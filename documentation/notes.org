@@ -1,0 +1,387 @@
+* Holgraphic Analysis
+
+** Notes
+
+So the holographic analysis goes like this:
+
+You start by reading in the JPG file. This is a compressed file. It has to be decompressed. The JPG file will be 3 color values for each pixel (RGB). You convert this to a single value based on:
+red = 0.3
+green = 0.59
+blu = 0.11
+Meaning you add all 3 values together, weighted by the above values. You should do this for a shot with plasma (plasmaShot) and a shot with no plasma (vacuumShot).
+
+Then, apply multiple the length and width of each shot by a hyperbolic function. The matlab code for this is:
+L = size(hol_def);
+M = L(2);  % x-direction
+N = L(1);  % y-direction
+
+param = 8;
+x2 = linspace(-param*pi,param*pi,M+1); x = x2(1:M);
+y2 = linspace(-param*pi,param*pi,N+1); y = y2(1:N);
+
+for i = 1: length(hol_def(:,1))
+    hol_def(i,:) = hol_def(i,:).*(tanh(x+(param-1)*pi)-tanh(x-(param-1)*pi));
+    hol_base(i,:) = hol_base(i,:).*(tanh(x+(param-1)*pi)-tanh(x-(param-1)*pi));
+end
+
+for j = 1: length(hol_base(1,:))
+    hol_def(:,j) = hol_def(:,j).*(tanh(y+(param-1)*pi)-tanh(y-(param-1)*pi))';
+    hol_base(:,j) = hol_base(:,j).*(tanh(y+(param-1)*pi)-tanh(y-(param-1)*pi))';
+end
+
+Notice the parameter is 8. I'm not sure if that should ever be varied. This hyperbolic window should stop the "Gibbs Phenomena".
+
+Then, you use the Fresnel method to reconstruct the complex amplitude of each scene beam (the plasma and vacuum). This is basically an approximation of the physical process of a hologram. You basically digitally have each small wavelet being transmitted off of the image. So each wavelet is attenuated by the transmittance of the image. You can approximate the double integral involved in this by an FFT of the image multiplied by an exponential. The matlab code for this process is:
+
+% Constants:
+res = (3.85e-6); % [m] Pixel size of Nikon 3200D 4.3e-6 for Canon Rebel T2i
+
+% Declaring pixel and sensor size in the hologram plane:
+L = size(hol);
+M = L(2);      % number of pixels along x-direction
+N = L(1);      % number of pixels in y-direction
+del_xi = res;  % pixel size in x-direction
+del_eta = res; % pixel size in y-direction
+chirp = ones(N,M);
+
+% Computing the length scales in the reconstruction plane:
+xsize_fres = abs(d*lambda/M/res);
+ysize_fres = abs(d*lambda/N/res);
+xfres = [-(M/2)*xsize_fres:xsize_fres:(M/2)*xsize_fres];
+xfres = xfres(1:M);
+yfres = ([-(N/2)*ysize_fres:ysize_fres:(N/2)*ysize_fres]);
+yfres = yfres(1:N);
+
+k = 2*pi/lambda;
+
+% Generating the chirp function required by the Fresnel transform:
+status = sprintf('Generating chirp...')
+for n = 0:N-1
+        for m = 0:M-1
+            
+            % Chirp function:
+            chirp(n+1,m+1) = exp((1i*pi/(d*lambda))*(((n-N/2)^2*...
+                del_eta^2)+((m-M/2)^2*del_xi^2)));
+
+            % Complex, constant phase factor:
+            % This factor is only required if we want a correctly scaled
+            % reconstructed intensity distribution.  It is not needed in
+            % computing the interference phase distribution.
+            % A(n+1,m+1) = (exp(1i*k*d)/(1i*lambda*d))*...
+            % exp((1i*pi/(d*lambda))*(xfres(m+1)^2+yfres(n+1)^2));
+            
+        end
+end
+
+% Set the complex factor to 1 when only reconstructing phase.
+A = 1; 
+
+% Multiply the hologram intensity distribution with the reference beam:
+hol_ref = hol*ref;
+
+% Convolving the product of the hologram function and reference wave with 
+% the chirp function.
+b_base =fft2(hol_base.*chirp);
+b_base =fftshift(b_base);
+
+You do it for each one of the images to get the complex amplitude of each scene beam. The beam with plasma, and the beam without plasma.
+
+Then, you subtract the two phases of each scene beam, and get one real value for the phase difference between the scene beam with, and the scene beam without plasma.
+
+At this point, the image is sampled every 10 points across in the columns, and down the rows. So information is thrown away. Then, there is a smoothing procedure. The smoothing procedure starts by taking the sine and cosine of the image (now with 9 out of 10 points removed). Then, it does a box car average over both the sine and cosine values. This keeps the image size the same, but just replaces each point with an average over a box around that point. For the edge points where a box doesn't fit, it just sets the value equal to the nearest value where a box does fit. Then, the arctangent of the sine / cosine image is taken. This gets us the phase back. Then, we do an unwrapping procedure which is basically the matlab unwrap function. It is looking for situations where the phase may have exceeded +/- pi, and rolled over. It goes first across the columns, then down the rows and checks for instances where the phase changes by more the pi (the threshold, somewhat arbitrary). In these situations, and adds +/- 2pi to every subsequent element. This unwraps the image in the sense that it allows for phase variations greater then 2 pi. Then, finally, the maximum phase is subtracted from the from the unwrapped phase. I'm not sure what that does exactly?
+
+At this point, it converts the phase to plasma density by the formula:
+den_int_full = sign_twin*[unwrapped/((-q^2/(4*pi*c^2*me*e_0))*lambda)];
+where,
+% Declare constants and ZaP-HD plasma parameters:
+e_0 = 8.85e-12; % Permitivity of free space
+mu_0 = 1.257e-6; % Permeability of free space
+k = 1.38e-23; % Boltzmann's constant in SI units
+q = 1.6e-19; % electron charge [C]
+c = 3e8; % speed of light [m/s]
+mi = 1.67e-27; % proton mass [kg]
+me = 9.12e-31; % electron mass [kg]
+lambda = 532e-9; % laser wavelength [m]
+R_electrode = 8*2.54/100;
+
+
+Then, the mininum density is subtracted from the density. That seems to make sense because the laser likely passes through zero plasma density at some point.
+
+The physical x and y values are now defined by:
+delta X = abs(d*lambda/M/res)
+delta Y = abs(d*lambda/N/res)
+where, M = the number of columns, N = the number of rows, d = the reconstruction distance, and res = the pixel size of the camera.
+
+And now you have the line-integrated density.
+
+
+
+
+* Abel Inversion
+
+** Notes
+
+So the abel inversion goes like this.
+
+You start by getting the "Number of Cross Sections" or basically the column number. Then, you iterate through each column. 
+
+Here is what you do for each column. Find the maximum value, and it's index. 
+
+You set a number of centroids to 10. That means, I think, you have 10 cocentric circles at each different radii.
+
+Then you take the index of the maximum value, and subtract the number of centroids.
+
+Then, check and see if your index is outside of the range of the image. If it is, then you set the left and right density for that column to NaN for all rows. It also sets the cenroid valve for that column to 0. I think that is suposed to be the center? Then, you are done.
+
+If that index value is inside the matrix range, check to see if it is close to the upper boundary (less then 2 times the number of centroids). If it is, then it decreases the number of centroid iterations by the difference between the index, and 2 times the number of centroids.
+
+Otherwise, its sets the number of centroid iterations to 2 times the number of centroids.
+
+Now, it starts to iterate through the centroid iterations. At each centroid iteration it:
+
+It gets a left and right profile, from the maximum value index to the begining of the column, and the maximum value index to the end of the column.
+
+Then, it applies an abel inversion to theleft and right vectors minus the minimum value of the vector. This abel inversion is starting with a square matrix that each side is the length of the vector. Every elements starts at zero. Then, its sets the element like this:
+
+for k = length(den_int):-1:1
+    for i = k:-1:1
+       
+        A(k,i) = sqrt(((k+1))^2-(i)^2)-sqrt((k)^2-(i)^2);
+        
+    end
+end
+
+A = 2*dr*(A');
+
+Then, does a matrix left divison to solve for the radial density:
+den_num = A\den_int;
+
+The matrix appears to be a marix with the half of the matrix zero, and the other half non-zero (split at the diagonal), like a triangle. The top row is full, the bottom row has one value. Each value appears to be
+
+A(i, j) = sqrt((j+2)^2 - (i+1)^2) - sqrt((j+1)^2-(i+1)^2)
+Matrix values are only for i <= j, or top left diagonal.
+
+A is a square matrix,
+A(length of half cross section, length of half cross section)
+
+So if,
+M = (3,3)
+A = (3,1)
+B = (3,1)
+
+B = M x A
+
+Then,
+
+A = M\B
+
+
+So,
+A(i, j) is the contribution from the jth circle (0 being the inner most circle), that adds to the ith cross section element/chord (just half, 0 being the chord through the center)
+
+A(i, j) = sqrt((j+2)^2-(i+1)^2) - sqrt((j+1)^2-(i+1)^2)
+
+So j = 0 is the inner most circle contribution,
+and i = 0 is the 0th chord that runs through the center
+
+sqrt((j+1)^2-(i+1)^2)
+
+the jth circle has a radius of (j+1). 
+
+The ith chord has an impact parameter of (i+1).
+
+That means that it will the ith chord will intersect the jth circle at an x value of,
+sqrt( (j+1)^2-(i+1)^2)
+and that the ith chord will intersect the j-1 circle at an x value of,
+sqrt( (j+1)^2-(i+1)^2)
+
+So then basically you just subtract the two x values to get the x distance that the chord will pass through the (j+1)th circle
+sqrt( (j+2)^2-(i+1)^2) -    sqrt( (j+1)^2-(i+1)^2)    = A(i,j) 
+Mikes Formula:
+sqrt( ((j+2))^2-(i+1)^2) -  sqrt((j+1)^2-(i+1)^2)     = A(i,j) 
+
+
+So I think this should work:
+
+A(i, j) = 2 x dr x sqrt( (j+2)^2 - (i+1)^2)   -   sqrt( (j+1)^2 - (i+1)^2)
+where i<=j
+
+This basically just gets the distance that a line at impact parameter i, will travel with circle j, where i = 0 corresponds to a chord through the center (exactly through the center??), and j = 0 corresponds to the inner most circle.
+
+This needs to be tested.
+
+Then, make sure both the left and right sides lengths match. So the longer of the two must be truncated.
+
+Okay, let's start over:
+The line integrated density is starting at the maximum i =0. That is the chord that passes through the center.
+
+That doesn't actually work.
+
+Mike's Code (Verified this):
+A(i,j) = sqrt((j+1)^2-i^2)-sqrt(j^2-i^2);
+for i <= j
+
+Converted to C (Verified this):
+A(i,j) = sqrt((j+2)^2-(i+1)^2)-sqrt((j+1)^2-(i+1)^2);
+for i <= j
+
+
+Here is my issue. So for j = 1, the inner most circle, and i =1, the inner impact parater,
+
+sqrt (2^2 - 1^2) - sqrt( 1^2 - 1^2)
+
+sqrt(3) for the length???
+
+For j = 2, the second inner most circle, and i = 1, the smallest impact paramter,
+sqrt(3^2 - 1^2)  - sqrt( 2^2-1^2)
+
+sqrt(8) - sqrt(3)
+That would make sense if the path length through the 2nd inner most circle was sqrt(8), but the max it could be is 2, and sqrt(8) is 2.82.
+
+
+For my formula (except for j = 0, i = 0),
+
+sqrt( (j+1)^2 - 0.25*(i+1)^2) - sqrt( j^2  - 0.25*(i+1)^2)
+
+For j = 0, the inner most circle, and i = 0, the inner impact parameter,
+
+sqrt( 1^2 - 0.25*1^2)
+
+sqrt(0.75)
+
+Kind of makes sense, less then 1,
+
+
+And then for j = 1, the second inner most circle, and i =0, the smallest impact parameter,
+
+sqrt( 2^2 - 0.25*1^2)  - sqrt(1^2 - 0.25*1^2)
+sqrt(3.75) - sqrt(0.75)
+
+I guess if sqrt(3.75) = 1.93, that is less then 2, so that kind of makes sense.
+
+But what about the case where you i = j?
+
+i = Impact parameter
+j = Shell parameter
+
+
+for i = 0, that is the line through the middle. 
+
+
+
+
+After the abel inversion, Mike goes in makes sure that both the left and right sides are the same size.
+
+Then, he goes int and checks to see a value for 0 density at the edge as the density in the longer profileat the radius of the shorter profile.
+
+
+
+I think he goes the abel inversion based on a number of different centroid locations, and looks for the one that is most symetrical. Then, he uses that one, I think.
+
+
+So here is my formula:
+
+  /* 
+   * Here is the method I came up with to get the length of the
+   * chord of impact parameter ii, through the shell, jj. The chord
+   * is the chord through the center of the 1 pixel width rectangle
+   * that passes through the plasma
+   */
+  for (jj = 0; jj < 10; jj++) {
+    for (ii = 0; ii <= jj; ii++) {
+
+	num = sqrt(gsl_pow_2(jj+1)-
+		   gsl_pow_2(ii+0.5))
+	  -sqrt(gsl_pow_2(jj)-
+		gsl_pow_2(ii+0.5));
+
+	gsl_matrix_set(myMethod, ii, jj, num);
+	
+    }
+  }
+
+  /* 
+   * Double back over cases where i = j, because the formula doesn't work
+   * for that case.
+   */
+  for (jj = 0; jj < 10; jj++) {
+
+	num = sqrt(gsl_pow_2(jj+1)-
+		   gsl_pow_2(jj+0.5));
+
+	gsl_matrix_set(myMethod, jj, jj, num);
+	
+  }
+
+
+Here is Mike's formula:
+
+  /* 
+   * This method (m-file) but 0-9 instead of 1-10:
+   * for j = 1:1:10
+   *   for i = 1:1:j
+   *      A(i,j) = sqrt(((j+1))^2-(i)^2)-sqrt((j)^2-(i)^2);
+   *   end
+   * end
+   * This is what Mike does in this code. I don't know what ii, and
+   * jj correspond to, I think ii = impact parameter, j = shell
+   */
+  for (jj = 0; jj < 10; jj++) {
+    for (ii = 0; ii <= jj; ii++) {
+
+      num = sqrt(gsl_pow_2(jj+2)-
+		 gsl_pow_2(ii+1))
+	-sqrt(gsl_pow_2(jj+1)-
+	      gsl_pow_2(ii+1));
+      
+      gsl_matrix_set(mikeMethod, ii, jj, num);
+
+    }
+  }
+
+
+So you are in a big for loop for each column/cross section, that is iterating through "centroids_iterations", which is set to 2 times the number of centroids, or "num_of_centroids". In this case, it's 20.
+
+You are keeping track of a of each profile, and each "centroid_ind_temp", which is set to initially the maximum index - the number of centroids. In this case, it's the maximum index subtracted by 10. You are also keeping track of the edge values.
+
+Okay, so once the matrix has been inverted, you have a left and right radial density profile. This is starting a r = 0, and going out by the "num_of_centroids", I think.
+
+Then,  you make sure that both the lengths of the left and right profiles are equal. If not, set them equal.
+
+Then, you want to find an edge value. That is the longer profile's density at the radius of the short profile.
+
+
+Then, for some reason that I don't understand, they do a for loop through a number of edge values, or essentially background values. But appears they only subtract it off of one of the profiles, the left or the right. Then, he subtracts the 2 matrices from another. Then, he calulates the matlab "norm" of that matrix , which is just the max(svd(M)), and normalizes that to the vector length. At that point he appears to find the minimum value, and set that equal
+
+
+
+
+
+* Fourier Method
+
+** Notes
+
+
+Okay, so you break down f(r) as:
+
+f(r) = sum An x fn(r)
+where,
+fn(r) = 1 - (-1)^n x cos(n x pi x r/R)
+
+hn(y) = integral fn(r) r x dr / (sqrt(r^2 - y^2))
+
+Solve for An, then get f(r)
+
+
+Looking at that matlab code, you have,
+
+compute_expansion:
+
+It appears to get the functions,
+hn, and fn
+
+First, set hn and fn to matrixes, with the row number equal to the length of X, and the column number equal to the upf value.
+
+Then it executes some integrals to populate values for these two matrices.
+
+
