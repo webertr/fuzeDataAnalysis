@@ -1,5 +1,7 @@
 #include "dataAnalysis.h"
 
+static int cp(const char *to, const char *from);
+
 /******************************************************************************
  * Function: status_ok
  * Inputs: int
@@ -69,6 +71,48 @@ double getElement (dataVector *dataVecIn, int elementNum) {
 
 
 /******************************************************************************
+ * Function: saveData
+ * Inputs: dataVector*, char *
+ * Returns: int
+ * Description: Usage:
+ ******************************************************************************/
+
+int saveData (dataVector *dataVecIn, char *fileName) {
+
+  char line[256];
+  int ii;
+
+  FILE *fp = fopen("plot.txt", "r");
+  FILE *fpt = fopen("temp.txt", "w");
+
+  if ( (fp == NULL) || (fpt == NULL) ) {
+
+    printf("Error opening files!\n");
+    exit(1);
+
+  }
+
+  ii = 0;
+  while (fgets(line, sizeof(line), fp)) {
+
+    fprintf(fpt, "%d \t %s", ii, line);
+
+    ii = ii + 1;
+
+  }
+
+  fclose(fp);
+  fclose(fpt);
+
+  /* Copying file over */
+  cp("plot.txt", "temp.txt");  
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: getMagneticData
  * Inputs: dataVector*, char*
  * Returns: dataVector *
@@ -99,6 +143,9 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
 
   /* Setting node name */
   strcpy(structReturn->nodeName, nodeName);
+
+  /* Setting shot number */
+  structReturn->shotNumber = shotNumber;
 
   /* Setting get element function */
   structReturn->getElement = &getElement;
@@ -212,5 +259,66 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
   gsl_vector_float_free(tempVec);
   
   return structReturn;
+
+}
+
+
+static int cp(const char *to, const char *from) {
+
+  int fd_to, fd_from;
+  char buf[4096];
+  ssize_t nread;
+  int saved_errno;
+
+  fd_from = open(from, O_RDONLY);
+  if (fd_from < 0)
+    return -1;
+
+  fd_to = open(to, O_WRONLY | O_CREAT | O_EXCL, 0666);
+  if (fd_to < 0)
+    goto out_error;
+
+  while (nread = read(fd_from, buf, sizeof buf), nread > 0)
+    {
+      char *out_ptr = buf;
+      ssize_t nwritten;
+
+      do {
+	nwritten = write(fd_to, out_ptr, nread);
+
+	if (nwritten >= 0)
+	  {
+	    nread -= nwritten;
+	    out_ptr += nwritten;
+	  }
+	else if (errno != EINTR)
+	  {
+	    goto out_error;
+	  }
+      } while (nread > 0);
+    }
+
+  if (nread == 0)
+    {
+      if (close(fd_to) < 0)
+        {
+	  fd_to = -1;
+	  goto out_error;
+        }
+      close(fd_from);
+
+      /* Success! */
+      return 0;
+    }
+
+ out_error:
+  saved_errno = errno;
+
+  close(fd_from);
+  if (fd_to >= 0)
+    close(fd_to);
+
+  errno = saved_errno;
+  return -1;
 
 }

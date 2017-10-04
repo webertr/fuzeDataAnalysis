@@ -21,7 +21,9 @@ int main(int argc, char *argv[]) {
   printf("Node Name: %s\n", data->nodeName);
 
   printf("20th Element: %f\n", data->getElement(data, 20));
-  
+
+  saveData(data, "Test.txt");
+
   return 0;
 
 }
