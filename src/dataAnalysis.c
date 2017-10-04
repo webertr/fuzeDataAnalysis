@@ -55,24 +55,28 @@ static int get_signal_length(const char *signal) {
 }
 
 /******************************************************************************
- * Function: getMagneticData
- * Inputs: dataVector*
- * Returns: void
+ * Function: getElement
+ * Inputs: dataVector*, int
+ * Returns: double
  * Description: 
  ******************************************************************************/
 
-int getMagneticData (dataVector *dataVecIn) {
+double getElement (dataVector *dataVecIn, int elementNum) {
 
-  return 1;
+  return gsl_vector_get(dataVecIn->data, elementNum);
 
 }
 
 
 /******************************************************************************
  * Function: getMagneticData
- * Inputs: dataVector*
- * Returns: void
- * Description: 
+ * Inputs: dataVector*, char*
+ * Returns: dataVector *
+ * Description: Example usage:
+ * dataVector *data = initializeMagneticData(170817005, "\\b_n95_000_sm");
+ * printf("Data: %d, %f\n", data->length, data->deltaT);
+ * printf("Node Name: %s\n", data->nodeName);
+ * printf("20th Element: %f\n", data->getElement(data, 20));
  ******************************************************************************/
 
 dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
@@ -91,7 +95,13 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
   double deltaT;        // A single time step;
   
   /* Initializing struct to return everything */
-  dataVector *structReturn = malloc(sizeof(dataVector*));
+  dataVector *structReturn = malloc(sizeof(dataVector));
+
+  /* Setting node name */
+  strcpy(structReturn->nodeName, nodeName);
+
+  /* Setting get element function */
+  structReturn->getElement = &getElement;
 
   /* Return this if there is an error */
   dataVector *nullReturn = NULL;

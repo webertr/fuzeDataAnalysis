@@ -22,17 +22,17 @@
  * for hologram reconstruction and inversion
  */
 struct datavector { 
-  double deltaT;                              // Time step for each data point
-  int length;                                 // Number of points
-  gsl_vector *data;                           // Pointer to gsl_vector containg raw data
-  int shotNumber;                             // The shot number
-  int (*getData)(struct datavector*);         // Function pointer to getData function
-  int (*getElement)(struct datavector*, int);  // Function to get element from vector
+  double deltaT;                               // Time step for each data point
+  int length;                                  // Number of points
+  gsl_vector *data;                            // Pointer to gsl_vector containg raw data
+  int shotNumber;                              // The shot number
+  char nodeName[20];                           // The node name
+  double (*getElement)(struct datavector*, int);  // Function to get element from vector
 };
 
 typedef struct datavector dataVector;
 
-int getVectorData(int shotNumber);
+double getElement (dataVector *dataVecIn, int elementIn);
 dataVector* initializeMagneticData (int shotNumber, char *nodeName);
 
 #endif

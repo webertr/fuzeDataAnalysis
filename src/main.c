@@ -18,12 +18,9 @@ int main(int argc, char *argv[]) {
 
   printf("Data: %d, %f\n", data->length, data->deltaT);
 
-  int ii;
-  for (ii =0; ii < data->length; ii++) {
+  printf("Node Name: %s\n", data->nodeName);
 
-    printf("Data: %f\n", gsl_vector_get(data->data, ii));
-    
-  }
+  printf("20th Element: %f\n", data->getElement(data, 20));
   
   return 0;
 
