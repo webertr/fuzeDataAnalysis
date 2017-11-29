@@ -16,13 +16,15 @@ int main(int argc, char *argv[]) {
    */
   dataVector *data = initializeMagneticData(170817005, "\\b_n95_000_sm");
 
-  printf("Data: %d, %f\n", data->length, data->deltaT);
+  printf("Data: %d, Delta T: %f\n", data->length, data->deltaT);
 
   printf("Node Name: %s\n", data->nodeName);
 
   printf("20th Element: %f\n", data->getElement(data, 20));
 
-  saveData(data, "Test.txt");
+  data->saveData(data);
+
+  system("script/plot_test.sh");
 
   return 0;
 

@@ -31,12 +31,13 @@ struct datavector {
   int shotNumber;                                 // The shot number
   char nodeName[20];                              // The node name
   double (*getElement)(struct datavector*, int);  // Function to get element from vector
+  int (*saveData)(struct datavector*);            // Function to save the data for gnuplot
 };
 
 typedef struct datavector dataVector;
 
 double getElement (dataVector *dataVecIn, int elementIn);
+int saveData (dataVector *dataVecIn);
 dataVector* initializeMagneticData (int shotNumber, char *nodeName);
-int saveData (dataVector *dataVecIn, char *fileName);
 
 #endif
