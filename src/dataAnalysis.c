@@ -264,3 +264,33 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
   return structReturn;
 
 }
+
+
+/******************************************************************************
+ * Function: dataStructPlotTest
+ * Inputs: int, char *
+ * Returns: int
+ * Description: This will just show how to use the data struct in this framework.
+ ******************************************************************************/
+
+int dataStructPlotTest(int shotNumber, char *nodeName) {
+
+  /* 
+   * struct containing all the data
+   */
+  dataVector *data = initializeMagneticData(170817005, "\\b_n95_000_sm");
+
+  printf("Data: %d, Delta T: %f\n", data->length, data->deltaT);
+
+  printf("Node Name: %s\n", data->nodeName);
+
+  printf("20th Element: %f\n", data->getElement(data, 20));
+
+  /* Saves as the data->nodeName + _plot.txt */
+  data->saveData(data);
+
+  system("script/plot_struct_test.sh");
+
+  return 0;
+
+}

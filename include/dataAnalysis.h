@@ -39,5 +39,6 @@ typedef struct datavector dataVector;
 double getElement (dataVector *dataVecIn, int elementIn);
 int saveData (dataVector *dataVecIn);
 dataVector* initializeMagneticData (int shotNumber, char *nodeName);
+int dataStructPlotTest(int shotNumber, char *nodeName);
 
 #endif
