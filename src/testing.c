@@ -692,3 +692,28 @@ int testGetDensitySlice(gsl_vector *forwardProjectData, int numRows, int numCols
   return 1;
 
 }
+
+int testModifyJPEG() {
+
+  char *filenameRef = "/home/fuze/DHI_Images/Calibration/DSC_0009.JPG";
+
+  gsl_matrix* imagePlasma = readJPEGImage(filenameRef);
+  
+  int numRows = imagePlasma->size1,
+    numCols = imagePlasma->size2;
+
+  int ii, jj;
+
+  for (ii = 1634; ii < 2805; ii++) {
+    for (jj = 462; jj< 1694; jj++) {
+
+      gsl_matrix_set(imagePlasma, ii, jj, 0);
+
+    }
+  }
+
+  saveJPEGImage(imagePlasma, "/home/fuze/DHI_Images/Calibration/Test.JPG");
+
+  return 0;
+
+}

@@ -40,5 +40,6 @@ int testGetDensitySlice(gsl_vector *forwardProjectData, int numRows, int numCols
 gsl_matrix *getRadialProfileImageTest(char *fileLeftMatrix, char *fileRightMatrix,
 				      char *fileNameCentroid,
 				      int numRows, int numCols);
+int testModifyJPEG();
 
 #endif

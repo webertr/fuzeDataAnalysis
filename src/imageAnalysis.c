@@ -1773,7 +1773,7 @@ int hologramMain() {
                                    // and unwrapped phase
   param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
   param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
+  param.hologramPreview = 1;       // 1 means to preview the hologram before extracting twin image
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
@@ -1788,8 +1788,8 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/171213/171213018.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/171213/171213016.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/Calibration/DSC_0009.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/Calibration/DSC_0010.JPG";
 
   /* Setting bounds of reconstructed image */
   param.xLL = 2739;          // Lower left x pixel value of phase reconstruction

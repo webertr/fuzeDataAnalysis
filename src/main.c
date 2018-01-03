@@ -28,8 +28,13 @@ int main(int argc, char *argv[]) {
    * Demonstrating how to get and plot mdsplus data.
    */
   //dataStructPlotTest(170817005, "\\b_n95_000_sm");
-  
-  hologramMain();
+
+  /*
+   * Running the DHI analysis
+   */
+  //hologramMain();
+
+  testModifyJPEG();
 
   return 0;
 

@@ -31,14 +31,13 @@ my_error_exit (j_common_ptr cinfo)
 }
 
 /******************************************************************************
- * Function: read_JPEG_file
+ * Function: readJPEGImage
  * Inputs: char *
  * Returns: gsl_matrix*
  * Description: Converts a jpeg file to a gsl_matrix and returns it
  ******************************************************************************/
 
-gsl_matrix *readJPEGImage(char * filename)
-{
+gsl_matrix *readJPEGImage(char * filename) {
   
   /* This struct contains the JPEG decompression parameters and pointers to
    * working space (which is allocated as needed by the JPEG library).
@@ -194,5 +193,92 @@ gsl_matrix *readJPEGImage(char * filename)
 
   /* And we're done! */
   return image;
+
+}
+
+
+/******************************************************************************
+ * Function: saveJPEGImage
+ * Inputs: gsl_matrix *, char *
+ * Returns: int
+ * Description: Save a gsl matrix to a jpeg file.
+ ******************************************************************************/
+
+int saveJPEGImage(gsl_matrix *mInput, char *fileName) {
+
+  /* Quality should be between 0 and 100 */
+  int quality = 100;
+
+  /* jpeg struct */
+  struct jpeg_compress_struct cinfo;
+  struct jpeg_error_mgr jerr;
+
+  /* pointer to raw image */
+  unsigned char *raw_image = NULL;
+
+  /* dimensions of the image we want to write */
+  int width=mInput->size1, 
+    height=mInput->size2,
+    bytes_per_pixel=sizeof(gsl_matrix_get(mInput, 0, 0));
+
+  /* Other option: JCS_GRAYSCALE */
+  //int color_space=JCS_RGB;
+  int color_space=JCS_GRAYSCALE;
+
+  /* alloc raw image data */
+  raw_image = (unsigned char *)malloc((sizeof (unsigned char))*width*height*bytes_per_pixel);
+
+  /* convert tensor to raw bytes */
+  int ii, jj;
+  for (ii=0; ii<width; ii++) {
+    for (jj=0; jj<height; jj++) {
+
+      raw_image[(ii*width+jj)*bytes_per_pixel] = gsl_matrix_get(mInput, ii, jj);
+
+    }
+  }
+
+  /* this is a pointer to one row of image data */
+  JSAMPROW row_pointer[1];
+  FILE *outfile = NULL;
+
+  outfile = fopen( fileName, "wb" );
+
+  cinfo.err = jpeg_std_error( &jerr );
+  jpeg_create_compress(&cinfo);
+
+  jpeg_stdio_dest(&cinfo, outfile);
+  
+  /* Setting the parameters of the output file here */
+  cinfo.image_width = width;
+  cinfo.image_height = height;
+  cinfo.input_components = bytes_per_pixel;
+  cinfo.in_color_space = color_space;
+
+  /* default compression parameters, we shouldn't be worried about these */
+  jpeg_set_defaults( &cinfo );
+  jpeg_set_quality(&cinfo, quality, (boolean)0);
+
+  /* Now do the compression .. */
+  jpeg_start_compress( &cinfo, TRUE );
+
+  /* like reading a file, this time write one row at a time */
+  while( cinfo.next_scanline < cinfo.image_height ) {
+    row_pointer[0] = 
+      &raw_image[ cinfo.next_scanline * cinfo.image_width *  cinfo.input_components];
+    jpeg_write_scanlines( &cinfo, row_pointer, 1 );
+  }
+
+  /* similar to read file, clean up after we're done compressing */
+  jpeg_finish_compress( &cinfo );
+  jpeg_destroy_compress( &cinfo );
+
+  fclose( outfile );
+
+  /* some cleanup */
+  free(raw_image);
+
+  /* success code is 1! */
+  return 1;
 
 }

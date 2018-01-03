@@ -114,6 +114,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
 };
 
 gsl_matrix *readJPEGImage(char *fileName);
+int saveJPEGImage(gsl_matrix *mInput, char *fileName);
 gsl_matrix_complex *fresnel (gsl_matrix *mInput, holographyParameters* param);
 gsl_matrix *phaseDiffHolo (gsl_matrix_complex *mInput1, 
 			   gsl_matrix_complex *mInput2);
