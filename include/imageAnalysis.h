@@ -169,5 +169,6 @@ int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDe
 int unwrapCols(gsl_matrix *mInput, holographyParameters* param);
 int unwrapRows(gsl_matrix *mInput, holographyParameters* param);
 gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
+int hologramMain();
 
 #endif
