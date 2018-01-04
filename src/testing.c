@@ -695,7 +695,7 @@ int testGetDensitySlice(gsl_vector *forwardProjectData, int numRows, int numCols
 
 int testModifyJPEG() {
 
-  char *filenameRef = "/home/fuze/DHI_Images/Calibration/DSC_0009.JPG";
+  char *filenameRef = "/home/webertr/DHI_Images/Calibration/DSC_0009.JPG";
 
   gsl_matrix* imagePlasma = readJPEGImage(filenameRef);
   

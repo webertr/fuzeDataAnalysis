@@ -219,11 +219,10 @@ int saveJPEGImage(gsl_matrix *mInput, char *fileName) {
   /* dimensions of the image we want to write */
   int width=mInput->size1, 
     height=mInput->size2,
-    bytes_per_pixel=sizeof(gsl_matrix_get(mInput, 0, 0));
+    bytes_per_pixel=3;
 
-  /* Other option: JCS_GRAYSCALE */
-  //int color_space=JCS_RGB;
-  int color_space=JCS_GRAYSCALE;
+  /* JCS_GRAYSCALE = 1 for J_COLOR_SPACE enum. JCS_RGB = 2 */
+  int color_space=JCS_RGB;
 
   /* alloc raw image data */
   raw_image = (unsigned char *)malloc((sizeof (unsigned char))*width*height*bytes_per_pixel);
@@ -233,7 +232,7 @@ int saveJPEGImage(gsl_matrix *mInput, char *fileName) {
   for (ii=0; ii<width; ii++) {
     for (jj=0; jj<height; jj++) {
 
-      raw_image[(ii*width+jj)*bytes_per_pixel] = gsl_matrix_get(mInput, ii, jj);
+      raw_image[(ii*width+jj)*bytes_per_pixel] = (unsigned char) 200;
 
     }
   }
@@ -264,11 +263,14 @@ int saveJPEGImage(gsl_matrix *mInput, char *fileName) {
 
   /* like reading a file, this time write one row at a time */
   while( cinfo.next_scanline < cinfo.image_height ) {
+    
     row_pointer[0] = 
       &raw_image[ cinfo.next_scanline * cinfo.image_width *  cinfo.input_components];
-    jpeg_write_scanlines( &cinfo, row_pointer, 1 );
-  }
 
+    jpeg_write_scanlines( &cinfo, row_pointer, 1 );
+    
+  }
+  
   /* similar to read file, clean up after we're done compressing */
   jpeg_finish_compress( &cinfo );
   jpeg_destroy_compress( &cinfo );
