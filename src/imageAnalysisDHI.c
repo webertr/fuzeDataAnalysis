@@ -1,4 +1,4 @@
-#include "dhiImageAnalysis.h"
+#include "imageAnalysisDHI.h"
 
 static int quadSwapComplexImage (gsl_matrix_complex *mInput);
 static int hyperbolicWindow (gsl_matrix *mInput, int param);

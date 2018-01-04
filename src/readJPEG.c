@@ -1,4 +1,4 @@
-#include "dhiImageAnalysis.h"
+#include "imageAnalysisDHI.h"
 
 /*
  * Someone else wrote this for handling errors, I don't want it

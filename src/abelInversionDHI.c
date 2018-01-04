@@ -1,4 +1,4 @@
-#include "dhiImageAnalysis.h"
+#include "imageAnalysisDHI.h"
 
 void saveVectorTest(gsl_vector *vecIn, char *fileName);
 

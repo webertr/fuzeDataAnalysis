@@ -1,4 +1,4 @@
-#include "dhiImageAnalysis.h"
+#include "imageAnalysisDHI.h"
 #include "testing.h"
 
 int testBoxCarSmooth() {
