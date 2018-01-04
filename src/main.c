@@ -1,7 +1,7 @@
 #include "dataAnalysis.h"
 #include "getLFData.h"
 #include "getSVFData.h"
-#include "imageAnalysis.h"
+#include "dhiImageAnalysis.h"
 #include "testing.h"
 
 

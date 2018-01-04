@@ -1,5 +1,5 @@
-#ifndef IMAGEANALYSIS_H
-#define IMAGEANALYSIS_H
+#ifndef DHIIMAGEANALYSIS_H
+#define DHIIMAGEANALYSIS_H
 
 #include <stdio.h>
 #include <gsl/gsl_math.h>
