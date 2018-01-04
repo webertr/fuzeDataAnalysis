@@ -699,8 +699,8 @@ int testModifyJPEG() {
 
   gsl_matrix* imagePlasma = readJPEGImage(filenameRef);
   
-  int numRows = imagePlasma->size1,
-    numCols = imagePlasma->size2;
+  //int numRows = imagePlasma->size1,
+  //numCols = imagePlasma->size2;
 
   int ii, jj;
 

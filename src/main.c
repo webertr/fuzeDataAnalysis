@@ -32,9 +32,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramMain();
-
-  testModifyJPEG();
+  hologramMain();
 
   return 0;
 

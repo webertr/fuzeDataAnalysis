@@ -2,7 +2,7 @@
 
 set palette rgb 33,13,10
 
-#set term x11 0
+set term x11 0
 
 set xrange[0:4000]
 set yrange[0:6016]
