@@ -188,13 +188,13 @@ gsl_matrix *getTestData() {
   saveLineIntegratedSlice(testData, 0, "data/lineIntegratedSlice0.txt");
   saveLineIntegratedSlice(testData, 99, "data/lineIntegratedSlice99.txt");
     
-  system("script/plot_test.sh");
+  system("script/plot_testing.sh");
 
   //saveVectorTest(testVec, "data/lineIntegratedSlice.txt");
 
   //saveVectorTest(radialProfile, "data/radialProfile.txt");
 
-  //system("script/plot_test.sh");
+  //system("script/plot_testing.sh");
 
   //lineIntegratedSave(testData, "data/lineIntegrated.dat");
 

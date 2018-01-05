@@ -30,9 +30,14 @@ int main(int argc, char *argv[]) {
   //dataStructPlotTest(170817005, "\\b_n95_000_sm");
 
   /*
+   * Doing testing of synthetic data 
+   */
+  getTestData();
+
+  /*
    * Running the DHI analysis
    */
-  hologramMain();
+  //hologramMain();
 
   return 0;
 

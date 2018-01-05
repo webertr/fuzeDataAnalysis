@@ -1,10 +1,55 @@
 * Notes
 
-This is a framework to analysis mdsplus data on the fuze experiment
+This is a framework to analysis mdsplus data on the fuze experiment. It also includes some analysis code for a digital holographic inteferometer.
 
-* Holgraphic Analysis
 
-** Notes
+* DHI Analysis
+
+** Reconstruction
+
+To perform the reconstruction, first, a fresnel transformation is taken of each of the two images (images with and without a plasma).
+
+
+---- Fresnel Transformation ----
+
+The fresnel transformation starts by applying hyperbolic filter to the image. This filter will first apply a smoothing function across each row, then apply the same smoothing function down each column. There is a smoothing parameter for this, called the hyperbolicWin (defaults to 8).
+
+Then, you multiply the image by the complex "chirp" function, and the reference beam (which is just 1.0).
+
+Then, you perform a 2D FFT (done by a series of 1D FFT's in the C code using the GSL). The result is then has the upper left and lower right quadrants exchanged, and then the upper right and lower left quadrants exchanged. The result is the a complex matrix that represents the complex wave amplitude of the holographic reconstruction.
+
+----------------------------------
+
+
+At this point, you simply find the phase difference between the complex wave amplitudes of the holographic reconstructions with and without plasma. Then, you extract the section that corresponds to the 1st order, object wave (virtual or conjugate/diverging). The phase difference in this extracted image now represents the phase shift of the laser beam caused by the presence of the plasma.
+
+Then, a reducing procedure is performed, where every "sampleInterval"th element is sampled and placed into a new matrix that is smaller in size.
+
+
+---- Smoothing and Unwrapping Procedure -----
+
+After that, this new, smaller, reduced size matrix representing the phase, is smoothed over and unwrapped together. This first step involves taking the sine and cosine of the phase angle. 
+
+Then, a simple box car smoothing procedure is applied to the sine and cosine of the phase angle. This box car smooth width is set by the "boxCarSmoothWidth" parameter. The returned matrix after the box car smoothing will be smaller, because the edges that don't contain enough points for an average and will be discarded. 
+
+Then, the smoothed sine and cosine matrices will be used to re-generate the phase, in a new, slightly smaller phase matrix. 
+
+Finally, that new phase matrix is "unwrapped". The unwrapping procedure goes through first each column, then each row. The procedure will look for phase jumps then a threshold, set by "unwrapThresh" (defaults to 1.0 x pi), and add or subtract 2pi, depending on the sign of the jump. This will account for phase transitions that go outside of the -pi -> +pi domain of the atan function. 
+
+At this point, the unwrapped and smoothed phase matrix has the maximum value subtracted from it at all points. This creates a zero baseline that all phases are referenced to. Later, a +1/-1 will be mulitplied by the phase when converting to density.
+
+-----------------------------------------------
+
+
+Finally, the phase is converted to plasma density by a simple formula. This matrix is now the line integrated plasma density.
+
+
+
+
+
+** Abel Inversion
+
+Now, the line integrated plasma density must be converted to plasma number density.
 
 
 ** Junk 
@@ -121,16 +166,32 @@ where, M = the number of columns, N = the number of rows, d = the reconstruction
 
 And now you have the line-integrated density.
 
+Our unwrapping procedure looks for phase jumps for some threshold value of pi. We have been using 1.0. The phase jump should be by 2pi, though. The phase is confined between +/- pi.
 
+Before, we were first taking every 10th point from the image, after the fresnel transformation. Then, we were applying a box car smooth (8). This made the computational time speed up. 
 
+Now, we are taking all the points, and doing a box car smooth of 100. That improved things a little. 
 
-* Abel Inversion
+The density offset procedure I do is:
 
-** Notes
+For each centroid iteration, it will iterate through a number of density offsets, both positive and negative, apply them to the smaller cross section, and determine which one best minimizes the L2 norm of the different between the small profile, and truncated larger profile. I think this is what M. Ross's code it doing. I have this commented out.
 
+The issue with the abel inversion, is when it doesn't go to zero, you get a large point on the outer shell. Then, this outer shell is a false data, and the geometry is included incorrectly in the rest of the inversion routine. I think we want to set this to zero, then add an offset to match... where?
 
+We unwrap each row first, then each column. 
 
-** Junk
+Should we box car average the phase, then take the sin/cos, or do we have been doing which is take the sin/cos, then do a box car average?
+
+About the abel inversion. I think that we want to force one end to zero, then have the the
+
+After you get the phase map, the maximum value is subtracted.
+
+Previously, mike ross would calculate the sine and cosine of the phase, then do a box car smoothing. Then, he would re-calculate the phase using atan. Then, he would unwrap the phase.
+
+Now, I'm just unwrapping the phase, then doing a box car average.
+
+Now, I'm seeing really confusing results. The new procedure which just unwraps the phase, then does a box car smooth over the unwrapped phase, is producing results that don't make a ton of sense. They are radically different from what was obtained using the previous method. I'm trying to track the phase in the reconstructed twin image, and it's hard to make sense out of it. 
+
 
 So the abel inversion goes like this.
 
@@ -368,30 +429,3 @@ Then, for some reason that I don't understand, they do a for loop through a numb
 
 
 
-* Analysis Write up
-
-Our unwrapping procedure looks for phase jumps for some threshold value of pi. We have been using 1.0. The phase jump should be by 2pi, though. The phase is confined between +/- pi.
-
-Before, we were first taking every 10th point from the image, after the fresnel transformation. Then, we were applying a box car smooth (8). This made the computational time speed up. 
-
-Now, we are taking all the points, and doing a box car smooth of 100. That improved things a little. 
-
-The density offset procedure I do is:
-
-For each centroid iteration, it will iterate through a number of density offsets, both positive and negative, apply them to the smaller cross section, and determine which one best minimizes the L2 norm of the different between the small profile, and truncated larger profile. I think this is what M. Ross's code it doing. I have this commented out.
-
-The issue with the abel inversion, is when it doesn't go to zero, you get a large point on the outer shell. Then, this outer shell is a false data, and the geometry is included incorrectly in the rest of the inversion routine. I think we want to set this to zero, then add an offset to match... where?
-
-We unwrap each row first, then each column. 
-
-Should we box car average the phase, then take the sin/cos, or do we have been doing which is take the sin/cos, then do a box car average?
-
-About the abel inversion. I think that we want to force one end to zero, then have the the
-
-After you get the phase map, the maximum value is subtracted.
-
-Previously, mike ross would calculate the sine and cosine of the phase, then do a box car smoothing. Then, he would re-calculate the phase using atan. Then, he would unwrap the phase.
-
-Now, I'm just unwrapping the phase, then doing a box car average.
-
-Now, I'm seeing really confusing results. The new procedure which just unwraps the phase, then does a box car smooth over the unwrapped phase, is producing results that don't make a ton of sense. They are radically different from what was obtained using the previous method. I'm trying to track the phase in the reconstructed twin image, and it's hard to make sense out of it. 

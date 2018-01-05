@@ -395,6 +395,8 @@ for shot_ind = 1:size(shots,1)
             
             for k = 1:num_of_cross_sect
                 
+		% centroid_abs(k) is the kth centroid in absolute pixel space
+		% If its 1, that means that it is the first point.
                 if centroid_abs(k) == 1
                     y_edge_l{k} = 0:del_y:del_y;
                     y_edge_r{k} = 0:del_y:size(unwrapped,1)-1;
@@ -403,6 +405,7 @@ for shot_ind = 1:size(shots,1)
                     x_edge_l(k) = 2*sqrt(R_electrode^2-max(y_edge_l{k})^2);
                     x_edge_r(k) = 2*sqrt(R_electrode^2-max(y_edge_r{k})^2);
                     
+                % The centroid is at the last point
                 elseif centroid_abs(k) == size(unwrapped,1)
                     y_edge_l{k} = 0:del_y:(size(unwrapped,1)-1)*del_y;
                     y_edge_r{k} = 0:del_y:del_y;
