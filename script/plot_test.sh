@@ -45,6 +45,6 @@ set yrange[0:6016]
 set size ratio -1
 set terminal png
 #set term x11 0
-set output 'data/hologramPreviewd42.png'
+set output 'data/hologramPreviewd100.png'
 
 plot 'data/hologramPreview.dat' binary matrix with image title ""

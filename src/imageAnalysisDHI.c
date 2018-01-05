@@ -1760,7 +1760,7 @@ int hologramMain() {
 
   param.res = 3.85E-6;             // CCD Resolution
   param.lambda = 532E-9;           // Wavelength of laser
-  param.d = 0.50;                  // Reconstruction distance
+  param.d = 1.00;                  // Reconstruction distance
   param.deltaN = 1E23;             // Density offset delta for inversion
   param.hyperbolicWin = 8;         // Hyperbolic window parameter
   param.sampleInterval = 1;        // Sampling interval of line-integrated density 
@@ -1773,7 +1773,7 @@ int hologramMain() {
                                    // and unwrapped phase
   param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
   param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
+  param.hologramPreview = 1;       // 1 means to preview the hologram before extracting twin image
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
