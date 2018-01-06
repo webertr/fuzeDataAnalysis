@@ -49,7 +49,47 @@ Finally, the phase is converted to plasma density by a simple formula. This matr
 
 ** Abel Inversion
 
-Now, the line integrated plasma density must be converted to plasma number density.
+Now, the line integrated plasma density must be converted to plasma number density. This procedure is more complicated.
+
+It will iterate through each column, which is meant to be in an orientation where the column runs in the y-direction, or perpendicular to the z-direction, the direction of the pinch. For each column, it will do the following:
+
+
+------- Each Column Iteration ---------
+
+It will pick the center to be the maximum value in the column. It will use this center value to divide the column up into a "Left" and "Right" line integrated profile. The "Left" profile is 0 -> the center value.
+
+Then, it will iterate this center value from -"centroidNum" to +"centroidNum" around the maximum value (set to 10). For each center value, it will do the following:
+
+
+------- Each Value for the "Center" ---------
+
+It will start by dividing up the column into a "Left" and "Right" line integrated profile.
+
+Then, it will subtract the minimum value from both the "Left" and "Right" line integrated profile.
+
+Then, it will invert each "Left" and "Right" line integrated profile, to obtain a "Left" and "Right" density profile.
+
+At this point, it will try to determine an approriate density offset for the smaller of the two profiles. To do this, it will iterate through a number of different density offsets determined by the parameters "deltaN" (set to 5E21) and "offsetIter" (set to 15). It will apply these offsets to the smaller radial density profile, and determine the sum of the square of the differences between the smaller profile, and the truncated larger profile. It will then find the density offset that minimizes this sum. This will be the density offset that it applies to the smaller of the two profiles.
+
+Now that the density offset has been determined, the code will find the sum of the squares of the difference between the smaller density profile, and truncated larger density profile. The code will find the centroid value, or center pixel value to divide the column into a left and right line integrated density profile, that minimizes this sum. This will then be the center pixel value, or centroid value, that is used for that column.
+
+-------------------------------------
+
+
+That center value that minimizes the L2 norm between the smaller and large radial density profiles (the sum of the squares of the differences between the small and truncated large radial density profile) is what will be recorded as the actual inverted radial density profile. Remember that the appropriate density offset was also found for the smaller of the two profiles. So the "Left" and "Right" radial density profiles will be glued together, yielding the 2D inverted plasma radial density profiles.
+
+Finally, the code will apply an axial phase correction. I'm not sure this code is necessary, but here is what it does:
+
+
+------ Axial Phase Correction -----------
+
+It will start by iterating through each column. 
+
+Then, it will longer of the two profiles, and calculate the length = dy x The length of the longer profile. From this length, it will calculate a distance, 2 x sqrt(Relec^2-length^2), which is path length of the edge chord of the longer profile.
+
+Then, it will divide the top or bottom value of the line integrated profile that column, by this distance. This value will then be an offset that is ???added??? to the ???longer???? profile.
+
+
 
 
 ** Junk 
