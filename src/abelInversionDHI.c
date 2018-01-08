@@ -147,7 +147,7 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
    * 2*(sqrt(R^2 - y^2), and add that to both the left and right radial density profiles.
    */
   axialVariationCorrection(leftDensityProfile, rightDensityProfile, 
-  			   imageM, centroidLocation, param);
+   			   imageM, centroidLocation, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
@@ -920,6 +920,9 @@ int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDe
       /* Raising left radial profile up by the minimum background value */
       gsl_vector_add_constant(&leftCrossSection.vector, densityOffset);
 
+      /* Raising right radial profile up by the minimum background value */
+      gsl_vector_add_constant(&rightCrossSection.vector, densityOffset);
+
     }
     else {
 
@@ -929,6 +932,9 @@ int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDe
       /* Dividing the line integrated data by the chord length of the of edge */
       densityOffset = gsl_matrix_get(imageM, numRows-1, jj)/(2*sqrt(gsl_pow_2(Relec) 
 								    - gsl_pow_2(yval)));
+
+      /* Raising left radial profile up by the minimum background value */
+      gsl_vector_add_constant(&leftCrossSection.vector, densityOffset);
 
       /* Raising right radial profile up by the minimum background value */
       gsl_vector_add_constant(&rightCrossSection.vector, densityOffset);

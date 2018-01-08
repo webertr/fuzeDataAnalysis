@@ -63,7 +63,7 @@ Then, it will iterate this center value from -"centroidNum" to +"centroidNum" ar
 
 ------- Each Value for the "Center" ---------
 
-It will start by dividing up the column into a "Left" and "Right" line integrated profile.
+It will start by dividing up the column into a "Left" and "Right" line integrated profile. The left line integrated profile is starting at the 0th pixel and increments up, while the right line integrated profile starts at the last pixel and increments down.
 
 Then, it will subtract the minimum value from both the "Left" and "Right" line integrated profile.
 
@@ -85,11 +85,9 @@ Finally, the code will apply an axial phase correction. I'm not sure this code i
 
 It will start by iterating through each column. 
 
-Then, it will longer of the two profiles, and calculate the length = dy x The length of the longer profile. From this length, it will calculate a distance, 2 x sqrt(Relec^2-length^2), which is path length of the edge chord of the longer profile.
+Then, it will take the longer of the two profiles, and calculate the length = dy x The length of the longer profile. From this length, it will calculate a distance, 2 x sqrt(Relec^2-length^2), which is path length of the edge chord of the longer profile.
 
-Then, it will divide the top or bottom value of the line integrated profile that column, by this distance. This value will then be an offset that is ???added??? to the ???longer???? profile.
-
-
+Then, it will divide the edge value of the line integrated longer profile of that column, by this distance. This value will then be an offset that is added to the both left and right radial density profiles.
 
 
 ** Junk 
