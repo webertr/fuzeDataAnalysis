@@ -1615,8 +1615,19 @@ int hologramAnalysis(char* baseFileName, char *plasmaFileName,
   gsl_matrix_complex *fftPlasma = fresnel(imagePlasma, param);
   gsl_matrix_complex *fftRef = fresnel(imageRef, param);
 
+  /*
+   * Don't subtract reference image if refSubtract is zero
+   */
+  if (param->refSubtract == 0) {
+
+    fftRef = gsl_matrix_complex_alloc(param->numRows, param->numCols);
+    gsl_matrix_complex_set_all(fftRef, GSL_COMPLEX_ONE);
+
+  }
+
   /* Finding phase difference between plasma and reference reconstructions */
   gsl_matrix *phase = phaseDiffHolo(fftPlasma, fftRef);
+  
 
   /*
    * If the holgramPreview debug parameter is set,
@@ -1769,11 +1780,11 @@ int hologramMain() {
   param.boxCarSmoothWidth = 40;    // Width of box car smoothing on phase
   param.unwrapThresh = 1.0*M_PI;   // Threshold to trigger the phase unwrapping
   param.signTwin = 1;              // Sign to density conversion +/-1. Depends on laser setup (-1)
-  param.debugPhase = 1;            // 1 means save and plot a col profile of phase 
+  param.debugPhase = 0;            // 1 means save and plot a col profile of phase 
                                    // and unwrapped phase
   param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
   param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
+  param.hologramPreview = 1;       // 1 means to preview the hologram before extracting twin image
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
@@ -1785,11 +1796,12 @@ int hologramMain() {
   param.plotRawHologramCol = 100;  // 1 means it will plot a column of the raw hologram
   param.plotTwinImage = 0;         // 1 means it will plot a column of the twin image  
   param.rotateImage = 1;           // 1 means to rotate the image by 90 degrees CW
+  param.refSubtract = 1;           // 1 means to subtract the reference image
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/Calibration/DSC_0019.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/Calibration/DSC_0021.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/171213/171213007.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/171213/171213008.JPG";
 
   /* Setting bounds of reconstructed image */
   param.xLL = 2591;          // Lower left x pixel value of phase reconstruction

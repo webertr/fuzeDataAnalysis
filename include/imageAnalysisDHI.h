@@ -68,6 +68,7 @@ struct holographyparameters {
   int plotTwinImage;     // 1 means it will plot this twin image
   double R_electrode;    // value of the radius of the inner electrode
   int rotateImage;       // 1 means to rotate the image by 90 degrees CW
+  int refSubtract;       // 1 means to subtract the reference image
 };
 
 typedef struct holographyparameters holographyParameters;
@@ -110,7 +111,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .plotRawHologramCol = 20,
   .plotTwinImage = 1,
   .R_electrode = 0.100838,
-  .rotateImage = 0
+  .rotateImage = 0,
+  .refSubtract = 1
 };
 
 gsl_matrix *readJPEGImage(char *fileName);
