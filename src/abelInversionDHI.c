@@ -146,8 +146,8 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
    * then convert it to density (divide by maximum length at that axial point before the circle
    * 2*(sqrt(R^2 - y^2), and add that to both the left and right radial density profiles.
    */
-  axialVariationCorrection(leftDensityProfile, rightDensityProfile, 
-   			   imageM, centroidLocation, param);
+  //axialVariationCorrection(leftDensityProfile, rightDensityProfile, 
+  // 			   imageM, centroidLocation, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
