@@ -32,12 +32,12 @@ int main(int argc, char *argv[]) {
   /*
    * Doing testing of synthetic data 
    */
-  //getTestData();
+  getTestData();
 
   /*
    * Running the DHI analysis
    */
-  hologramMain();
+  //hologramMain();
 
   return 0;
 
