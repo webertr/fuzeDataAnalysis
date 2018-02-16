@@ -1443,6 +1443,71 @@ gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma) {
   gsl_matrix_free(imagePlasma);
 
   return imagePlasmaReturn;
+
+}
+
+
+/******************************************************************************
+ * Function: flipImageRows
+ * Inputs: gsl_matrix *
+ * Returns: gsl_matrix *
+ * Description: These allocates some more memory, flips the columns meaning
+ * 0 index becomes the end, and the last index becomes zero.
+ ******************************************************************************/
+
+gsl_matrix *flipImageRows(gsl_matrix *imagePlasma) {
+
+  int numRows = imagePlasma->size1,
+    numCols = imagePlasma->size2;
+
+  gsl_matrix *imagePlasmaReturn = gsl_matrix_alloc(numRows, numCols);
+
+  int ii, jj;
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+
+      gsl_matrix_set(imagePlasmaReturn, ii, numCols - jj - 1,
+		     gsl_matrix_get(imagePlasma, ii, jj));
+
+    }
+  }
+
+  gsl_matrix_free(imagePlasma);
+
+  return imagePlasmaReturn;
+
+}
+
+
+/******************************************************************************
+ * Function: flipImageCols
+ * Inputs: gsl_matrix *
+ * Returns: gsl_matrix *
+ * Description: These allocates some more memory, flips the rows meaning
+ * 0 index becomes the end, and the last index becomes zero.
+ ******************************************************************************/
+
+gsl_matrix *flipImageCols(gsl_matrix *imagePlasma) {
+
+  int numRows = imagePlasma->size1,
+    numCols = imagePlasma->size2;
+
+  gsl_matrix *imagePlasmaReturn = gsl_matrix_alloc(numRows, numCols);
+
+  int ii, jj;
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+
+      gsl_matrix_set(imagePlasmaReturn, numRows  - ii - 1 , jj,
+		     gsl_matrix_get(imagePlasma, ii, jj));
+
+    }
+  }
+
+  gsl_matrix_free(imagePlasma);
+
+  return imagePlasmaReturn;
+
 }
 
 
@@ -1592,6 +1657,22 @@ int hologramAnalysis(char* baseFileName, char *plasmaFileName,
 
     imagePlasma = rotateImage90CW(imagePlasma);
     imageRef = rotateImage90CW(imageRef);
+
+  }
+
+  /* Flipping rows left - right if specified */
+  if (param->flipImageRows == 1) {
+
+    imagePlasma = flipImageRows(imagePlasma);
+    imageRef = flipImageRows(imageRef);
+
+  }
+
+  /* Flipping cols left - right if specified */
+  if (param->flipImageCols == 1) {
+    
+    imagePlasma = flipImageCols(imagePlasma);
+    imageRef = flipImageCols(imageRef);
 
   }
 
@@ -1771,7 +1852,7 @@ int hologramMain() {
 
   param.res = 3.85E-6;             // CCD Resolution
   param.lambda = 532E-9;           // Wavelength of laser
-  param.d = 0.40;                  // Reconstruction distance
+  param.d = 0.45;                  // Reconstruction distance
   param.deltaN = 1E23;             // Density offset delta for inversion
   param.hyperbolicWin = 8;         // Hyperbolic window parameter
   param.sampleInterval = 1;        // Sampling interval of line-integrated density 
@@ -1788,7 +1869,7 @@ int hologramMain() {
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
-  param.plotColNum = 100;           // Column number to plot for the inverted radial profile and a 
+  param.plotColNum = 100;          // Column number to plot for the inverted radial profile and a 
                                    // slice of line integrated data 
   param.plotLineIntegrated = 1;    // 1 means to plot the line integrated data
   param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
@@ -1796,18 +1877,20 @@ int hologramMain() {
   param.plotRawHologramCol = 100;  // 1 means it will plot a column of the raw hologram
   param.plotTwinImage = 0;         // 1 means it will plot a column of the twin image  
   param.rotateImage = 1;           // 1 means to rotate the image by 90 degrees CW
+  param.flipImageRows = 0;         // 1 means to flip the rows 0 <-> end index
+  param.flipImageCols = 0;         // 1 means to flip the cols 0 <-> end index
   param.refSubtract = 1;           // 1 means to subtract the reference image
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/171213/171213007.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/171213/171213008.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/180215/180215011.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG";
 
   /* Setting bounds of reconstructed image */
-  param.xLL = 2591;          // Lower left x pixel value of phase reconstruction
-  param.yLL = 2525;          // Lower left y pixel value of phase reconstruction
-  param.xUR = 3586;          // Upper right x pixel value of phase reconstruction
-  param.yUR = 4670;          // Upper right y pixel value of phase reconstruction
+  param.xLL = 2531;          // Lower left x pixel value of phase reconstruction
+  param.yLL = 2437;          // Lower left y pixel value of phase reconstruction
+  param.xUR = 3356;          // Upper right x pixel value of phase reconstruction
+  param.yUR = 4349;          // Upper right y pixel value of phase reconstruction
 
 
   /* Obtained line integrated data and do an abel inversion */

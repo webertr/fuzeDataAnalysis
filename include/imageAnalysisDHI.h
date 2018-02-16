@@ -68,6 +68,8 @@ struct holographyparameters {
   int plotTwinImage;     // 1 means it will plot this twin image
   double R_electrode;    // value of the radius of the inner electrode
   int rotateImage;       // 1 means to rotate the image by 90 degrees CW
+  int flipImageRows;     // 1 means to flip the image rows
+  int flipImageCols;     // 1 means to flip the images cols
   int refSubtract;       // 1 means to subtract the reference image
 };
 
@@ -112,6 +114,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .plotTwinImage = 1,
   .R_electrode = 0.100838,
   .rotateImage = 0,
+  .flipImageRows = 0,
+  .flipImageCols = 0,
   .refSubtract = 1
 };
 
@@ -172,6 +176,9 @@ int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDe
 int unwrapCols(gsl_matrix *mInput, holographyParameters* param);
 int unwrapRows(gsl_matrix *mInput, holographyParameters* param);
 gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
+gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
+gsl_matrix *flipImageRows(gsl_matrix *imagePlasma);
+gsl_matrix *flipImageCols(gsl_matrix *imagePlasma);
 int hologramMain();
 
 #endif
