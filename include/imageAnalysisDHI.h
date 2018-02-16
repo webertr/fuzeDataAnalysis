@@ -71,6 +71,7 @@ struct holographyparameters {
   int flipImageRows;     // 1 means to flip the image rows
   int flipImageCols;     // 1 means to flip the images cols
   int refSubtract;       // 1 means to subtract the reference image
+  double zPosition;      // The z position of the hologram at the center of the image
 };
 
 typedef struct holographyparameters holographyParameters;
@@ -116,7 +117,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .rotateImage = 0,
   .flipImageRows = 0,
   .flipImageCols = 0,
-  .refSubtract = 1
+  .refSubtract = 1,
+  .zPosition = 0.0
 };
 
 gsl_matrix *readJPEGImage(char *fileName);

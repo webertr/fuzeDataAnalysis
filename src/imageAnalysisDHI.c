@@ -709,7 +709,8 @@ gsl_vector *getImageXVectorHol(gsl_matrix *mInput, holographyParameters* param) 
   /* The twin image that will be returned */
   gsl_vector *colVector = gsl_vector_alloc(numCols);
 
-  double dX = param->deltaX;
+  double dX = param->deltaX,
+    z0 = param->zPosition;
 
   /* 
    * Creating vector of y positions 
@@ -720,7 +721,7 @@ gsl_vector *getImageXVectorHol(gsl_matrix *mInput, holographyParameters* param) 
    */
   for (ii = 0; ii < numCols; ii++) {
 
-    gsl_vector_set(colVector, ii, (ii-numCols/2)*dX);
+    gsl_vector_set(colVector, ii, z0 - (ii-numCols/2)*dX);
     
   }
 
@@ -1865,12 +1866,12 @@ int hologramMain() {
                                    // and unwrapped phase
   param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
   param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 1;       // 1 means to preview the hologram before extracting twin image
+  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
   param.plotColNum = 100;          // Column number to plot for the inverted radial profile and a 
-                                   // slice of line integrated data 
+                                   // slice of line integrated data
   param.plotLineIntegrated = 1;    // 1 means to plot the line integrated data
   param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
   param.plotRawHologramRow = 100;  // 1 means it will plot a row of the raw hologram
@@ -1880,10 +1881,11 @@ int hologramMain() {
   param.flipImageRows = 0;         // 1 means to flip the rows 0 <-> end index
   param.flipImageCols = 0;         // 1 means to flip the cols 0 <-> end index
   param.refSubtract = 1;           // 1 means to subtract the reference image
+  param.zPosition = 14.5;          // Z position of the hologram at the center of the image
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/180215/180215011.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/180215/180215013.JPG";
   char *filenamePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG";
 
   /* Setting bounds of reconstructed image */
