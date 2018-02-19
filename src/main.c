@@ -35,9 +35,14 @@ int main(int argc, char *argv[]) {
   //getTestData();
 
   /*
+   * Trying to do an FFT smoothing procedure
+   */
+  testSmoothData();
+  
+  /*
    * Running the DHI analysis
    */
-  hologramMain();
+  //hologramMain();
 
   return 0;
 

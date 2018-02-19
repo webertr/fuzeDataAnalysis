@@ -1,6 +1,167 @@
 #include "imageAnalysisDHI.h"
 #include "testing.h"
 
+int testGetMaxIndexComplex(gsl_vector_complex *vIn) {
+
+  int numCols = vIn->size,
+    ii, retI = 0;
+
+  gsl_complex numC;
+
+  double maxD = 0,
+    maxTest;
+  
+  for (ii = 0; ii < numCols; ii++) {
+
+    numC = gsl_vector_complex_get(vIn, ii);
+
+    maxTest = gsl_complex_arg(numC);
+    
+    if (maxD < maxTest) {
+
+      retI = ii;
+      maxD = maxTest;
+
+    }
+
+  }
+
+  return retI;
+
+}
+
+  
+void testSmoothData() {
+
+  gsl_matrix *data = readGSLMatrix("data/plasmaMatrix.dat");
+
+  int numRows = data->size1,
+    numCols = data->size2,
+    ii, jj,
+    maxI;
+
+  gsl_complex numC;
+  
+  gsl_matrix_complex* dataC = gsl_matrix_complex_alloc(numRows, numCols);
+
+  gsl_vector_complex_view dataV;
+  
+  for (ii = 0; ii < numRows; ii++) {
+    for(jj = 0; jj < numCols; jj++) {
+
+      numC = gsl_complex_rect(gsl_matrix_get(data, ii, jj), 0);
+      
+      gsl_matrix_complex_set(dataC, ii, jj, numC);
+
+    }
+  }
+  
+  gsl_fft_complex_wavetable * wavetableRows;
+  gsl_fft_complex_workspace * workspaceRows;
+  gsl_fft_complex_wavetable * wavetableCols;
+  gsl_fft_complex_workspace * workspaceCols;
+
+  wavetableRows = gsl_fft_complex_wavetable_alloc(numRows);
+  workspaceRows = gsl_fft_complex_workspace_alloc(numRows);
+  wavetableCols = gsl_fft_complex_wavetable_alloc(numCols);
+  workspaceCols = gsl_fft_complex_workspace_alloc(numCols);
+
+  gsl_complex_packed_array dataP = &(dataC->data[0]);
+
+  for (ii = 0; ii < numRows; ii++) {
+
+    dataP = &(dataC->data[ii*numCols*2]);
+    gsl_fft_complex_forward(dataP, 1, (size_t) numCols,
+			    wavetableCols, workspaceCols);
+
+  }
+
+  /* numC = gsl_complex_rect(0, 0); */
+
+  /* int zeroOffset = 20; */
+
+  /* double maxIL, maxIU; */
+  
+  /* for (ii = 0; ii < numRows; ii++) { */
+
+  /*   dataV = gsl_matrix_complex_row(dataC, ii);     */
+  /*   maxI = testGetMaxIndexComplex(&dataV.vector); */
+
+  /*   maxIL = maxI - zeroOffset; */
+  /*   maxIU = maxI + zeroOffset; */
+  /*   if (maxIL < 0) { */
+
+  /*     maxIL = 0; */
+
+  /*   } */
+
+  /*   if (  maxIU >= numCols) { */
+
+  /*     maxIU = numCols; */
+
+  /*   } */
+    
+  /*   for (jj = maxIL; jj < maxIU; jj++) { */
+      
+  /*     gsl_vector_complex_set(&dataV.vector, jj, numC); */
+
+  /*   } */
+      
+  /* } */
+
+  /* for (jj = 0; jj < numCols; jj++) { */
+
+  /*   dataV = gsl_matrix_complex_column(dataC, jj);     */
+  /*   maxI = testGetMaxIndexComplex(&dataV.vector); */
+
+  /*   maxIL = maxI - zeroOffset; */
+  /*   maxIU = maxI + zeroOffset; */
+  /*   if (maxIL < 0) { */
+
+  /*     maxIL = 0; */
+
+  /*   } */
+
+  /*   if (  maxIU >= numRows) { */
+
+  /*     maxIU = numRows; */
+
+  /*   } */
+    
+  /*   for (ii = maxIL; ii < maxIU; ii++) { */
+      
+  /*     gsl_vector_complex_set(&dataV.vector, ii, numC); */
+
+  /*   } */
+      
+  /* } */
+
+
+  /* for (ii = 0; ii < numRows; ii++) { */
+
+  /*   dataP = &(dataC->data[ii*numCols*2]); */
+  /*   gsl_fft_complex_backward(dataP, 1, (size_t) numCols, */
+  /* 			     wavetableCols, workspaceCols); */
+
+  /* } */
+
+  for (ii = 0; ii < numRows; ii++) {
+    for(jj = 0; jj < numCols; jj++) {
+      
+      gsl_matrix_set(data, ii, jj,
+		     GSL_REAL(gsl_matrix_complex_get(dataC, ii, jj)));
+
+    }
+  }
+
+  lineIntegratedSave(data, "data/lineIntegratedNew.dat");
+
+  system("script/plot_line_integrated.sh");
+
+  return;
+
+}
+  
 int testBoxCarSmooth() {
 
   gsl_matrix* testMatrix = gsl_matrix_alloc(100,100);

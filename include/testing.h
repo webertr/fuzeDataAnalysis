@@ -23,6 +23,8 @@
 
 int testBoxCarSmooth();
 int unwrapTest();
+gsl_matrix *testReadRawFileHol (char * filename, int numRows, int numCols);
+void testSmoothData();
 gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput);
 gsl_matrix *getTestData();
 void saveVectorTest(gsl_vector *vecIn, char *fileName);
@@ -41,5 +43,6 @@ gsl_matrix *getRadialProfileImageTest(char *fileLeftMatrix, char *fileRightMatri
 				      char *fileNameCentroid,
 				      int numRows, int numCols);
 int testModifyJPEG();
+int testGetMaxIndexComplex(gsl_vector_complex *vIn);
 
 #endif

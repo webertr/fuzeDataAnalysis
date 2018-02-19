@@ -1790,7 +1790,12 @@ int hologramAnalysis(char* baseFileName, char *plasmaFileName,
    * if specified, plotting the line integrated data with/without centroid or position information
    */
   if (param->plotLineIntegrated == 1) {
- 
+
+    /* 
+     * Option to save the image as a GSL matrix
+     */
+    //saveGSLMatrix(twinImageUnwrap, "data/plasmaMatrix.dat");
+    
     /*
      * Saving line integrated with pixel number and center line encoded on it
      * plot 'data/test.dat' binary matrix with image title "Line Integrated"
@@ -1801,12 +1806,12 @@ int hologramAnalysis(char* baseFileName, char *plasmaFileName,
      * Saving line integrated with pixel number and NO center line encoded on it
      * plot 'data/test.dat' binary matrix with image title "Line Integrated"
      */
-    //lineIntegratedSave(twinImageUnwrap, "data/lineIntegrated.dat");
+    lineIntegratedSave(twinImageUnwrap, "data/lineIntegrated.dat");
 
     /*
      * Save line integrated with position information
      */
-    saveHologramImageBinary(twinImageUnwrap, xPhase, yPhase, "data/lineIntegrated.dat");
+    //saveHologramImageBinary(twinImageUnwrap, xPhase, yPhase, "data/lineIntegrated.dat");
 
     /* 
      * Save line integrated with no position or centroid information
@@ -1885,8 +1890,8 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/180215/180215013.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG";
+  char *filenameRef = "/home/webertr/DHI_Images/180215/180215013.JPG";
+  char *filenamePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG";
 
   /* Setting bounds of reconstructed image */
   param.xLL = 2531;          // Lower left x pixel value of phase reconstruction
