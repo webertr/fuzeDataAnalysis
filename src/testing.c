@@ -62,14 +62,6 @@ int testGetMaxIndexComplex(gsl_vector_complex *vIn) {
 void testSmoothData() {
 
   gsl_matrix *data = readGSLMatrix("data/plasmaMatrix.dat");
-
-  gsl_matrix *dataNew = testSmoothRows(data, 220);
-  
-  lineIntegratedSave(dataNew, "data/lineIntegratedNew.dat");
-
-  system("script/plot_line_integrated.sh");
-
-  return;
   
   int numRows = data->size1,
     numCols = data->size2,
@@ -94,9 +86,13 @@ void testSmoothData() {
   
   gsl_fft_complex_wavetable * wavetableCols;
   gsl_fft_complex_workspace * workspaceCols;
+  gsl_fft_complex_wavetable * wavetableRows;
+  gsl_fft_complex_workspace * workspaceRows;
 
   wavetableCols = gsl_fft_complex_wavetable_alloc(numCols);
   workspaceCols = gsl_fft_complex_workspace_alloc(numCols);
+  wavetableRows = gsl_fft_complex_wavetable_alloc(numRows);
+  workspaceRows = gsl_fft_complex_workspace_alloc(numRows);
 
   gsl_complex_packed_array dataP = &(dataC->data[0]);
 
@@ -108,9 +104,17 @@ void testSmoothData() {
 
   }
 
+  for (jj = 0; jj < numCols; jj++) {
+
+    dataP = &(dataC->data[jj*numRows*2]);
+    gsl_fft_complex_forward(dataP, 1, (size_t) numRows,
+			    wavetableRows, workspaceRows);
+
+  }
+
   numC = gsl_complex_rect(0, 0);
 
-  int zeroOffset = 20;
+  int zeroOffset = 10;
 
   double maxIL, maxIU;
   
@@ -118,8 +122,6 @@ void testSmoothData() {
 
     dataV = gsl_matrix_complex_row(dataC, ii);
     maxI = testGetMaxIndexComplex(&dataV.vector);
-
-    printf("MaxI: %d\n", maxI);
     
     maxIL = maxI - zeroOffset;
     maxIU = maxI + zeroOffset;
@@ -137,47 +139,54 @@ void testSmoothData() {
     
     for (jj = maxIL; jj < maxIU; jj++) {
       
-      gsl_vector_complex_set(&dataV.vector, jj, numC);
+      //gsl_vector_complex_set(&dataV.vector, jj, numC);
 
     }
       
   }
 
-  /* for (jj = 0; jj < numCols; jj++) { */
+  for (jj = 0; jj < numCols; jj++) {
 
-  /*   dataV = gsl_matrix_complex_column(dataC, jj);     */
-  /*   maxI = testGetMaxIndexComplex(&dataV.vector); */
+    dataV = gsl_matrix_complex_column(dataC, jj);
+    maxI = testGetMaxIndexComplex(&dataV.vector);
 
-  /*   maxIL = maxI - zeroOffset; */
-  /*   maxIU = maxI + zeroOffset; */
-  /*   if (maxIL < 0) { */
+    maxIL = maxI - zeroOffset;
+    maxIU = maxI + zeroOffset;
+    if (maxIL < 0) {
 
-  /*     maxIL = 0; */
+      maxIL = 0;
 
-  /*   } */
+    }
 
-  /*   if (  maxIU >= numRows) { */
+    if (  maxIU >= numRows) {
 
-  /*     maxIU = numRows; */
+      maxIU = numRows;
 
-  /*   } */
+    }
     
-  /*   for (ii = maxIL; ii < maxIU; ii++) { */
+    for (ii = maxIL; ii < maxIU; ii++) {
       
-  /*     gsl_vector_complex_set(&dataV.vector, ii, numC); */
+      //gsl_vector_complex_set(&dataV.vector, ii, numC);
 
-  /*   } */
+    }
       
-  /* } */
+  }
 
+  for (ii = 0; ii < numRows; ii++) {
 
-  /* for (ii = 0; ii < numRows; ii++) { */
+    dataP = &(dataC->data[ii*numCols*2]);
+    gsl_fft_complex_backward(dataP, 1, (size_t) numCols,
+  			     wavetableCols, workspaceCols);
 
-  /*   dataP = &(dataC->data[ii*numCols*2]); */
-  /*   gsl_fft_complex_backward(dataP, 1, (size_t) numCols, */
-  /* 			     wavetableCols, workspaceCols); */
+  }
 
-  /* } */
+  for (jj = 0; jj < numCols; jj++) {
+
+    dataP = &(dataC->data[jj*numRows*2]);
+    gsl_fft_complex_backward(dataP, 1, (size_t) numRows,
+  			     wavetableRows, workspaceRows);
+
+  }
 
   for (ii = 0; ii < numRows; ii++) {
     for(jj = 0; jj < numCols; jj++) {
@@ -188,7 +197,7 @@ void testSmoothData() {
     }
   }
 
-  //lineIntegratedSave(data, "data/lineIntegratedNew.dat");
+  lineIntegratedSave(data, "data/lineIntegratedNew.dat");
 
   system("script/plot_line_integrated.sh");
 
