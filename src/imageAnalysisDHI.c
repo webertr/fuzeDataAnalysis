@@ -1886,7 +1886,7 @@ int hologramMain() {
   param.flipImageRows = 0;         // 1 means to flip the rows 0 <-> end index
   param.flipImageCols = 0;         // 1 means to flip the cols 0 <-> end index
   param.refSubtract = 1;           // 1 means to subtract the reference image
-  param.zPosition = 14.5;          // Z position of the hologram at the center of the image
+  param.zPosition = .145;          // Z position of the hologram at the center of the image
 
   /******** Holography Analysis *************/
 
