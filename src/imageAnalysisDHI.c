@@ -1867,7 +1867,7 @@ int hologramMain() {
   param.boxCarSmoothWidth = 40;    // Width of box car smoothing on phase
   param.unwrapThresh = 1.0*M_PI;   // Threshold to trigger the phase unwrapping
   param.signTwin = 1;              // Sign to density conversion +/-1. Depends on laser setup (-1)
-  param.debugPhase = 0;            // 1 means save and plot a col profile of phase 
+  param.debugPhase = 1;            // 1 means save and plot a col profile of phase 
                                    // and unwrapped phase
   param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
   param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
@@ -1890,14 +1890,14 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/webertr/DHI_Images/180215/180215013.JPG";
-  char *filenamePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/Temp/DSC_0057.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/Temp/DSC_0062.JPG";
 
   /* Setting bounds of reconstructed image */
-  param.xLL = 2531;          // Lower left x pixel value of phase reconstruction
-  param.yLL = 2437;          // Lower left y pixel value of phase reconstruction
-  param.xUR = 3356;          // Upper right x pixel value of phase reconstruction
-  param.yUR = 4349;          // Upper right y pixel value of phase reconstruction
+  param.xLL = 2515;          // Lower left x pixel value of phase reconstruction
+  param.yLL = 2653;          // Lower left y pixel value of phase reconstruction
+  param.xUR = 3370;          // Upper right x pixel value of phase reconstruction
+  param.yUR = 4241;          // Upper right y pixel value of phase reconstruction
 
 
   /* Obtained line integrated data and do an abel inversion */
