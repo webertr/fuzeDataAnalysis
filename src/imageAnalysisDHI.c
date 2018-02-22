@@ -1890,14 +1890,14 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/180215/180215011.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/180221/180221017.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/180221/180221019.JPG";
 
   /* Setting bounds of reconstructed image */
-  param.xLL = 2531;          // Lower left x pixel value of phase reconstruction
-  param.yLL = 2437;          // Lower left y pixel value of phase reconstruction
-  param.xUR = 3356;          // Upper right x pixel value of phase reconstruction
-  param.yUR = 4349;          // Upper right y pixel value of phase reconstruction
+  param.xLL = 2522;          // Lower left x pixel value of phase reconstruction
+  param.yLL = 2289;          // Lower left y pixel value of phase reconstruction
+  param.xUR = 3380;          // Upper right x pixel value of phase reconstruction
+  param.yUR = 4237;          // Upper right y pixel value of phase reconstruction
 
 
   /* Obtained line integrated data and do an abel inversion */
