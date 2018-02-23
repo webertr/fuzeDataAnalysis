@@ -1890,8 +1890,8 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/180221/180221017.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/180221/180221019.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/180222/180222038.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/180222/180222040.JPG";
 
   /* Setting bounds of reconstructed image */
   param.xLL = 2522;          // Lower left x pixel value of phase reconstruction
