@@ -917,8 +917,6 @@ int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDe
       densityOffset = gsl_matrix_get(imageM, 0, jj)/(2*sqrt(gsl_pow_2(Relec) 
 							    - gsl_pow_2(yval)));
 
-      printf("Left Density Offset: %f\n", densityOffset);
-
       /* Raising left radial profile up by the minimum background value */
       gsl_vector_add_constant(&leftCrossSection.vector, densityOffset);
 
@@ -933,8 +931,6 @@ int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDe
       /* Dividing the line integrated data by the chord length of the of edge */
       densityOffset = gsl_matrix_get(imageM, numRows-1, jj)/(2*sqrt(gsl_pow_2(Relec) 
 								    - gsl_pow_2(yval)));
-
-      printf("Right Density Offset: %f\n", densityOffset);
 
       /* Raising left radial profile up by the minimum background value */
       gsl_vector_add_constant(&leftCrossSection.vector, densityOffset);

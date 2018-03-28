@@ -1858,7 +1858,7 @@ int hologramMain() {
 
   param.res = 3.85E-6;             // CCD Resolution
   param.lambda = 532E-9;           // Wavelength of laser
-  param.d = 0.45;                  // Reconstruction distance
+  param.d = 0.40;                  // Reconstruction distance
   param.deltaN = 1E23;             // Density offset delta for inversion
   param.hyperbolicWin = 8;         // Hyperbolic window parameter
   param.sampleInterval = 10;       // Sampling interval of line-integrated density 
@@ -1875,7 +1875,7 @@ int hologramMain() {
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
-  param.plotColNum = 100;          // Column number to plot for the inverted radial profile and a 
+  param.plotColNum = 20;          // Column number to plot for the inverted radial profile and a 
                                    // slice of line integrated data
   param.plotLineIntegrated = 1;    // 1 means to plot the line integrated data
   param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
@@ -1890,14 +1890,14 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/180222/180222038.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/180222/180222040.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/180308/180308020_Baseline.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/180308/180308020.JPG";
 
   /* Setting bounds of reconstructed image */
-  param.xLL = 2522;          // Lower left x pixel value of phase reconstruction
-  param.yLL = 2289;          // Lower left y pixel value of phase reconstruction
-  param.xUR = 3380;          // Upper right x pixel value of phase reconstruction
-  param.yUR = 4237;          // Upper right y pixel value of phase reconstruction
+  param.xLL = 2634;          // Lower left x pixel value of phase reconstruction
+  param.yLL = 1910;          // Lower left y pixel value of phase reconstruction
+  param.xUR = 3579;          // Upper right x pixel value of phase reconstruction
+  param.yUR = 4112;          // Upper right y pixel value of phase reconstruction
 
 
   /* Obtained line integrated data and do an abel inversion */
