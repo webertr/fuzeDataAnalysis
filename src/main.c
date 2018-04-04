@@ -27,7 +27,10 @@ int main(int argc, char *argv[]) {
   /* 
    * Demonstrating how to get and plot mdsplus data.
    */
-  testMagneticData();
+  //testMagneticData();
+
+  /* Testing image plotting */
+  testPlotImageData();
 
   /*
    * Doing testing of synthetic data 

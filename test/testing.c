@@ -21,6 +21,19 @@ int testMagneticData() {
 
 }
 
+
+int testPlotImageData() {
+
+  char *filenamePlasma = "/home/fuze/DHI_Images/Calibration/DSC_0088.JPG";
+
+  gsl_matrix* imagePlasma = readJPEGImage(filenamePlasma);  
+
+  plotImageData(imagePlasma);
+
+  return 0;
+
+}
+
 gsl_matrix *testSmoothRows(gsl_matrix *mIn, int smoothWidth) {
 
   int numRows = mIn->size1,

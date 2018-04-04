@@ -10,14 +10,13 @@ SOURCE = src/magneticData.c \
 	src/abelInversionDHI.c \
 	src/imageAnalysisDHI.c \
 	src/readJPEG.c \
-	src/testing.c
+	test/testing.c
 
 all: example
 
 example: $(SOURCE)
 	$(CC) $(FLAGS) $(INCL) \
-	$(SOURCE) \
-	$(LIBRY) -o example
+	$(SOURCE) $(LIBRY) -o example
 
 clean:
-	rm -f *~ *.o example
+	rm -f *~ *.o data/* example
