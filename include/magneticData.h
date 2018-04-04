@@ -19,8 +19,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include "plot.h"
 
-int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn);
 int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data,
 			    gsl_vector **time);
 int saveVectorData(gsl_vector *xVec, gsl_vector *yVec, char *fileName);

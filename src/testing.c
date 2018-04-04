@@ -1,5 +1,3 @@
-#include "imageAnalysisDHI.h"
-#include "magneticData.h"
 #include "testing.h"
 
 int testMagneticData() {

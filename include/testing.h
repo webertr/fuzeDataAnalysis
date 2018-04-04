@@ -21,6 +21,10 @@
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_sf_exp.h>
 
+#include "plot.h"
+#include "imageAnalysisDHI.h"
+#include "magneticData.h"
+
 int testBoxCarSmooth();
 int unwrapTest();
 gsl_matrix *testReadRawFileHol (char * filename, int numRows, int numCols);
