@@ -44,5 +44,6 @@ gsl_matrix *getRadialProfileImageTest(char *fileLeftMatrix, char *fileRightMatri
 				      int numRows, int numCols);
 int testModifyJPEG();
 int testGetMaxIndexComplex(gsl_vector_complex *vIn);
+int testMagneticData();
 
 #endif

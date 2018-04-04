@@ -1,6 +1,23 @@
 #include "dataAnalysis.h"
 
 /******************************************************************************
+ * Example Usage:
+ *  gsl_vector *data = 0,
+ *   *time = 0;
+ *
+ * initializeMagneticData(170817005, "\\b_n95_000_sm", &data, &time);
+ *
+ * printf("Data Length: %d", (int) data->size);
+ * printf("20th Element: %f\n", gsl_vector_get(data, 20));
+ * saveVectorData(time, data, "data/temp.dat");
+ * plotVectorData(time, data);
+ *
+ * gsl_vector_free(data);
+ * gsl_vector_free(time);
+ ******************************************************************************/
+
+
+/******************************************************************************
  * Function: status_ok
  * Inputs: int
  * Returns: int
@@ -54,39 +71,15 @@ static int get_signal_length(const char *signal) {
 
 }
 
-/******************************************************************************
- * Function: getElement
- * Inputs: dataVector*, int
- * Returns: double
- * Description: 
- ******************************************************************************/
-
-double getElement (dataVector *dataVecIn, int elementNum) {
-
-  return gsl_vector_get(dataVecIn->data, elementNum);
-
-}
-
 
 /******************************************************************************
- * Function: saveData
- * Inputs: dataVector*, char *
+ * Function: saveVectorData
+ * Inputs: gsl_vector *, gsl_vector *
  * Returns: int
- * Description: Usage:
+ * Description: Save vector data
  ******************************************************************************/
 
-int saveData (dataVector *dataVecIn) {
-
-  char fileName[50];
-  char *data = "data/";
-  char *plot = "_plot.txt";
-  char name[20];
-  strcpy(name, dataVecIn->nodeName);
-  strcpy(name, &(name[1]));
-
-  strcpy(fileName, data);
-  strcat(fileName, name);
-  strcat(fileName, plot);
+int saveVectorData (gsl_vector *xVec, gsl_vector *yVec, char *fileName) {
 
   FILE *fp = fopen(fileName, "w");
 
@@ -98,14 +91,62 @@ int saveData (dataVector *dataVecIn) {
   }
 
   int ii;
-  for (ii = 0; ii < dataVecIn->length; ii++) {
+  for (ii = 0; ii < xVec->size; ii++) {
 
-    fprintf(fp, "%f \t %f\n", (float) (dataVecIn->deltaT * ii), 
-	    (float) dataVecIn->getElement(dataVecIn, ii));
+    fprintf(fp, "%g \t %g\n", gsl_vector_get(xVec, ii), 
+	    gsl_vector_get(xVec, ii));
 
   }
 
   fclose(fp);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotVectorData
+ * Inputs: dataVector*
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn) {
+
+  int ii, status;
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf (stderr,
+	     "incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "set xrange [0:50E-6]\n");
+
+  fprintf(gnuplot, "plot '-'\n");
+
+  for (ii = 0; ii < xVecIn->size; ii++) {
+
+    fprintf(gnuplot, "%g %g\n", gsl_vector_get(xVecIn, ii), gsl_vector_get(yVecIn, ii));
+
+  }
+
+  fprintf(gnuplot, "e\n");
+
+  fflush(gnuplot);
+
+  /* Pausing */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
 
   return 0;
 
@@ -123,38 +164,23 @@ int saveData (dataVector *dataVecIn) {
  * printf("20th Element: %f\n", data->getElement(data, 20));
  ******************************************************************************/
 
-dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
+int initializeMagneticData (int shotNumber, char *nodeName, gsl_vector **data,
+			    gsl_vector **time) {
 
   /* local vars */
-  int dtype_float = DTYPE_FLOAT;
+  int dtype_dbl = DTYPE_DOUBLE;
   int null = 0;
   int connectionStatus;
   char buf[1024];       // Used to get DIM_OF of the array
-  float *timeBase;      // array of floats used for timeBase
   int signalDescriptor; // signal descriptor
   int timeDescriptor;   // descriptor for timeBase
   int sizeArray;        // length of signal
   int len;
   int connectionID;     // Connection ID for mdsplus connection
-  double deltaT;        // A single time step;
-  
-  /* Initializing struct to return everything */
-  dataVector *structReturn = malloc(sizeof(dataVector));
 
-  /* Setting node name */
-  strcpy(structReturn->nodeName, nodeName);
-
-  /* Setting shot number */
-  structReturn->shotNumber = shotNumber;
-
-  /* Setting get element function */
-  structReturn->getElement = &getElement;
-
-  /* Setting get element function */
-  structReturn->saveData = &saveData;
-
-  /* Return this if there is an error */
-  dataVector *nullReturn = NULL;
+  /* In case there is already data here */
+  gsl_vector_free(*data);
+  gsl_vector_free(*time);
   
   /* Connecting to mdsplus database "fuze" */
   connectionID = MdsConnect("10.10.10.240");
@@ -163,7 +189,7 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
   if (connectionID == -1) {
 
     fprintf(stderr, "Connection Failed\n");
-    return nullReturn;
+    return -1;
 
   }
 
@@ -174,7 +200,7 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
   if ( !status_ok(connectionStatus) ) {
 
     fprintf(stderr,"Error opening tree for shot: %d.\n",shotNumber);
-    return nullReturn;
+    return -1;
 
   }
 
@@ -184,25 +210,15 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
   if ( sizeArray < 1 ) {
 
     fprintf(stderr,"Error retrieving length of signal\n");
-    return nullReturn;
+    return -1;
 
   }
 
-  /* Setting length member in struct */
-  structReturn->length = sizeArray;
-  
-  /* use malloc() to allocate memory for the timeBase */
-  timeBase = (float *)malloc(sizeArray * sizeof(float));
+  *data = gsl_vector_alloc(sizeArray);
+  *time = gsl_vector_alloc(sizeArray);
 
-  if ( !timeBase ) {
-    
-    fprintf(stderr,"Error allocating memory for timeBase\n");
-    return nullReturn;
-
-  }
- 
   /* create a descriptor for the timeBase */
-  timeDescriptor = descr(&dtype_float, timeBase, &sizeArray, &null);
+  timeDescriptor = descr(&dtype_dbl, (*time)->data, &sizeArray, &null);
 
   snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName);
 
@@ -214,82 +230,26 @@ dataVector* initializeMagneticData (int shotNumber, char *nodeName) {
 
     /* error */
     fprintf(stderr,"Error retrieving timeBase\n");
-    free( (void *)timeBase );
-    return nullReturn;
+    gsl_vector_free(*data);
+    gsl_vector_free(*time);
+    return -1;
 
   }
 
-  /* Getting time difference in micro seconds */
-  deltaT = (timeBase[sizeArray]-timeBase[0])*1E6/sizeArray;
-
-  /* Setting timebase of struct */
-  structReturn->deltaT = deltaT;
-  
-  /* Freeing time base, no longer needed */
-  free( (void *)timeBase );
-
-  gsl_vector_float* tempVec = gsl_vector_float_alloc(sizeArray);
-  gsl_vector* structVec = gsl_vector_alloc(sizeArray);
-  
   /* create a descriptor for this signal */
-  signalDescriptor = descr(&dtype_float, tempVec->data, &sizeArray, &null);
+  signalDescriptor = descr(&dtype_dbl, (*data)->data, &sizeArray, &null);
  
   /* retrieve signal */
   connectionStatus = MdsValue(nodeName, &signalDescriptor, &null, &len);
 
   if ( !status_ok(connectionStatus) ) {
     
-    gsl_vector_float_free(tempVec);
-    gsl_vector_free(structVec);
+    gsl_vector_free(*data);
+    gsl_vector_free(*time);
     fprintf(stderr,"Error retrieving signal\n");
-    return nullReturn;
+    return -1;
     
   }
-
-  /* Converting float vector to double vector */
-  int ii;
-  for (ii = 0; ii < sizeArray; ii++) {
-
-    gsl_vector_set(structVec, ii,
-		   (double) gsl_vector_float_get(tempVec, ii));
-
-  }
-
-  /* Setting vector data in struct */
-  structReturn->data = structVec;
-  
-  /* Freeing temporary vector data */
-  gsl_vector_float_free(tempVec);
-  
-  return structReturn;
-
-}
-
-
-/******************************************************************************
- * Function: dataStructPlotTest
- * Inputs: int, char *
- * Returns: int
- * Description: This will just show how to use the data struct in this framework.
- ******************************************************************************/
-
-int dataStructPlotTest(int shotNumber, char *nodeName) {
-
-  /* 
-   * struct containing all the data
-   */
-  dataVector *data = initializeMagneticData(170817005, "\\b_n95_000_sm");
-
-  printf("Data: %d, Delta T: %f\n", data->length, data->deltaT);
-
-  printf("Node Name: %s\n", data->nodeName);
-
-  printf("20th Element: %f\n", data->getElement(data, 20));
-
-  /* Saves as the data->nodeName + _plot.txt */
-  data->saveData(data);
-
-  system("script/plot_struct_test.sh");
 
   return 0;
 

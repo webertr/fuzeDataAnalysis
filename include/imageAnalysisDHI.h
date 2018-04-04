@@ -25,8 +25,7 @@
 
 
 /* 
- * A structure to pass around the necessary parameters
- * for hologram reconstruction and inversion
+ * A structure to pass around the necessary parameters for hologram reconstruction and inversion
  */
 struct holographyparameters { 
   double res;            // Resolution of Camera CCD Pixels (3.85E-6 m)

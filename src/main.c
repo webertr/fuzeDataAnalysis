@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Demonstrating how to get and plot mdsplus data.
    */
-  //dataStructPlotTest(170817005, "\\b_n95_000_sm");
+  testMagneticData();
 
   /*
    * Doing testing of synthetic data 
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  hologramMain();
+  //hologramMain();
 
   return 0;
 

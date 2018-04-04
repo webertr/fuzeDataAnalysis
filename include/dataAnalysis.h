@@ -20,25 +20,9 @@
 #include <unistd.h>
 #include <errno.h>
 
-/* 
- * A structure to pass around the necessary parameters
- * for hologram reconstruction and inversion
- */
-struct datavector { 
-  double deltaT;                                  // Time step for each data point
-  int length;                                     // Number of points
-  gsl_vector *data;                               // Pointer to gsl_vector containg raw data
-  int shotNumber;                                 // The shot number
-  char nodeName[20];                              // The node name
-  double (*getElement)(struct datavector*, int);  // Function to get element from vector
-  int (*saveData)(struct datavector*);            // Function to save the data for gnuplot
-};
-
-typedef struct datavector dataVector;
-
-double getElement (dataVector *dataVecIn, int elementIn);
-int saveData (dataVector *dataVecIn);
-dataVector* initializeMagneticData (int shotNumber, char *nodeName);
-int dataStructPlotTest(int shotNumber, char *nodeName);
+int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn);
+int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data,
+			    gsl_vector **time);
+int saveVectorData(gsl_vector *xVec, gsl_vector *yVec, char *fileName);
 
 #endif

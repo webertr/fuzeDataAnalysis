@@ -1,5 +1,27 @@
 #include "imageAnalysisDHI.h"
+#include "dataAnalysis.h"
 #include "testing.h"
+
+int testMagneticData() {
+
+  gsl_vector *data = 0,
+    *time = 0;
+
+  initializeMagneticData(170817005, "\\b_n95_000_sm", &data, &time);
+
+  printf("Data Length: %d", (int) data->size);
+  printf("20th Element: %f\n", gsl_vector_get(data, 20));
+
+  plotVectorData(time, data);
+
+  saveVectorData(time, data, "data/temp.dat");
+
+  gsl_vector_free(data);
+  gsl_vector_free(time);
+
+  return 0;
+
+}
 
 gsl_matrix *testSmoothRows(gsl_matrix *mIn, int smoothWidth) {
 
