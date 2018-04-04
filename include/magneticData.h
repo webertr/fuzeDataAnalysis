@@ -1,5 +1,5 @@
-#ifndef GETSVFFILE_H
-#define GETSVFFILE_H
+#ifndef MAGNETICDATA_H
+#define MAGNETICDATA_H
 
 #include <stdio.h>
 #include <gsl/gsl_math.h>

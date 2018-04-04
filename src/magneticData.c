@@ -1,4 +1,4 @@
-#include "dataAnalysis.h"
+#include "magneticData.h"
 
 /******************************************************************************
  * Example Usage:

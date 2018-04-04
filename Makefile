@@ -5,10 +5,10 @@ LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
 
 all: example
 
-example: src/dataAnalysis.c src/main.c src/getLFData.c src/getSVFData.c \
+example: src/magneticData.c src/main.c src/getLFData.c src/getSVFData.c src/plot.c \
 	src/abelInversionDHI.c src/imageAnalysisDHI.c src/readJPEG.c src/testing.c
 	$(CC) $(FLAGS) $(INCL) \
-	src/dataAnalysis.c src/main.c src/getLFData.c src/getSVFData.c \
+	src/magneticData.c src/main.c src/getLFData.c src/getSVFData.c src/plot.c \
 	src/abelInversionDHI.c src/imageAnalysisDHI.c src/readJPEG.c src/testing.c \
 	$(LIBRY) -o example
 

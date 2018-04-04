@@ -1,4 +1,4 @@
-#include "dataAnalysis.h"
+#include "magneticData.h"
 #include "getLFData.h"
 #include "getSVFData.h"
 #include "imageAnalysisDHI.h"
