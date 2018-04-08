@@ -23,7 +23,7 @@
 
 #include "plot.h"
 #include "imageAnalysisDHI.h"
-#include "magneticData.h"
+#include "magnetic.h"
 
 int testBoxCarSmooth();
 int unwrapTest();

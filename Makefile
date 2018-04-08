@@ -3,7 +3,7 @@ INCL = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS = -g -Wall
 LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
 
-SOURCE = src/magneticData.c \
+SOURCE = src/magnetic.c \
 	src/main.c \
 	src/getLFData.c \
 	src/plot.c \
@@ -12,11 +12,13 @@ SOURCE = src/magneticData.c \
 	src/readJPEG.c \
 	test/testing.c
 
-all: example
+PROD = run
 
-example: $(SOURCE)
+all: $(PROD)
+
+run: $(SOURCE)
 	$(CC) $(FLAGS) $(INCL) \
-	$(SOURCE) $(LIBRY) -o example
+	$(SOURCE) $(LIBRY) -o $(PROD)
 
 clean:
-	rm -f *~ *.o data/* example
+	rm -f *~ *.o data/* $(PROD)

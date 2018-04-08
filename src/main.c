@@ -1,4 +1,4 @@
-#include "magneticData.h"
+#include "magnetic.h"
 #include "getLFData.h"
 #include "getSVFData.h"
 #include "imageAnalysisDHI.h"
@@ -27,10 +27,10 @@ int main(int argc, char *argv[]) {
   /* 
    * Demonstrating how to get and plot mdsplus data.
    */
-  //testMagneticData();
+  testMagneticData();
 
   /* Testing image plotting */
-  testPlotImageData();
+  //testPlotImageData();
 
   /*
    * Doing testing of synthetic data 

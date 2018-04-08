@@ -1,5 +1,5 @@
-#ifndef MAGNETICDATA_H
-#define MAGNETICDATA_H
+#ifndef MAGNETIC_H
+#define MAGNETIC_H
 
 #include <stdio.h>
 #include <gsl/gsl_math.h>
