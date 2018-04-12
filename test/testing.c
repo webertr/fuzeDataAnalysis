@@ -1,5 +1,13 @@
 #include "testing.h"
 
+int testPlasmaParam() {
+
+  gyroFrequencies(1E4);
+
+  return 0;
+
+}
+
 int testMagneticData() {
 
   gsl_vector *data = 0,

@@ -10,6 +10,7 @@ SOURCE = src/magnetic.c \
 	src/abelInversionDHI.c \
 	src/imageAnalysisDHI.c \
 	src/readJPEG.c \
+	src/plasmaParam.c \
 	test/testing.c
 
 PROD = run

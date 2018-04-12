@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Demonstrating how to get and plot mdsplus data.
    */
-  testMagneticData();
+  //testMagneticData();
 
   /* Testing image plotting */
   //testPlotImageData();
@@ -46,6 +46,11 @@ int main(int argc, char *argv[]) {
    * Running the DHI analysis
    */
   //hologramMain();
+
+  /*
+   * Plotting plasma parameters
+   */
+  testPlasmaParam();
 
   return 0;
 

@@ -24,6 +24,7 @@
 #include "plot.h"
 #include "imageAnalysisDHI.h"
 #include "magnetic.h"
+#include "plasmaParam.h"
 
 int testBoxCarSmooth();
 int unwrapTest();
@@ -50,6 +51,6 @@ int testModifyJPEG();
 int testGetMaxIndexComplex(gsl_vector_complex *vIn);
 int testMagneticData();
 int testPlotImageData();
-
+int testPlasmaParam();
 
 #endif
