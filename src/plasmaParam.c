@@ -8,10 +8,10 @@
 
 /* Define physical constants in CGS */
 
-static const double E_0  = 1;              // Permitivity of free space in m^-3 kg^-1 s4 A^2
-static const double MU_0 = 1;              // Permeability of free space in m kg s^-2 A^-2
-static const double KB   = 1.3807E-16;     // Boltznman constant in erg/deg(K)
-static const double QE   = -4.8032E-10;    // Charge of an electron in stat-columbs
+//static const double E_0  = 1;              // Permitivity of free space in m^-3 kg^-1 s4 A^2
+//static const double MU_0 = 1;              // Permeability of free space in m kg s^-2 A^-2
+//static const double KB   = 1.3807E-16;     // Boltznman constant in erg/deg(K)
+//static const double QE   = -4.8032E-10;    // Charge of an electron in stat-columbs
 static const double QP   = 4.8032E-10;     // Charge of a proton in stat-columbs
 static const double C    = 2.998E10;       // Speed of light in cm/sec
 static const double MP   = 1.673E-24;      // Mass of proton in g
