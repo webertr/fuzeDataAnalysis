@@ -106,7 +106,7 @@ int saveVectorData (gsl_vector *xVec, gsl_vector *yVec, char *fileName) {
 
 
 /******************************************************************************
- * Function: getMagneticData
+ * Function: getMagneticDataAndTime
  * Inputs: dataVector*, char*
  * Returns: dataVector *
  * Description: Example usage:
@@ -116,8 +116,8 @@ int saveVectorData (gsl_vector *xVec, gsl_vector *yVec, char *fileName) {
  * printf("20th Element: %f\n", data->getElement(data, 20));
  ******************************************************************************/
 
-int initializeMagneticData (int shotNumber, char *nodeName, gsl_vector **data,
-			    gsl_vector **time) {
+int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **data,
+				   gsl_vector **time) {
 
   /* local vars */
   int dtype_dbl = DTYPE_DOUBLE;
@@ -198,6 +198,84 @@ int initializeMagneticData (int shotNumber, char *nodeName, gsl_vector **data,
     
     gsl_vector_free(*data);
     gsl_vector_free(*time);
+    fprintf(stderr,"Error retrieving signal\n");
+    return -1;
+    
+  }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: getMagneticDataAndTime
+ * Inputs: dataVector*, char*
+ * Returns: dataVector *
+ * Description: Example usage:
+ * dataVector *data = initializeMagneticData(170817005, "\\b_n95_000_sm");
+ * printf("Data: %d, %f\n", data->length, data->deltaT);
+ * printf("Node Name: %s\n", data->nodeName);
+ * printf("20th Element: %f\n", data->getElement(data, 20));
+ ******************************************************************************/
+
+int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data) {
+
+  /* local vars */
+  int dtype_dbl = DTYPE_DOUBLE;
+  int null = 0;
+  int connectionStatus;
+  int signalDescriptor; // signal descriptor
+  int sizeArray;        // length of signal
+  int len;
+  int connectionID;     // Connection ID for mdsplus connection
+
+  /* In case there is already data here */
+  gsl_vector_free(*data);
+  
+  /* Connecting to mdsplus database "fuze" */
+  connectionID = MdsConnect("10.10.10.240");
+
+  /* Checking to see if Connected */
+  if (connectionID == -1) {
+
+    fprintf(stderr, "Connection Failed\n");
+    return -1;
+
+  }
+
+  /* Opening a tree */
+  connectionStatus = MdsOpen("fuze", &shotNumber);
+
+  /* Checking to see if opened correctly */
+  if ( !status_ok(connectionStatus) ) {
+
+    fprintf(stderr,"Error opening tree for shot: %d.\n",shotNumber);
+    return -1;
+
+  }
+
+  /* Getting signal length of */
+  sizeArray = get_signal_length(nodeName);
+
+  if ( sizeArray < 1 ) {
+
+    fprintf(stderr,"Error retrieving length of signal\n");
+    return -1;
+
+  }
+
+  *data = gsl_vector_alloc(sizeArray);
+
+  /* create a descriptor for this signal */
+  signalDescriptor = descr(&dtype_dbl, (*data)->data, &sizeArray, &null);
+ 
+  /* retrieve signal */
+  connectionStatus = MdsValue(nodeName, &signalDescriptor, &null, &len);
+
+  if ( !status_ok(connectionStatus) ) {
+    
+    gsl_vector_free(*data);
     fprintf(stderr,"Error retrieving signal\n");
     return -1;
     

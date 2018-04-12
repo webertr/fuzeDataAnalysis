@@ -6,5 +6,6 @@
 
 int plotImageData (gsl_matrix *imageIn);
 int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn);
+int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In);
 
 #endif

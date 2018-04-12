@@ -11,6 +11,7 @@ SOURCE = src/magnetic.c \
 	src/imageAnalysisDHI.c \
 	src/readJPEG.c \
 	src/plasmaParam.c \
+	src/analysis.c \
 	test/testing.c
 
 PROD = run

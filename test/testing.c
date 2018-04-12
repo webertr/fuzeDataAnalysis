@@ -13,7 +13,7 @@ int testMagneticData() {
   gsl_vector *data = 0,
     *time = 0;
 
-  initializeMagneticData(170817005, "\\b_n95_000_sm", &data, &time);
+  initializeMagneticDataAndTime(170817005, "\\b_n95_000_sm", &data, &time);
 
   printf("Data Length: %d", (int) data->size);
   printf("20th Element: %f\n", gsl_vector_get(data, 20));

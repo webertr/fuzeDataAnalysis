@@ -1,0 +1,22 @@
+#ifndef ANALYSIS_H
+#define ANALYSIS_H
+
+#include <stdio.h>
+#include <gsl/gsl_math.h>
+#include <gsl/gsl_complex_math.h>
+#include <gsl/gsl_fft_complex.h>
+#include <math.h>
+#include <gsl/gsl_linalg.h>
+#include <gsl/gsl_blas.h>
+#include <gsl/gsl_sf_exp.h>
+
+#include "plot.h"
+#include "imageAnalysisDHI.h"
+#include "magnetic.h"
+#include "plasmaParam.h"
+
+
+int plotPostShotData(int shotNumber);
+
+
+#endif

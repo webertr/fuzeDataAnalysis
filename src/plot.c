@@ -52,6 +52,55 @@ int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn) {
 
 
 /******************************************************************************
+ * Function: plotVectorData
+ * Inputs: gsl_vector*
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In) {
+
+  int ii, status;
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf (stderr,
+	     "incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "plot '-' using 1:3\n");
+
+  for (ii = 0; ii < xVecIn->size; ii++) {
+
+    fprintf(gnuplot, "%g %g %g\n", gsl_vector_get(xVecIn, ii), 
+	    gsl_vector_get(yVec1In, ii),
+	    gsl_vector_get(yVec2In, ii));
+
+  }
+
+  fprintf(gnuplot, "e\n");
+
+
+  fflush(gnuplot);
+
+  /* Pausing */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plotImageData
  * Inputs: gsl_matrix *
  * Returns: int

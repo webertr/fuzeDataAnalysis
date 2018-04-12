@@ -3,6 +3,7 @@
 #include "getSVFData.h"
 #include "imageAnalysisDHI.h"
 #include "testing.h"
+#include "analysis.h"
 
 
 /******************************************************************************
@@ -50,7 +51,12 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting plasma parameters
    */
-  testPlasmaParam();
+  //testPlasmaParam();
+
+  /* 
+   * Plotting post shot data
+   */
+  plotPostShotData(170817005);
 
   return 0;
 
