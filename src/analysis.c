@@ -24,7 +24,7 @@ int plotPostShotData(int shotNumber) {
   initializeMagneticDataAndTime(shotNumber, "\\b_n95_000_sm", &data1, &time);
   initializeMagneticData(shotNumber, "\\b_n10_000_sm", &data2);
 
-  plot2VectorData(time, data1, data2);
+  plot2VectorData(time, data1, data2, "set xrange[0:50E-6]");
 
   gsl_vector_free(data1);
   gsl_vector_free(data2);

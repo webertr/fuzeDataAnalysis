@@ -13,7 +13,7 @@
  * then attach a pipe between that shell command and a stream
  ******************************************************************************/
 
-int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn) {
+int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn, char *plotOptions) {
 
   int ii, status;
   
@@ -25,6 +25,8 @@ int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn) {
     return EXIT_FAILURE;
   }
 
+  fprintf(gnuplot, "%s\n", plotOptions);
+  
   fprintf(gnuplot, "plot '-'\n");
 
   for (ii = 0; ii < xVecIn->size; ii++) {
@@ -59,34 +61,64 @@ int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn) {
  * then attach a pipe between that shell command and a stream
  ******************************************************************************/
 
-int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In) {
+int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In,
+		     char *plotOptions) {
 
   int ii, status;
+
+  char *tempFile = "data/temp.txt";
+
+
+  
+  /* Writing file to hold data */
+  
+  if (remove(tempFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(tempFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files!\n");
+    exit(1);
+
+  }
+
+  for (ii = 0; ii < xVecIn->size; ii++) {
+
+    fprintf(fp, "%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii));
+
+  }
+
+  fclose(fp);
+
+
+
+
+
+
+  /* 
+   * Creating child process to then call "gnuplot" in shell, and then to pipe the standard output
+   * to it.
+   */
   
   FILE *gnuplot = popen("gnuplot", "w");
 
   if (!gnuplot) {
-    fprintf (stderr,
-	     "incorrect parameters or too many files.\n");
+    fprintf(stderr,"incorrect parameters or too many files.\n");
     return EXIT_FAILURE;
   }
 
-  fprintf(gnuplot, "plot '-' using 1:3\n");
-
-  for (ii = 0; ii < xVecIn->size; ii++) {
-
-    fprintf(gnuplot, "%g %g %g\n", gsl_vector_get(xVecIn, ii), 
-	    gsl_vector_get(yVec1In, ii),
-	    gsl_vector_get(yVec2In, ii));
-
-  }
-
-  fprintf(gnuplot, "e\n");
-
-
+  fprintf(gnuplot, "%s\n", plotOptions);
+  
+  fprintf(gnuplot, "plot 'data/temp.txt' using 1:2 title 'Testing this out',\
+                    'data/temp.txt' using 1:3 title 'Testing this out again'\n");
+  
   fflush(gnuplot);
 
-  /* Pausing */
+  /* Pausing so user can look at plot */
   getchar();
 
   status = pclose(gnuplot);

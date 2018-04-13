@@ -18,7 +18,7 @@ int testMagneticData() {
   printf("Data Length: %d", (int) data->size);
   printf("20th Element: %f\n", gsl_vector_get(data, 20));
 
-  plotVectorData(time, data);
+  plotVectorData(time, data, "set xrange[0:50E-6]");
 
   saveVectorData(time, data, "data/temp.dat");
 
