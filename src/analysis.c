@@ -84,8 +84,9 @@ int plotIPApril2018Talk(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "plot '%s' using 1:2 title 'IP',\\\n", ipFile);
-  fprintf(fp, "     '%s' using 1:2 title 'Cap 1'\n", cap1File);
+  fprintf(fp, "set xrange[-15E-6:600E-6]\n");
+  fprintf(fp, "plot '%s' using 1:($2/1E3) title 'IP',\\\n", ipFile);
+  fprintf(fp, "     '%s' using ($1-16E-6):(12*$2/1E3) title 'Cap 1'\n", cap1File);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);
