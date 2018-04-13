@@ -9,14 +9,15 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_sf_exp.h>
+#include <sys/stat.h>
 
 #include "plot.h"
 #include "imageAnalysisDHI.h"
 #include "magnetic.h"
 #include "plasmaParam.h"
-
+#include "save.h"
 
 int plotPostShotData(int shotNumber);
-
+int plotIPApril2018Talk(int shotNumber);
 
 #endif

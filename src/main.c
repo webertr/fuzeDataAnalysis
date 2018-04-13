@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  hologramMain();
+  //hologramMain();
 
   /*
    * Plotting plasma parameters
@@ -58,6 +58,11 @@ int main(int argc, char *argv[]) {
    */
   //plotPostShotData(170817005);
 
+  /*
+   * Plotting IP for talk
+   */
+  plotIPApril2018Talk(180308040);
+  
   return 0;
 
 }
