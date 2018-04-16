@@ -1,7 +1,7 @@
 fileBase=180412
 startPulse=180412001
 startFile=1
-numImages=18
+numImages=49
 
 for i in `seq 1 $numImages`; 
 do

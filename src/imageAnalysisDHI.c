@@ -1919,7 +1919,7 @@ int hologramMain() {
                                    // and unwrapped phase
   param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
   param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 1;       // 1 means to preview the hologram before extracting twin image
+  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
   param.invertImage = 0;           // 1 means to invert the image.
   param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
                                    // the line integrated image (at plotColNum)
@@ -1938,14 +1938,14 @@ int hologramMain() {
 
   /******** Holography Analysis *************/
 
-  char *filenameRef = "/home/fuze/DHI_Images/180412/180412014.JPG";
-  char *filenamePlasma = "/home/fuze/DHI_Images/180412/180412014_Baseline.JPG";
+  char *filenameRef = "/home/fuze/DHI_Images/180412/180412018.JPG";
+  char *filenamePlasma = "/home/fuze/DHI_Images/180412/180412018_Baseline.JPG";
 
   /* Setting bounds of reconstructed image */
-  param.xLL = 306;          // Lower left x pixel value of phase reconstruction
-  param.yLL = 1686;          // Lower left y pixel value of phase reconstruction
-  param.xUR = 1300;          // Upper right x pixel value of phase reconstruction
-  param.yUR = 3506;          // Upper right y pixel value of phase reconstruction
+  param.xLL = 2787;          // Lower left x pixel value of phase reconstruction
+  param.yLL = 2614;          // Lower left y pixel value of phase reconstruction
+  param.xUR = 3767;          // Upper right x pixel value of phase reconstruction
+  param.yUR = 4774;          // Upper right y pixel value of phase reconstruction
 
 
   /* Obtained line integrated data and do an abel inversion */
