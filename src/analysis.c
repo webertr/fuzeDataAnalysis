@@ -187,13 +187,17 @@ int plotAccelApril2018Talk() {
   fprintf(fp, "set xrange[0:15]\n");
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #180223035'\n");
+  fprintf(fp, "set title 'Acceleration Region for Pulse #180223035' font '0,18'\n");
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,2\n");
-  fprintf(fp, "plot '%s' using (($1+14E-6)*1E6):($2) title 'z = -45 cm',\\\n", accelFile);
-  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($3) title 'z = -35 cm',\\\n", accelFile);
-  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($4) title 'z = -25 cm',\\\n", accelFile);
-  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($5) title 'z = -15 cm'\n", accelFile);
+  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using (($1+14E-6)*1E6):($2) with line lw 3 lc rgb 'black' \
+title 'z = -45 cm',\\\n", accelFile);
+  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($3) with line lw 3 lc rgb 'red' \
+title 'z = -35 cm',\\\n", accelFile);
+  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($4) with line lw 3 lc rgb 'blue' \
+title 'z = -25 cm',\\\n", accelFile);
+  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($5) with line lw 3 lc rgb 'yellow' \
+title 'z = -15 cm'\n", accelFile);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);
