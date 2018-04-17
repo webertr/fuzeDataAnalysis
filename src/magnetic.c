@@ -152,6 +152,7 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
   if ( !status_ok(connectionStatus) ) {
 
     fprintf(stderr,"Error opening tree for shot: %d.\n",shotNumber);
+    MdsDisconnect();
     return -1;
 
   }
@@ -162,6 +163,7 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
   if ( sizeArray < 1 ) {
 
     fprintf(stderr,"Error retrieving length of signal\n");
+    MdsDisconnect();
     return -1;
 
   }
@@ -184,6 +186,7 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
     fprintf(stderr,"Error retrieving timeBase\n");
     gsl_vector_free(*data);
     gsl_vector_free(*time);
+    MdsDisconnect();
     return -1;
 
   }
@@ -199,9 +202,13 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
     gsl_vector_free(*data);
     gsl_vector_free(*time);
     fprintf(stderr,"Error retrieving signal\n");
+    MdsDisconnect();
     return -1;
     
   }
+
+  /* Disconnecting from MDSplus */
+  MdsDisconnect();
 
   return 0;
 
@@ -251,6 +258,7 @@ int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data) {
   if ( !status_ok(connectionStatus) ) {
 
     fprintf(stderr,"Error opening tree for shot: %d.\n",shotNumber);
+    MdsDisconnect();
     return -1;
 
   }
@@ -261,6 +269,7 @@ int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data) {
   if ( sizeArray < 1 ) {
 
     fprintf(stderr,"Error retrieving length of signal\n");
+    MdsDisconnect();
     return -1;
 
   }
@@ -277,10 +286,83 @@ int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data) {
     
     gsl_vector_free(*data);
     fprintf(stderr,"Error retrieving signal\n");
+    MdsDisconnect();
     return -1;
     
   }
 
+  /* Disconnecting from MDSplus */
+  MdsDisconnect();
+  
   return 0;
+
+}
+
+
+
+
+/******************************************************************************
+ * Function: getSignalLengthMDSplus
+ * Inputs: const char *
+ * Returns: int
+ * Description: Returns the length of the specified signal if successful, -1
+ * if not successfull.
+ ******************************************************************************/
+
+int getSignalLengthMDSplus(const char *signal, int shotNumber) {
+
+  char buf[1024];
+  int size,
+    null = 0,
+    dtype_long = DTYPE_LONG,
+    idesc = descr(&dtype_long, &size, &null),
+    status,
+    connectionStatus,
+    connectionID;
+  
+  /* Connecting to mdsplus database "fuze" */
+  connectionID = MdsConnect("10.10.10.240");
+
+  /* Checking to see if Connected */
+  if (connectionID == -1) {
+
+    fprintf(stderr, "Connection Failed\n");
+    return -1;
+
+  }
+
+  /* Opening a tree */
+  connectionStatus = MdsOpen("fuze", &shotNumber);
+
+  /* Checking to see if opened correctly */
+  if ( !status_ok(connectionStatus) ) {
+
+    fprintf(stderr,"Error opening tree for shot: %d.\n",shotNumber);
+    MdsDisconnect();
+    return -1;
+
+  }
+
+  /* init buffer */
+  memset(buf,0,sizeof(buf));
+
+  /* put SIZE() TDI function around signal name */
+  snprintf(buf,sizeof(buf)-1,"SIZE(%s)",signal);
+
+  /* use MdsValue to get the signal length */
+  status = MdsValue(buf, &idesc, &null, 0);
+
+  if ( !( (status & 1) == 1 ) ) {
+
+    fprintf(stderr,"Unable to get length of %s.\n",signal);
+    MdsDisconnect();
+    return -1;
+
+  }
+
+  MdsDisconnect();
+  
+  /* return signal length */
+  return size;
 
 }
