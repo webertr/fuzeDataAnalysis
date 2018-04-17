@@ -29,14 +29,15 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
   gsl_matrix *rightDensityProfile = gsl_matrix_alloc(numRows, numCols);
 
   /* This is the centroid location in absolute pixel-space */
-  gsl_vector *centroidLocation = gsl_vector_alloc(numCols);
+  gsl_vector *centroidLocation = gsl_vector_alloc(numCols),
+    *crossSection = gsl_vector_alloc(numRows),       // The crosss section through image
+    *leftCrossSection = gsl_vector_alloc(numRows),   // Vec of the leftDensityProfile
+    *rightCrossSection = gsl_vector_alloc(numRows);  // Vec of the rightDensityProfile
+
 
   /* Get the matrix that will project the radial profile to the line integrated density */
   gsl_matrix *projectMatrix = getProjectMatrix(numRows, param->deltaY);
   
-  gsl_vector_view crossSection, // The crosss section through image, vertical, a single column
-    leftCrossSection,           // Vector views of matrix to represent col of leftDensityProfile
-    rightCrossSection;          // Vector views of matrix to represent col of rightDensityProfile
 
   /*
    * Starting to iterate through the cross sections. Each
@@ -46,17 +47,17 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
   for (jj = 0; jj < numCols; jj++) {
 
     /* 
-     * vector view of the column of the primary matrix that will hold the 
+     * vector of the column of the primary matrix that will hold the 
      * radial density profile
      */
-    leftCrossSection  = gsl_matrix_column(leftDensityProfile, jj);
-    rightCrossSection = gsl_matrix_column(rightDensityProfile, jj);
+    gsl_matrix_get_col(leftCrossSection, leftDensityProfile, jj);
+    gsl_matrix_get_col(rightCrossSection, rightDensityProfile, jj);
 
     /* The cross section of the image */
-    crossSection  = gsl_matrix_column(imageM, jj);
+    gsl_matrix_get_col(crossSection, imageM, jj);
 
     /* Getting index with maximum line-integrated density of cross section*/
-    maxIndex = gsl_vector_max_index(&crossSection.vector);
+    maxIndex = gsl_vector_max_index(crossSection);
 
     /* This will be the first index to start on for a guess at the plasma center */
     centroidIndexTest = maxIndex-numCentroids;
@@ -76,8 +77,8 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
       /* 
        * leftDensityProfile, rightDensityProfile need to have set to a "NaN" (Not a Number) value,
        */
-      gsl_vector_set_all(&leftCrossSection.vector, GSL_NAN);
-      gsl_vector_set_all(&rightCrossSection.vector, GSL_NAN);
+      gsl_vector_set_all(leftCrossSection, GSL_NAN);
+      gsl_vector_set_all(rightCrossSection, GSL_NAN);
 
       /* This is the centroid location in absolute pixel-space */
       gsl_vector_set(centroidLocation, jj, 0);
@@ -95,8 +96,8 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
       /* 
        * leftDensityProfile, rightDensityProfile need to have set to a "NaN" (Not a Number) value,
        */
-      gsl_vector_set_all(&leftCrossSection.vector, GSL_NAN);
-      gsl_vector_set_all(&rightCrossSection.vector, GSL_NAN);
+      gsl_vector_set_all(leftCrossSection, GSL_NAN);
+      gsl_vector_set_all(rightCrossSection, GSL_NAN);
 
       /* This is the centroid location in absolute pixel-space */
       gsl_vector_set(centroidLocation, jj, numRows-1);
@@ -132,8 +133,8 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
      * It will also set the centroidLocation vector which represents the plasma center in
      * each cross section
      */
-    getRadialDensityProfile(&leftCrossSection.vector, &rightCrossSection.vector, 
-			    &crossSection.vector, centroidLocation, 
+    getRadialDensityProfile(leftCrossSection, rightCrossSection, 
+			    crossSection, centroidLocation, 
 			    projectMatrix,
 			    centroidIterations, centroidIndexTest, 
 			    jj, param);
