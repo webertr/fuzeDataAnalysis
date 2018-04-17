@@ -22,7 +22,7 @@
  * Inputs: int
  * Returns: int
  * Description: Returns 1 if OK, 0 otherwise. Status is OK if the LSB is set.
-******************************************************************************/
+ ******************************************************************************/
 
 static int status_ok( int status ) {
 
@@ -116,23 +116,19 @@ int saveVectorData (gsl_vector *xVec, gsl_vector *yVec, char *fileName) {
  * printf("20th Element: %f\n", data->getElement(data, 20));
  ******************************************************************************/
 
-int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **data,
-				   gsl_vector **time) {
+int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector *data,
+				   gsl_vector *time) {
 
   /* local vars */
   int dtype_dbl = DTYPE_DOUBLE;
   int null = 0;
   int connectionStatus;
-  char buf[1024];       // Used to get DIM_OF of the array
-  int signalDescriptor; // signal descriptor
-  int timeDescriptor;   // descriptor for timeBase
-  int sizeArray;        // length of signal
+  char buf[1024];                 // Used to get DIM_OF of the array
+  int signalDescriptor;           // signal descriptor
+  int timeDescriptor;             // descriptor for timeBase
+  int sizeArray = data->size;     // length of signal
   int len;
-  int connectionID;     // Connection ID for mdsplus connection
-
-  /* In case there is already data here */
-  gsl_vector_free(*data);
-  gsl_vector_free(*time);
+  int connectionID;               // Connection ID for mdsplus connection
   
   /* Connecting to mdsplus database "fuze" */
   connectionID = MdsConnect("10.10.10.240");
@@ -157,22 +153,9 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
 
   }
 
-  /* Getting signal length of */
-  sizeArray = get_signal_length(nodeName);
-
-  if ( sizeArray < 1 ) {
-
-    fprintf(stderr,"Error retrieving length of signal\n");
-    MdsDisconnect();
-    return -1;
-
-  }
-
-  *data = gsl_vector_alloc(sizeArray);
-  *time = gsl_vector_alloc(sizeArray);
 
   /* create a descriptor for the timeBase */
-  timeDescriptor = descr(&dtype_dbl, (*time)->data, &sizeArray, &null);
+  timeDescriptor = descr(&dtype_dbl, time->data, &sizeArray, &null);
 
   snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName);
 
@@ -184,24 +167,21 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
 
     /* error */
     fprintf(stderr,"Error retrieving timeBase\n");
-    gsl_vector_free(*data);
-    gsl_vector_free(*time);
     MdsDisconnect();
     return -1;
 
   }
 
   /* create a descriptor for this signal */
-  signalDescriptor = descr(&dtype_dbl, (*data)->data, &sizeArray, &null);
+  signalDescriptor = descr(&dtype_dbl, data->data, &sizeArray, &null);
  
   /* retrieve signal */
   connectionStatus = MdsValue(nodeName, &signalDescriptor, &null, &len);
 
   if ( !status_ok(connectionStatus) ) {
     
-    gsl_vector_free(*data);
-    gsl_vector_free(*time);
     fprintf(stderr,"Error retrieving signal\n");
+    fprintf(stderr,"Signal length: %d\n", get_signal_length(nodeName));
     MdsDisconnect();
     return -1;
     
@@ -226,20 +206,17 @@ int initializeMagneticDataAndTime (int shotNumber, char *nodeName, gsl_vector **
  * printf("20th Element: %f\n", data->getElement(data, 20));
  ******************************************************************************/
 
-int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data) {
+int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector *data) {
 
   /* local vars */
   int dtype_dbl = DTYPE_DOUBLE;
   int null = 0;
   int connectionStatus;
-  int signalDescriptor; // signal descriptor
-  int sizeArray;        // length of signal
+  int signalDescriptor;              // signal descriptor
+  int sizeArray = data->size;        // length of signal
   int len;
-  int connectionID;     // Connection ID for mdsplus connection
+  int connectionID;                  // Connection ID for mdsplus connection
 
-  /* In case there is already data here */
-  gsl_vector_free(*data);
-  
   /* Connecting to mdsplus database "fuze" */
   connectionID = MdsConnect("10.10.10.240");
 
@@ -263,28 +240,14 @@ int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data) {
 
   }
 
-  /* Getting signal length of */
-  sizeArray = get_signal_length(nodeName);
-
-  if ( sizeArray < 1 ) {
-
-    fprintf(stderr,"Error retrieving length of signal\n");
-    MdsDisconnect();
-    return -1;
-
-  }
-
-  *data = gsl_vector_alloc(sizeArray);
-
   /* create a descriptor for this signal */
-  signalDescriptor = descr(&dtype_dbl, (*data)->data, &sizeArray, &null);
+  signalDescriptor = descr(&dtype_dbl, data->data, &sizeArray, &null);
  
   /* retrieve signal */
   connectionStatus = MdsValue(nodeName, &signalDescriptor, &null, &len);
 
   if ( !status_ok(connectionStatus) ) {
     
-    gsl_vector_free(*data);
     fprintf(stderr,"Error retrieving signal\n");
     MdsDisconnect();
     return -1;

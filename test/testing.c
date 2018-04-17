@@ -10,10 +10,13 @@ int testPlasmaParam() {
 
 int testMagneticData() {
 
-  gsl_vector *data = 0,
-    *time = 0;
+  int shotNumber = 170817005,
+    sigSize = getSignalLengthMDSplus("\\b_n95_000_sm", shotNumber);
 
-  initializeMagneticDataAndTime(170817005, "\\b_n95_000_sm", &data, &time);
+  gsl_vector *data = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(170817005, "\\b_n95_000_sm", data, time);
 
   printf("Data Length: %d", (int) data->size);
   printf("20th Element: %f\n", gsl_vector_get(data, 20));

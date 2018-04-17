@@ -21,9 +21,10 @@
 #include <errno.h>
 #include "plot.h"
 
-int initializeMagneticDataAndTime(int shotNumber, char *nodeName, gsl_vector **data,
-				  gsl_vector **time);
+int initializeMagneticDataAndTime(int shotNumber, char *nodeName, gsl_vector *data,
+				  gsl_vector *time);
 int saveVectorData(gsl_vector *xVec, gsl_vector *yVec, char *fileName);
-int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector **data);
+int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector *data);
+int getSignalLengthMDSplus(const char *signal, int shotNumber);
 
 #endif

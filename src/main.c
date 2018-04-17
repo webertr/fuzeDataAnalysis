@@ -61,7 +61,12 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting IP for talk
    */
-  plotAccelApril2018Talk();
+  //plotAccelApril2018Talk();
+
+  /*
+   * Plotting mode data for talk
+   */
+  plotModeApril2018Talk();
   
   return 0;
 
