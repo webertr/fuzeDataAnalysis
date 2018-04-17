@@ -26,5 +26,6 @@ int initializeMagneticDataAndTime(int shotNumber, char *nodeName, gsl_vector *da
 int saveVectorData(gsl_vector *xVec, gsl_vector *yVec, char *fileName);
 int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector *data);
 int getSignalLengthMDSplus(const char *signal, int shotNumber);
+gsl_matrix *getAzimuthalArrayP15(int shotNumber);
 
 #endif

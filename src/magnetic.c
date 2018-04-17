@@ -329,3 +329,69 @@ int getSignalLengthMDSplus(const char *signal, int shotNumber) {
   return size;
 
 }
+
+
+
+/******************************************************************************
+ * Function: getAzimuthalArrayP15
+ * Inputs: int
+ * Returns: gsl_matrix
+ * Description: Returns a matrix of the 8 azimuthal array of magnetic probes
+ * at p15 in the fuze machine with time at the end
+ ******************************************************************************/
+
+gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
+  
+  int sigSize = getSignalLengthMDSplus("\\b_p15_000", shotNumber);
+  
+  gsl_matrix *azimuthArray = gsl_matrix_alloc(sigSize, 9);
+ 
+  /* Declaring variables */
+  gsl_vector  *time = gsl_vector_alloc(sigSize),
+    *p15_000 = gsl_vector_alloc(sigSize),
+    *p15_045 = gsl_vector_alloc(sigSize),
+    *p15_090 = gsl_vector_alloc(sigSize),
+    *p15_135 = gsl_vector_alloc(sigSize),
+    *p15_180 = gsl_vector_alloc(sigSize),
+    *p15_225 = gsl_vector_alloc(sigSize),
+    *p15_270 = gsl_vector_alloc(sigSize),
+    *p15_315 = gsl_vector_alloc(sigSize);
+
+
+  /* Geting Data */
+  initializeMagneticDataAndTime(shotNumber, "\\b_p15_000", p15_000, time);
+  initializeMagneticData(shotNumber, "\\b_p15_045", p15_045);
+  initializeMagneticData(shotNumber, "\\b_p15_090", p15_090);
+  initializeMagneticData(shotNumber, "\\b_p15_135", p15_135);
+  initializeMagneticData(shotNumber, "\\b_p15_180", p15_180);
+  initializeMagneticData(shotNumber, "\\b_p15_225", p15_225);
+  initializeMagneticData(shotNumber, "\\b_p15_270", p15_270);
+  initializeMagneticData(shotNumber, "\\b_p15_315", p15_315);
+  
+  gsl_matrix_set_col(azimuthArray, 0, time);
+  gsl_matrix_set_col(azimuthArray, 1, p15_000);
+  gsl_matrix_set_col(azimuthArray, 2, p15_045);
+  gsl_matrix_set_col(azimuthArray, 3, p15_090);
+  gsl_matrix_set_col(azimuthArray, 4, p15_135);
+  gsl_matrix_set_col(azimuthArray, 5, p15_180);
+  gsl_matrix_set_col(azimuthArray, 6, p15_225);
+  gsl_matrix_set_col(azimuthArray, 7, p15_270);
+  gsl_matrix_set_col(azimuthArray, 8, p15_315);
+
+
+  
+  /* Freeing data */
+  gsl_vector_free(time);
+  gsl_vector_free(p15_000);
+  gsl_vector_free(p15_045);
+  gsl_vector_free(p15_090);
+  gsl_vector_free(p15_135);
+  gsl_vector_free(p15_180);
+  gsl_vector_free(p15_225);
+  gsl_vector_free(p15_270);
+  gsl_vector_free(p15_315);
+
+  
+  return azimuthArray;
+
+}

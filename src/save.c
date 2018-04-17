@@ -78,3 +78,45 @@ int save5VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
   return 0;
 
 }
+
+
+/******************************************************************************
+ * Function: saveMatrixData
+ * Inputs: gsl_matrix*, char *
+ * Returns: int
+ * Description: This will first delete the file that it is passed, then save 
+ * the matrix into a series of columns for each column
+ ******************************************************************************/
+
+int saveMatrixData(gsl_matrix *mIn, char *fileName) {
+
+  int ii, jj;
+  
+  if (remove(fileName) != 0) {
+    printf("Unable to delete the file");
+  }
+  
+  FILE *fp = fopen(fileName, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files to save for 3 vector save!\n");
+    exit(1);
+
+  }
+
+  for (ii = 0; ii < mIn->size1; ii++) {
+
+    for (jj = 0; jj < mIn->size2; jj++) {
+
+      fprintf(fp, "%g\t", gsl_matrix_get(mIn, ii, jj));
+
+    }
+    fprintf(fp, "\n");
+  }
+
+  fclose(fp);
+
+  return 0;
+
+}

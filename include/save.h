@@ -9,5 +9,6 @@
 int save2VectorData(gsl_vector *vec1In, gsl_vector *vec2In, char *fileName);
 int save5VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
 		    gsl_vector *vec4In, gsl_vector *vec5In, char *fileName);
+int saveMatrixData(gsl_matrix *mIn, char *fileName);
 
 #endif

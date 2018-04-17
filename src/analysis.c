@@ -192,7 +192,7 @@ int plotAccelApril2018Talk() {
   fprintf(fp, "set xrange[0:15]\n");
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #180223035' font '0,18'\n");
+  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
   fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
   fprintf(fp, "plot '%s' using (($1+14E-6)*1E6):($2) with line lw 3 lc rgb 'black' \
@@ -259,46 +259,25 @@ title 'z = -15 cm'\n", accelFile);
 int plotModeApril2018Talk() {
 
   int shotNumber = 180222040,
-    sigSize = getSignalLengthMDSplus("\\b_p15_000", shotNumber),
     status;
-
-  gsl_matrix *azimuthArray = gsl_matrix_alloc(8, sigSize);
-  
-  /* Declaring variables */
-  gsl_vector_view p15_000 = gsl_matrix_row(azimuthArray, 0),
-    p15_045 = gsl_matrix_row(azimuthArray, 1),
-    p15_090 = gsl_matrix_row(azimuthArray, 2),
-    p15_135 = gsl_matrix_row(azimuthArray, 3),
-    p15_180 = gsl_matrix_row(azimuthArray, 4),
-    p15_225 = gsl_matrix_row(azimuthArray, 5),
-    p15_270 = gsl_matrix_row(azimuthArray, 6),
-    p15_315 = gsl_matrix_row(azimuthArray, 7);
-
-  gsl_vector *timeDetaq = gsl_vector_alloc(sigSize);
 
   char *gnuPlotFile = "script/temp.sh",
     *modeFile = "data/mode.txt";
 
 
-  /* Geting Data */
-  initializeMagneticDataAndTime(shotNumber, "\\b_p15_000", &p15_000.vector, timeDetaq);
-  initializeMagneticData(shotNumber, "\\b_p15_045", &p15_045.vector);
-  initializeMagneticData(shotNumber, "\\b_p15_090", &p15_090.vector);
-  initializeMagneticData(shotNumber, "\\b_p15_135", &p15_135.vector);
-  initializeMagneticData(shotNumber, "\\b_p15_180", &p15_180.vector);
-  initializeMagneticData(shotNumber, "\\b_p15_225", &p15_225.vector);
-  initializeMagneticData(shotNumber, "\\b_p15_270", &p15_270.vector);
-  initializeMagneticData(shotNumber, "\\b_p15_315", &p15_315.vector);
+  
 
+  /* Getting data */
+  gsl_matrix *azimuthArray = getAzimuthalArrayP15(shotNumber);
+
+  
 
   /* Saving data */
-  save5VectorData(timeDetaq, &p15_000.vector, &p15_045.vector, &p15_090.vector,
-		  &p15_135.vector, modeFile);
+  saveMatrixData(azimuthArray, modeFile);
 
 
   
   /* Creating gnuplot file */
-
   if (remove(gnuPlotFile) != 0) {
     printf("Unable to delete the file");
   }
@@ -318,7 +297,7 @@ int plotModeApril2018Talk() {
   fprintf(fp, "set xrange[0:40]\n");
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #180223035' font '0,18'\n");
+  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
   fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
   fprintf(fp, "plot '%s' using (($1+14E-6)*1E6):($2) with line lw 3 lc rgb 'black' \
@@ -364,8 +343,8 @@ title 'z = 15cm, 135 Deg.'\n", modeFile);
   
   /* Freeing vectors */
   gsl_matrix_free(azimuthArray);
-  gsl_vector_free(timeDetaq);
 
+  
   return 0;
 
 
