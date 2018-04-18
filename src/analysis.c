@@ -210,7 +210,7 @@ int plotAccelApril2018Talk() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set terminal pngcairo\n");
   //fprintf(fp, "set output 'data/accel180223035'\n");
   fprintf(fp, "set xrange[0:15]\n");
   fprintf(fp, "set key left top\n");
@@ -315,7 +315,7 @@ int plotModeApril2018Talk() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set terminal pngcairo\n");
   //fprintf(fp, "set output 'data/modeData.png'\n");
   fprintf(fp, "set xrange[15:100]\n");
   fprintf(fp, "set yrange[0:1]\n");
@@ -419,11 +419,11 @@ int plotDHIApril2018Talk() {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set palette rgb 33,13,10\n");
-  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set terminal pngcairo\n");
   fprintf(fp, "set output 'data/dhiData.png'\n");
   fprintf(fp, "set xrange[14.1:14.9]\n");
   fprintf(fp, "set yrange[-0.86:0.86]\n");
-  fprintf(fp, "set title 'Line integrated n_{e} for pulse 180215012' font 'Times Bold, 20'\n");
+  fprintf(fp, "set title 'Line integrated n_{e} for pulse 180215012' font 'Times Bold, 24'\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
   fprintf(fp, "set xlabel 'Axial Position (cm)' font 'Times Bold,20' offset 0,0\n");
   fprintf(fp, "set ylabel 'Impact Parameter (cm)' font 'Times Bold,20' offset 0,0\n\n");
