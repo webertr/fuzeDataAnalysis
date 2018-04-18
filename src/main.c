@@ -67,12 +67,12 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting mode data for talk
    */
-  //plotModeApril2018Talk();
+  plotModeApril2018Talk();
 
   /*
    * Plotting DHI data for talk
    */
-  plotDHIApril2018Talk();
+  //plotDHIApril2018Talk();
 
   /*
    * Testing real FFT
