@@ -79,10 +79,10 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .me = 9.109E-31,
   .numRows = 4000,
   .numCols = 6016,
-  .xLL = 2858,
-  .yLL = 2876,
-  .xUR = 3696,
-  .yUR = 4583,
+  .xLL = 2531,
+  .yLL = 2437,
+  .xUR = 3356,
+  .yUR = 4349,
   .hyperbolicWin = 8,
   .sampleInterval = 10,
   .centroidNum = 10,
@@ -104,8 +104,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
-  .fileRef = "/home/webertr/DHI_Images/180417/180417046_Baseline.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180417/180417046.JPG"
+  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG"
 };
 
 /******************************************************************************

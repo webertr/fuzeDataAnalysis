@@ -421,12 +421,15 @@ int plotDHIApril2018Talk() {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set palette rgb 33,13,10\n");
-  fprintf(fp, "set terminal pngcairo\n");
+  fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
   fprintf(fp, "set output 'data/dhiData.png'\n");
   fprintf(fp, "set xrange[14.1:14.9]\n");
   fprintf(fp, "set yrange[-0.86:0.86]\n");
-  fprintf(fp, "set size ratio -1\n");  
-  fprintf(fp, "set title 'Line integrated n_{e} for pulse 180215012' font 'Times Bold, 24'\n");
+  fprintf(fp, "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.40,0.30 ");
+  fprintf(fp, "rotate by 90 font 'Times Bold, 20'\n");
+  fprintf(fp, "set size ratio -1\n");
+  fprintf(fp, "set xtics 14.1, 0.2, 14.9\n");  
+  fprintf(fp, "set title 'Pulse 180215012' font 'Times Bold, 20'\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
   fprintf(fp, "set xlabel 'Axial Position (cm)' font 'Times Bold,20' offset 0,0\n");
   fprintf(fp, "set ylabel 'Impact Parameter (cm)' font 'Times Bold,20' offset 0,0\n\n");
