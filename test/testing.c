@@ -414,40 +414,6 @@ gsl_matrix *getTestData() {
   param.centroidNum = 10;
   param.offsetIter = 20;
 
-  char *fileLeftProfile = "data/leftProfile.dat";
-  char *fileRightProfile = "data/rightProfile.dat";
-  char *fileCentroid = "data/centroidLocation.dat";
-  invertImage(testData, fileLeftProfile, fileRightProfile,
-  	      fileCentroid, &param);
-
-  saveRadialProfileTest(fileLeftProfile, fileRightProfile, numRows, numCols,
-			0, "data/leftRadialProfile0.txt", "data/rightRadialProfile0.txt");
-
-  saveRadialProfileTest(fileLeftProfile, fileRightProfile, numRows, numCols,
-			99, "data/leftRadialProfile99.txt", "data/rightRadialProfile99.txt");
-
-  lineIntegratedCenterLine(testData, "data/lineIntegrated.dat", fileCentroid);
-
-  radialProfileVec = gsl_matrix_column(radialProfile, 0);
-  saveVectorTest(&radialProfileVec.vector, "data/radialProfile0.txt");
-  radialProfileVec = gsl_matrix_column(radialProfile, 99);
-  saveVectorTest(&radialProfileVec.vector, "data/radialProfile99.txt");
-
-  saveLineIntegratedSlice(testData, 0, "data/lineIntegratedSlice0.txt");
-  saveLineIntegratedSlice(testData, 99, "data/lineIntegratedSlice99.txt");
-    
-  system("script/plot_testing.sh");
-
-  //saveVectorTest(testVec, "data/lineIntegratedSlice.txt");
-
-  //saveVectorTest(radialProfile, "data/radialProfile.txt");
-
-  //system("script/plot_testing.sh");
-
-  //lineIntegratedSave(testData, "data/lineIntegrated.dat");
-
-  //system("script/plot_line_integrated.sh");
-  //exit(1);
 
   return testData;
   
@@ -710,33 +676,6 @@ int testWaveletFit() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  param.res = 3.85E-6;             // CCD Resolution
-  param.lambda = 532E-9;           // Wavelength of laser
-  param.d = 0.43;                  // Reconstruction distance
-  param.deltaN = 1E23;             // Density offset delta for inversion
-  param.hyperbolicWin = 8;         // Hyperbolic window parameter
-  param.sampleInterval = 1;        // Sampling interval of line-integrated density 
-  param.centroidNum = 10;          // number of centroids to vary +/- around maximum (10)
-  param.offsetIter = 10;           // Number of offset iterations (15)
-  param.boxCarSmoothWidth = 40;    // Width of box car smoothing on phase
-  param.unwrapThresh = 1.0*M_PI;   // Threshold to trigger the phase unwrapping
-  param.signTwin = 1;              // Sign to density conversion +/-1. Depends on laser setup (-1)
-  param.debugPhase = 1;            // 1 means save and plot a col profile of phase 
-                                   // and unwrapped phase
-  param.debugPhaseColNum = 12;     // Col number to save for the phase and unwrapped phase
-  param.debugPhaseRowNum = 100;    // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
-  param.invertImage = 0;           // 1 means to invert the image.
-  param.plotRadialProfile = 0;     // 1 means to plot the inverted radial profile and slice through
-                                   // the line integrated image (at plotColNum)
-  param.plotColNum = 50;           // Column number to plot for the inverted radial profile and a 
-                                   // slice of line integrated data 
-  param.plotLineIntegrated = 0;    // 1 means to plot the line integrated data
-  param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
-  param.plotRawHologramRow = 100;  // 1 means it will plot a row of the raw hologram
-  param.plotRawHologramCol = 100;  // 1 means it will plot a column of the raw hologram
-  param.plotTwinImage = 0;         // 1 means it will plot a column of the twin image  
-
   gsl_matrix* imageRef = testWaveletGetFit("data/2017_10_05_021.JPG", 55);
   gsl_matrix* imagePlasma = testWaveletGetFit("data/2017_10_05_023.JPG", 55);
 
@@ -798,117 +737,6 @@ int testPutHorizontalLine(gsl_matrix* mInput, int rowNumber, int width) {
 
 }
 
-
-int testAsymetricProjectionGenerate() {
-
-  int numRows = 100,
-    numCols = 100;
-
-  gsl_matrix* plasmaForwardProject = gsl_matrix_alloc(numRows, numCols*numRows);
-  gsl_matrix* plasmaImage = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix* plasmaImageProject = gsl_matrix_alloc(numRows, numCols);
-
-  gsl_vector* forwardProjectData = gsl_vector_alloc(numRows*numCols);
-  gsl_vector* forwardProjectImage = gsl_vector_alloc(numRows);
-
-  /*
-   * ii, jj => ii*numCols + jj
-   * A line across starts at a given y value, at the maximum x, and just
-   * iterates across x values. It simply needs to caculate the length or amount
-   * of time it spends in each. But that should be an easy caculation. Just a
-   * binary 1 in at all the x values for each y. Hmm. Not that hard, I guess.
-   */
-
-  int ind, ii, jj;
-  /* Iterating down the rows. Each row should be a y value */
-  for (ii = 0; ii < numRows; ii++) {
-    /* 
-     * Iterating across the single value that represents all x and y values
-     * jj => ii*numCols + jj
-     */
-    for (ind = ii*numCols; ind < ii*numCols+numCols; ind++) {
-      
-	gsl_matrix_set(plasmaForwardProject, ii, ind, 1);
-
-    }
-  }
-
-  /*
-   * Now we need x, y data that is a vector that is numRows * numCols in length
-   * Then, we multiply this vector by the matrix to get the vector that is
-   * numRows in length. This should be a slice of the line integrated data
-   */
-  testGetDensitySlice(forwardProjectData, numRows, numCols);
-
-  /*
-   * Matrix multiplication
-   */
-  double sum;
-  for (ii = 0; ii < numRows; ii++) {
-    sum = 0;
-    for (jj = 0; jj < numRows*numCols; jj++) {
-
-      sum = sum + gsl_vector_get(forwardProjectData, jj) 
-	* gsl_matrix_get(plasmaForwardProject, ii, jj);
-
-    }
-    gsl_vector_set(forwardProjectImage, ii, sum);
-  }
-
-  FILE *fp1;
-  fp1 = fopen("data/forwardProjectImage.txt", "w");
-
-  for (ii = 0; ii < numRows; ii++) {
-
-    fprintf(fp1, "%f\n",
-	    gsl_vector_get(forwardProjectImage, ii));
-
-  }
-  fclose(fp1);
-
-  for (ii = 0; ii < numRows; ii++) {
-    for (jj = 0; jj < numCols; jj++) {
-
-      gsl_matrix_set(plasmaImage, ii, jj,
-		     gsl_vector_get(forwardProjectData, ii*numCols + jj));
-      gsl_matrix_set(plasmaImageProject, ii, jj,
-		     gsl_vector_get(forwardProjectImage, ii));
-
-    }
-  }
-
-  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
-  param.numRows = numRows;
-  param.numCols = numCols;
-  param.deltaX = 1;
-  param.deltaY = 1;
-
-  param.deltaN = 0.05;
-  param.centroidNum = 10;
-  param.offsetIter = 20;
-
-  char *fileLeftProfile = "data/leftProfile.dat";
-  char *fileRightProfile = "data/rightProfile.dat";
-  char *fileCentroid = "data/centroidLocation.dat";
-  invertImage(plasmaImageProject, fileLeftProfile, fileRightProfile,
-  	      fileCentroid, &param);
-
-  gsl_matrix *plasmaImageRecon = getRadialProfileImageTest(fileLeftProfile, fileRightProfile,
-  							   fileCentroid, 
-  							   numRows, numCols);
-
-  saveRadialProfileTest(fileLeftProfile, fileRightProfile, numRows, numCols,
-			numCols/2, "data/leftRadialProfile.txt", "data/rightRadialProfile.txt");
-  
-  saveHologramImageBinaryOne(plasmaImage, "data/plasmaImage.dat");
-  saveHologramImageBinaryOne(plasmaImageProject, "data/plasmaImageProject.dat");
-  saveHologramImageBinaryOne(plasmaImageRecon, "data/plasmaImageRecon.dat");
-
-  system("script/plot_test.sh");
-    
-  return 0;
-
-}
 
 int testGetDensitySlice(gsl_vector *forwardProjectData, int numRows, int numCols) {
 

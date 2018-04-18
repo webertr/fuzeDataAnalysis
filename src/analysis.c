@@ -23,8 +23,7 @@ int hologramAnalysis() {
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
   /* Obtained line integrated data and do an abel inversion */
-  hologramMain(&param, "data/leftProfile.dat", "data/rightProfile.dat",
-	       "data/centroidLocation.dat");
+  hologramMain(&param);
 
   return 0;
 
@@ -291,7 +290,7 @@ int plotModeApril2018Talk() {
   
   
   /* Getting data */
-  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000_sm");
+  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000");
   getAzimuthalArrayModes(azimuthArray);
 
   
@@ -316,9 +315,9 @@ int plotModeApril2018Talk() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output 'data/modeData.png'\n");
-  fprintf(fp, "set xrange[15:45]\n");
+  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set output 'data/modeData.png'\n");
+  fprintf(fp, "set xrange[15:100]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
@@ -391,13 +390,18 @@ title 'Pinch Current' axes x1y2\n", modeFile);
 
 int plotDHIApril2018Talk() {
 
-  int shotNumber = 180222040,
-    status;
+  int status;
 
-  char *gnuPlotFile = "script/temp.sh",
-    *modeFile = "data/mode.txt";
-
+  char *gnuPlotFile = "script/temp.sh";
   
+  /* 
+   * struct containing all the holography parameters.
+   */
+  //holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
+
+  /* Obtained line integrated data and do an abel inversion */
+  //hologramMain(&param);
+
   
   /* Creating gnuplot file */
   if (remove(gnuPlotFile) != 0) {
@@ -405,7 +409,7 @@ int plotDHIApril2018Talk() {
   }
 
   FILE *fp = fopen(gnuPlotFile, "w");
-  
+
   if ( (fp == NULL) ) {
 
     printf("Error opening files gnuplot file!\n");
@@ -414,21 +418,17 @@ int plotDHIApril2018Talk() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set palette rgb 33,13,10\n");
   fprintf(fp, "set terminal png\n");
   fprintf(fp, "set output 'data/dhiData.png'\n");
-  fprintf(fp, "set xrange[15:45]\n");
-  fprintf(fp, "set yrange[0:1]\n");
-  fprintf(fp, "set y2range[0:]\n");
+  fprintf(fp, "set xrange[14.1:14.9]\n");
+  fprintf(fp, "set yrange[-0.86:0.86]\n");
+  fprintf(fp, "set title 'Line integrated n_{e} for pulse 180215012' font 'Times Bold, 20'\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
-  fprintf(fp, "set key right top\n");
-  fprintf(fp, "set arrow from 15,0.2 to 45,0.2 nohead dt 3 lw 2 lc rgb 'green'\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Normalized modes at z=15 cm for pulse #%d' font '0,14'\n", shotNumber);
-  fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "set ylabel 'Normalized modes' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "set y2tics nomirror tc lt 2\n");
-  fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using (($1+15.2E-6)*1E6):($3)\n", modeFile);
+  fprintf(fp, "set xlabel 'Axial Position (cm)' font 'Times Bold,20' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Impact Parameter (cm)' font 'Times Bold,20' offset 0,0\n\n");
+  fprintf(fp, "show title\n");
+  fprintf(fp, "plot 'data/lineIntegratedPosition.dat' binary matrix with image title ''\n");
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

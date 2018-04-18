@@ -1660,8 +1660,7 @@ int save2DInvertedProfile (char *imageSave, char *fileLeftProfile, char* fileRig
  * so you can look it at it in gnuplot.
  ******************************************************************************/
 
-int hologramMain(holographyParameters* param, char* fileLeftProfile, char* fileRightProfile,
-		 char* fileCentroidLocation) {
+int hologramMain(holographyParameters* param) {
 
   /* Reading in the jpeg file and getting cols/rows */
   gsl_matrix* imagePlasma = readJPEGImage(param->filePlasma);
@@ -1694,18 +1693,6 @@ int hologramMain(holographyParameters* param, char* fileLeftProfile, char* fileR
   param->numRows = imagePlasma->size1;
   param->numCols = imagePlasma->size2;
  
-  /*
-   * If plotRawHologram is set, plot the raw hologram
-   */
-  if (param->plotRawHologram == 1) {
-
-    saveHologramImageBinaryOne(imagePlasma, "data/rawHologram.dat");
-    saveLineIntegratedSlice(imagePlasma, param->plotRawHologramCol, "data/rawHologramCol.txt");
-    saveLineIntegratedRow(imagePlasma, param->plotRawHologramRow, "data/rawHologramRow.txt");
-    system("script/plot_raw_hologram.sh");
-    exit(1);
-
-  }
 
   /* Taking fresnel transformation */
   gsl_matrix_complex *fftPlasma = fresnel(imagePlasma, param);
@@ -1726,30 +1713,16 @@ int hologramMain(holographyParameters* param, char* fileLeftProfile, char* fileR
   
 
   /*
-   * If the holgramPreview debug parameter is set,
-   * then save the file, plot it and exit
+   * If the saveHologram parameter is set, then save the file
    */
-  if (param->hologramPreview == 1) {
+  if (param->saveHologram == 1) {
 
-    saveHologramImageBinaryOne(phase, "data/hologramPreview.dat");
-    system("script/plot_hologram_preview.sh");
-    exit(1);
+    saveHologramImageBinaryOne(phase, param->fileHologram);
 
   }
     
   /* Extracting the 1st order image from the reconstruction */
   gsl_matrix *twinImage = extractTwinImage(phase, param);
-
-  /*
-   * If the twinPlot is set, plot the twin image
-   */
-  if (param->plotTwinImage == 1) {
-
-    saveHologramImageBinaryOne(twinImage, "data/hologramPreview.dat");
-    system("script/plot_hologram_preview.sh");
-    exit(1);
-    
-  }
 
   /* Taking every param->sampleInterval the element */
   gsl_matrix *twinImageReduce = matrixReduceElements(twinImage, param);
@@ -1764,79 +1737,15 @@ int hologramMain(holographyParameters* param, char* fileLeftProfile, char* fileR
   gsl_vector *yPhase = getImageYVectorHol(twinImageUnwrap, param); 
   gsl_vector *xPhase = getImageXVectorHol(twinImageUnwrap, param); 
 
-  /* If the invertImage is specified, do the inversion */
-  if (param->invertImage == 1) {
-
-    /* Inverting the image and saving the radial profiles and centroid locations */
-    invertImage(twinImageUnwrap, fileLeftProfile, fileRightProfile,
-		fileCentroidLocation, param);
-
-    /*
-     * Saving a slice through the line integrated density.
-     */
-    saveLineIntegratedSlice(twinImageUnwrap, param->plotColNum, "data/lineIntegratedSlice.txt");
-    
-    /*
-     * Saving the 2D inverted profile
-     */
-    save2DInvertedProfile ("data/inverted2DImage.dat", fileLeftProfile, 
-			   fileRightProfile, fileCentroidLocation, param);
-
-    /*
-     * If specified, plotting the radial profils for a specific column
-     */
-    if (param->plotRadialProfile == 1) {
-
-      /* Extracting and saving radial profile for specific column */
-      saveRadialProfileWithPosition(fileLeftProfile, fileRightProfile, twinImageUnwrap->size1, 
-				    twinImageUnwrap->size2,
-				    yPhase, param->plotColNum, "data/leftRadialProfile.txt",
-				    "data/rightRadialProfile.txt");
-
-      system("script/plot_radial_profile.sh");
-      exit(1);
-
-    }
-
-  }
-
   /*
    * if specified, plotting the line integrated data with/without centroid or position information
    */
-  if (param->plotLineIntegrated == 1) {
+  if (param->saveLineIntPos == 1) {
 
-    /* 
-     * Option to save the image as a GSL matrix
-     */
-    //saveGSLMatrix(twinImageUnwrap, "data/plasmaMatrix.dat");
+    saveHologramImageBinary(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
     
-    /*
-     * Saving line integrated with pixel number and center line encoded on it
-     * plot 'data/test.dat' binary matrix with image title "Line Integrated"
-     */
-    //lineIntegratedCenterLine(twinImageUnwrap, "data/lineIntegrated.dat", fileCentroidLocation);
-
-    /*
-     * Saving line integrated with pixel number and NO center line encoded on it
-     * plot 'data/test.dat' binary matrix with image title "Line Integrated"
-     */
-    //lineIntegratedSave(twinImageUnwrap, "data/lineIntegrated.dat");
-
-    /*
-     * Save line integrated with position information
-     */
-    saveHologramImageBinary(twinImageUnwrap, xPhase, yPhase, "data/lineIntegrated.dat");
-
-    /* 
-     * Save line integrated with no position or centroid information
-     */
-    //saveHologramImageBinaryOne(twinImageUnwrap, "data/lineIntegrated.dat");
-    
-    system("script/plot_line_integrated.sh");
-    exit(1);
-
   }
-
+  
 
   gsl_matrix_free(imagePlasma);
   gsl_matrix_free(imageRef);

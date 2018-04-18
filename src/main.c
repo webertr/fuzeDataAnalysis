@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  hologramAnalysis();
+  //hologramAnalysis();
 
   /*
    * Plotting plasma parameters
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting DHI data for talk
    */
-  //plotDHIApril2018Talk();
+  plotDHIApril2018Talk();
 
   /*
    * Testing real FFT

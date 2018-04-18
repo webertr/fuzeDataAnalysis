@@ -538,14 +538,20 @@ int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector*
 
   int ii,
     jj,
-    numRows = mInput->size1,
-    numCols = mInput->size2,
+    numRows = rightSize,
+    numCols = rightSize,
     vecSize1 = vInput->size,
     vecSize2 = vInput->size;
 
   double vec,
     sum1;
 
+  gsl_matrix_view rightProjectMatrix; // Sub-matrix view of right inversion matrix
+
+  /* Getting matrix to solve equation with */
+  rightProjectMatrix = gsl_matrix_submatrix(mInput, 0, 0, rightSize, rightSize);
+
+    
   /* Error checking */
   if (numRows != numCols) {
 
@@ -577,14 +583,14 @@ int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector*
     /* Running across the columns */
     for (jj = (numCols-1); jj > ii; --jj) {
       
-      vec = vec + gsl_matrix_get(mInput, ii, jj) *
+      vec = vec + gsl_matrix_get(&rightProjectMatrix.matrix, ii, jj) *
 	gsl_vector_get(vOutput, jj);
 
     }
 
     /* Subtracting constant value */
     sum1 = gsl_vector_get(vInput, ii) - vec;
-    sum1 = sum1 / gsl_matrix_get(mInput, ii, ii);
+    sum1 = sum1 / gsl_matrix_get(&rightProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
 
@@ -612,13 +618,20 @@ int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* 
 
   int ii,
     jj,
-    numRows = mInput->size1,
-    numCols = mInput->size2,
+    numRows = leftSize,
+    numCols = leftSize,
     vecSize1 = vInput->size,
     vecSize2 = vInput->size;
 
   double vec,
     sum1;
+
+
+  gsl_matrix_view leftProjectMatrix; // Sub-matrix view of right inversion matrix
+
+  /* Getting matrix to solve equation with */
+  leftProjectMatrix = gsl_matrix_submatrix(mInput, 0, 0, leftSize, leftSize);
+
 
   /* Error checking */
   if (numRows != numCols) {
@@ -651,14 +664,14 @@ int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* 
     /* Running across the columns */
     for (jj = (numCols-1); jj > ii; --jj) {
       
-      vec = vec + gsl_matrix_get(mInput, ii, jj) *
+      vec = vec + gsl_matrix_get(&leftProjectMatrix.matrix, ii, jj) *
 	gsl_vector_get(vOutput, jj);
 
     }
 
     /* Subtracting constant value */
     sum1 = gsl_vector_get(vInput, (numRows-1)-ii) - vec;
-    sum1 = sum1 / gsl_matrix_get(mInput, ii, ii);
+    sum1 = sum1 / gsl_matrix_get(&leftProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
 
