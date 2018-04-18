@@ -892,10 +892,10 @@ int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param) {
    * k = 1.38e-23,              // Boltzmann's constant in SI units
    * 
    */
-  double e_0 = 8.85e-12,       // Permitivity of free space
-    q = 1.6e-19,               // electron charge [C]
-    c = 3e8,                   // speed of light [m/s]
-    me = 9.12e-31;             // electron mass [kg]
+  double e_0 = param->e0,       // Permitivity of free space
+    q = param->q,               // electron charge [C]
+    c = param->c,               // speed of light [m/s]
+    me = param->me;             // electron mass [kg]
 
   int ii, jj,
     numRows = param->numRows,

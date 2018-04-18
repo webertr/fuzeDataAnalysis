@@ -1,6 +1,8 @@
 #ifndef HOLOPARAM_H
 #define HOLOPARAM_H
 
+/* 1 is using meters, 100 if using CM */
+#define CM_ADJUST 100
 
 /* 
  * A structure to pass around the necessary parameters for hologram reconstruction and inversion
@@ -12,6 +14,10 @@ struct holographyparameters {
   double deltaN;              // Density offset delta (5E18)
   int numRows;                // Number of rows of image (6016)
   int numCols;                // Number of columns of image (4000)
+  double e0;                 // The permitivity of free space
+  double q;                   // The electron Charge
+  double c;                   // The speed of light
+  double me;                  // The electro mass
   int xLL;                    // X/Column number of far left pixel defining first order image
                               // to extract from the holographic reconstruction
   int yLL;                    // Y/Row number of bottom most pixel defining first order image
@@ -59,17 +65,24 @@ typedef struct holographyparameters holographyParameters;
  * that includes it, so the compiler won't complain when linking, I think?
  */
 static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
-  .res = 3.85E-6*100, 
-  .lambda = 532E-9*100,
-  .d = 0.45*100,
-  .deltaN = 1E23/(100*100*100.0),
-  .zPosition = 0.145*100,
+  .res = 3.85E-6*CM_ADJUST, 
+  .lambda = 532E-9*CM_ADJUST,
+  .d = 0.45*CM_ADJUST,
+  .deltaX = 0.000115*CM_ADJUST,
+  .deltaY = 0.000115*CM_ADJUST,
+  .zPosition = 0.145*CM_ADJUST,
+  .R_electrode = 0.100838*CM_ADJUST,
+  .deltaN = 1E23/pow(CM_ADJUST,3),
+  .c = 2.998E8*CM_ADJUST,
+  .e0 = 8.854e-12/pow(CM_ADJUST,3),
+  .q = 1.602e-19,
+  .me = 9.109E-31,
   .numRows = 4000,
   .numCols = 6016,
-  .xLL = 2531,
-  .yLL = 2437,
-  .xUR = 3356,
-  .yUR = 4349,
+  .xLL = 2858,
+  .yLL = 2876,
+  .xUR = 3696,
+  .yUR = 4583,
   .hyperbolicWin = 8,
   .sampleInterval = 10,
   .centroidNum = 10,
@@ -77,8 +90,6 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .boxCarSmoothWidth = 10,
   .unwrapThresh = 1.0*M_PI,
   .signTwin = 1,
-  .deltaX = 0.000115,
-  .deltaY = 0.000115,
   .debugPhase = 0,
   .debugPhaseColNum = 10,
   .debugPhaseRowNum = 61,
@@ -89,13 +100,12 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .plotColNum = 100,
   .saveLineIntPos = 1,
   .fileLineIntPos = "data/lineIntegratedPosition.dat",
-  .R_electrode = 0.100838,
   .rotateImage = 1,
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
-  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG"
+  .fileRef = "/home/webertr/DHI_Images/180417/180417046_Baseline.JPG",
+  .filePlasma = "/home/webertr/DHI_Images/180417/180417046.JPG"
 };
 
 /******************************************************************************

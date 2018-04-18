@@ -192,7 +192,50 @@ int plotImageData (gsl_matrix *mInput) {
   }
 
   fprintf(gnuplot, "set palette rgb 33,13,10\n");
-  fprintf(gnuplot, "plot 'data/temp.dat' binary matrix with image\n");
+  fprintf(gnuplot, "plot 'data/temp.dat' binary matrix with image title ''\n");
+
+  fflush(gnuplot);
+
+  /* Pausing before kill process that has gnuplot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  remove("data/temp.dat");
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotImageDataFile
+ * Inputs: char *
+ * Returns: int
+ * Description: This will plot an image from a passed file. It uses popen
+ * which calls gnuplot in the shell in a seperate process, then pipes that
+ * back to the parent process, and in gnuplot, it will open this binary file.
+ ******************************************************************************/
+
+int plotImageDataFile(char *fileName, char *plotOptions) {
+
+  int status;
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf (stderr,
+	     "incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "set palette rgb 33,13,10\n");
+  fprintf(gnuplot, "%s\n", plotOptions);
+  fprintf(gnuplot, "plot '%s' binary matrix with image title ''\n", fileName);
 
   fflush(gnuplot);
 

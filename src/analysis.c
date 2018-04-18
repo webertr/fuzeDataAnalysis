@@ -25,6 +25,8 @@ int hologramAnalysis() {
   /* Obtained line integrated data and do an abel inversion */
   hologramMain(&param);
 
+  plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
+  
   return 0;
 
 }
@@ -423,6 +425,7 @@ int plotDHIApril2018Talk() {
   fprintf(fp, "set output 'data/dhiData.png'\n");
   fprintf(fp, "set xrange[14.1:14.9]\n");
   fprintf(fp, "set yrange[-0.86:0.86]\n");
+  fprintf(fp, "set size ratio -1\n");  
   fprintf(fp, "set title 'Line integrated n_{e} for pulse 180215012' font 'Times Bold, 24'\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
   fprintf(fp, "set xlabel 'Axial Position (cm)' font 'Times Bold,20' offset 0,0\n");
