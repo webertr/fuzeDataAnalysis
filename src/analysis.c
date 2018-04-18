@@ -261,19 +261,27 @@ int plotModeApril2018Talk() {
   int shotNumber = 180222040,
     status;
 
-  char *gnuPlotFile = "script/temp.sh",
-    *modeFile = "data/mode.txt";
+  int sigSize = getSignalLengthMDSplus("\\b_p35_000_sm", shotNumber);
 
+  /* Declaring variables */
+  gsl_vector *pinch = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  char *gnuPlotFile = "script/temp.sh",
+    *modeFile = "data/mode.txt",
+    *pinchFile = "data/pinch.txt";
 
   
-
   /* Getting data */
   gsl_matrix *azimuthArray = getAzimuthalArrayP15(shotNumber);
+  getAzimuthalArrayModes(azimuthArray);
+  initializeMagneticDataAndTime(shotNumber, "\\b_p35_000_sm", pinch, time);
 
   
 
   /* Saving data */
   saveMatrixData(azimuthArray, modeFile);
+  save2VectorData(time, pinch, pinchFile);
 
 
   
@@ -294,20 +302,21 @@ int plotModeApril2018Talk() {
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   //fprintf(fp, "set terminal png\n");
   //fprintf(fp, "set output 'data/accel180223035'\n");
-  fprintf(fp, "set xrange[0:40]\n");
+  fprintf(fp, "set xrange[15:45]\n");
+  fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set title 'Normalized mode data for pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using (($1+14E-6)*1E6):($2) with line lw 3 lc rgb 'black' \
-title 'z = 15cm, 0 Deg.',\\\n", modeFile);
-  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($3) with line lw 3 lc rgb 'red' \
-title 'z = 15cm, 45 Deg.',\\\n", modeFile);
-  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($4) with line lw 3 lc rgb 'blue' \
-title 'z = 15cm, 90 Deg.',\\\n", modeFile);
-  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($5) with line lw 3 lc rgb 'yellow' \
-title 'z = 15cm, 135 Deg.'\n", modeFile);
+  fprintf(fp, "set ylabel 'Normalized mode' font ',16' offset 0,0\n");
+    fprintf(fp, "set y2tics nomirror tc lt 2\n");
+  fprintf(fp, "set y2label 'Pinch Current (kA)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using (($1+14E-6)*1E6):($3) with line lw 3 lc rgb 'black' \
+title 'z = 15cm, m=1',\\\n", modeFile);
+  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($4) with line lw 3 lc rgb 'red' \
+title 'z = 15cm, m=2',\\\n", modeFile);
+  fprintf(fp, "     '%s' using (($1+14E-6)*1E6):($2) with line lw 3 lc rgb 'yellow' \
+title 'Pinch Current' axes x1y2\n", pinchFile);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

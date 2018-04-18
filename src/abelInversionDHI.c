@@ -1,4 +1,4 @@
-#include "imageAnalysisDHI.h"
+#include "abelInversionDHI.h"
 
 void saveVectorTest(gsl_vector *vecIn, char *fileName);
 
@@ -45,13 +45,6 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
    * is represented by a single column
    */
   for (jj = 0; jj < numCols; jj++) {
-
-    /* 
-     * vector of the column of the primary matrix that will hold the 
-     * radial density profile
-     */
-    gsl_matrix_get_col(leftCrossSection, leftDensityProfile, jj);
-    gsl_matrix_get_col(rightCrossSection, rightDensityProfile, jj);
 
     /* The cross section of the image */
     gsl_matrix_get_col(crossSection, imageM, jj);
@@ -204,21 +197,11 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
     rightSize,
     sizeTot,
     minRightSize,
-    minLeftSize,
-    minCentroidIndex;
+    minLeftSize;
 
   double checkSum,
     minCheckSum = DBL_MAX,             // Minimum Check sum value. Set to max double
-    val1,
-    vecMin;
-  
-  gsl_matrix_view leftProjectMatrix, // Sub-matrix view of left inversion matrix
-    rightProjectMatrix;              // Sub-matrix view of right inversion matrix
-
-  gsl_vector_view leftTruncated,       // Truncated left line-integrated profile
-    rightTruncated,                    // Truncated right line-integrated profile
-    leftTruncatedProfile,              // Truncated left radial density profile
-    rightTruncatedProfile;             // Truncated right radial density profile
+    val1;
 
   /*
    * This for loop will go through and try a plasma center at a number of
@@ -228,58 +211,7 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
 
     leftSize = centroidIndexTest+1;
     rightSize = numRows-(centroidIndexTest+1);
-
-    /*
-     * These will be used to copy the line-integrated vectors so we don't modify the
-     * original data. Must create a new one for each loop. Will free at the end of loop.
-     */
-    gsl_vector *leftTruncatedCopy = gsl_vector_alloc(leftSize);
-    gsl_vector *rightTruncatedCopy = gsl_vector_alloc(rightSize);
-
-    /*
-     * This takes the appropriate subset of the vector for both the left and right
-     * line-integrated density profiles
-     * Access pointer vector with &name.vector
-     */
-    leftTruncated = gsl_vector_subvector(crossSection, centroidIndexTest+1-leftSize, leftSize);
-    rightTruncated = gsl_vector_subvector(crossSection, centroidIndexTest+1, rightSize);
-
-    /* 
-     * Copying these vectors so we don't overwrite line integrated data 
-     */
-    gsl_vector_memcpy(leftTruncatedCopy, &leftTruncated.vector);
-    gsl_vector_memcpy(rightTruncatedCopy, &rightTruncated.vector);
-
-    /*
-     * This subtracts the minimum value for each left and right profile
-     */
-    vecMin = gsl_vector_min(leftTruncatedCopy);
-    gsl_vector_add_constant(leftTruncatedCopy, -vecMin);
-    vecMin = gsl_vector_min(rightTruncatedCopy);
-    gsl_vector_add_constant(rightTruncatedCopy, -vecMin);
-
-    /* 
-     * This will be the density profile 
-     * This is the truncated left/rightCrossSection vector, which is a pointer to a
-     * column in the den_num_l/r matrix which will hold the final radial profile values
-     * Accesss with &leftTruncatedProfile.vector.
-     * The left vector will get flipped by the left inversion matrix.
-     */
-    leftTruncatedProfile  = gsl_vector_subvector(leftCrossSection, 0, leftSize);
-    rightTruncatedProfile = gsl_vector_subvector(rightCrossSection, 0, rightSize);
     
-    /* 
-     * Taking a sub matrix of the matrix which will project to the line integrated density
-     * from the radial density profile
-     * &leftInversionMatrix.matrix to give you a matrix pointer.
-     * First two parameters specify upper left component of matrix, then next
-     * are the sizes
-     */
-    leftProjectMatrix  = gsl_matrix_submatrix(projectMatrix, 0, 0, 
-					      leftSize, leftSize);
-    rightProjectMatrix = gsl_matrix_submatrix(projectMatrix, 0, 0, 
-					      rightSize, rightSize);
-
     /*
      * Solves the linear system of equations that is,
      * a = M x b
@@ -287,11 +219,9 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
      * b is the radial density profile, and M is the matrix 
      * that projects the radial density onto the line integrated density profile
      */
-    solveRightSystemLinearEq(&rightProjectMatrix.matrix, rightTruncatedCopy,
-			     &rightTruncatedProfile.vector);
+    solveRightSystemLinearEq(projectMatrix, crossSection, rightCrossSection, rightSize);
 
-    solveLeftSystemLinearEq(&leftProjectMatrix.matrix, leftTruncatedCopy,
-			     &leftTruncatedProfile.vector);
+    solveLeftSystemLinearEq(projectMatrix, crossSection, leftCrossSection, leftSize);
 
 
     /* 
@@ -304,13 +234,11 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
      */
     if (leftSize > rightSize) {
       sizeTot = rightSize;
-      findDensityOffset(&rightTruncatedProfile.vector, 
-      			&leftTruncatedProfile.vector, param);
+      findDensityOffset(rightCrossSection, leftCrossSection, param);
     }
     else {
       sizeTot = leftSize;
-      findDensityOffset(&leftTruncatedProfile.vector, 
-      			&rightTruncatedProfile.vector, param);
+      findDensityOffset(leftCrossSection, rightCrossSection, param);
     }
 
     /* Zeroing check sum value */
@@ -323,8 +251,7 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
      */
     for (jj = 0; jj < sizeTot; jj++) {
 
-      val1 = gsl_vector_get(&rightTruncatedProfile.vector, jj) -
-	gsl_vector_get(&leftTruncatedProfile.vector, jj);
+      val1 = gsl_vector_get(rightCrossSection, jj) - gsl_vector_get(leftCrossSection, jj);
       checkSum = checkSum + gsl_pow_2(val1);
 	
     }    
@@ -334,7 +261,6 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
      */
     if (checkSum < minCheckSum) {
 
-      minCentroidIndex = centroidIndexTest;
       minCheckSum = checkSum;
       minLeftSize = leftSize;
       minRightSize = rightSize;
@@ -344,53 +270,8 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
     /* Iterating the centroid value to to prepare for next loop iteration */
     centroidIndexTest = centroidIndexTest + 1;
 
-    /* Freeing vectors no longer needed. Will be created again in next loop iteration */
-    gsl_vector_free(leftTruncatedCopy);
-    gsl_vector_free(rightTruncatedCopy);
-
   }
 
-  /*
-   * Now you have found that minCentroidIndex is the best value, and the size is
-   * minSize. So you just have to do one more operation to put those values back
-   * in. To see what this is doing, see the above loop.
-   */
-  gsl_vector *leftTruncatedCopy = gsl_vector_alloc(minLeftSize);
-  gsl_vector *rightTruncatedCopy = gsl_vector_alloc(minRightSize);
-
-  leftTruncated = gsl_vector_subvector(crossSection, minCentroidIndex+1-minLeftSize, minLeftSize);
-  rightTruncated = gsl_vector_subvector(crossSection, minCentroidIndex+1, minRightSize);
-
-  gsl_vector_memcpy(leftTruncatedCopy, &leftTruncated.vector);
-  gsl_vector_memcpy(rightTruncatedCopy, &rightTruncated.vector);
-    
-  vecMin = gsl_vector_min(leftTruncatedCopy);
-  gsl_vector_add_constant(leftTruncatedCopy, -vecMin);
-  vecMin = gsl_vector_min(rightTruncatedCopy);
-  gsl_vector_add_constant(rightTruncatedCopy, -vecMin);
-
-  
-  leftTruncatedProfile  = gsl_vector_subvector(leftCrossSection, 0, minLeftSize);
-  rightTruncatedProfile = gsl_vector_subvector(rightCrossSection, 0, minRightSize);
-
-  leftProjectMatrix  = gsl_matrix_submatrix(projectMatrix, 0, 0, 
-					    minLeftSize, minLeftSize);
-  rightProjectMatrix = gsl_matrix_submatrix(projectMatrix, 0, 0, 
-					    minRightSize, minRightSize);
-
-  solveRightSystemLinearEq(&rightProjectMatrix.matrix, rightTruncatedCopy,
-			   &rightTruncatedProfile.vector);
-  solveLeftSystemLinearEq(&leftProjectMatrix.matrix, leftTruncatedCopy,
-			  &leftTruncatedProfile.vector);
-
-  if (minLeftSize > minRightSize) {
-    findDensityOffset(&rightTruncatedProfile.vector, 
-		      &leftTruncatedProfile.vector, param);
-  }
-  else if (minLeftSize < minRightSize) {
-    findDensityOffset(&leftTruncatedProfile.vector, 
-    		      &rightTruncatedProfile.vector, param);
-  }
 
   /* 
    * Then just zero out everything else in the vector in case it was written to
@@ -407,12 +288,6 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
     
   }
 
-  /* Freeing created vectors */
-  gsl_vector_free(leftTruncatedCopy);
-  gsl_vector_free(rightTruncatedCopy);
-
-  /* Setting centroid location */
-  gsl_vector_set(centroidLocation, colNumber, minCentroidIndex);
 
   return 0;
 
@@ -658,8 +533,8 @@ int findDensityOffset(gsl_vector* smallCrossSection, gsl_vector* largeCrossSecti
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput,
-			     gsl_vector* vOutput) {
+int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
+			     int rightSize) {
 
   int ii,
     jj,
@@ -732,8 +607,8 @@ int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput,
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput,
-			    gsl_vector* vOutput) {
+int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
+			    int leftSize) {
 
   int ii,
     jj,

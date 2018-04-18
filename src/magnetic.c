@@ -337,7 +337,9 @@ int getSignalLengthMDSplus(const char *signal, int shotNumber) {
  * Inputs: int
  * Returns: gsl_matrix
  * Description: Returns a matrix of the 8 azimuthal array of magnetic probes
- * at p15 in the fuze machine with time at the end
+ * at p15 in the fuze machine with time at the end. First column is the time
+ * values, next 8 are the 8 azimuthal probes. Going down the rows represent
+ * moving forward in time.
  ******************************************************************************/
 
 gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
@@ -359,14 +361,14 @@ gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
 
 
   /* Geting Data */
-  initializeMagneticDataAndTime(shotNumber, "\\b_p15_000", p15_000, time);
-  initializeMagneticData(shotNumber, "\\b_p15_045", p15_045);
-  initializeMagneticData(shotNumber, "\\b_p15_090", p15_090);
-  initializeMagneticData(shotNumber, "\\b_p15_135", p15_135);
-  initializeMagneticData(shotNumber, "\\b_p15_180", p15_180);
-  initializeMagneticData(shotNumber, "\\b_p15_225", p15_225);
-  initializeMagneticData(shotNumber, "\\b_p15_270", p15_270);
-  initializeMagneticData(shotNumber, "\\b_p15_315", p15_315);
+  initializeMagneticDataAndTime(shotNumber, "\\b_p15_000_sm", p15_000, time);
+  initializeMagneticData(shotNumber, "\\b_p15_045_sm", p15_045);
+  initializeMagneticData(shotNumber, "\\b_p15_090_sm", p15_090);
+  initializeMagneticData(shotNumber, "\\b_p15_135_sm", p15_135);
+  initializeMagneticData(shotNumber, "\\b_p15_180_sm", p15_180);
+  initializeMagneticData(shotNumber, "\\b_p15_225_sm", p15_225);
+  initializeMagneticData(shotNumber, "\\b_p15_270_sm", p15_270);
+  initializeMagneticData(shotNumber, "\\b_p15_315_sm", p15_315);
   
   gsl_matrix_set_col(azimuthArray, 0, time);
   gsl_matrix_set_col(azimuthArray, 1, p15_000);
@@ -393,5 +395,53 @@ gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
 
   
   return azimuthArray;
+
+}
+
+
+/******************************************************************************
+ * Function: getAzimuthalArrayModes
+ * Inputs: gsl_matrix *
+ * Returns: int
+ * Description: Receives a matrix that has 9 columns, the first being the time
+ * value, and the next 8 being the 8 different azimuthal magnetic probe data
+ * This function will calculate the m = 1, 2 and 3 modes, and overwrite them
+ * into the old matrix: the first being the time, and the next
+ * 3 being the modes m = 1, 2 and 3.
+ ******************************************************************************/
+
+int getAzimuthalArrayModes(gsl_matrix *mIn) {
+
+  int ii,
+    numRows = mIn->size1,
+    numCols = mIn->size2;
+
+  double *data;
+  
+  gsl_fft_real_wavetable * wavetableCols;
+  gsl_fft_real_workspace * workspaceCols;
+
+  wavetableCols = gsl_fft_real_wavetable_alloc(numCols - 1);
+  workspaceCols = gsl_fft_real_workspace_alloc(numCols - 1);
+
+  /* 
+   * 1D FFT of each row, stride = 1 
+   */
+  for (ii = 0; ii < numRows; ii++) {
+
+    data = &(mIn->data[ii*numCols+1]);
+    gsl_fft_real_transform(data, 1, (size_t) numCols - 1, wavetableCols, workspaceCols);
+    data = &(mIn->data[ii*numCols+1]);
+    data[1] = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))/data[0];
+    data[2] = sqrt(gsl_pow_2(data[3]) + gsl_pow_2(data[4]))/data[0];
+    data[3] = sqrt(gsl_pow_2(data[5]) + gsl_pow_2(data[6]))/data[0];
+    
+  }
+
+
+  gsl_fft_real_wavetable_free(wavetableCols);
+  gsl_fft_real_workspace_free(workspaceCols);
+
+  return 0;
 
 }

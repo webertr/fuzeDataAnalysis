@@ -20,11 +20,18 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include <gsl/gsl_sf_exp.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_fft_real.h>
+#include <gsl/gsl_fft_halfcomplex.h>
+
 
 #include "plot.h"
 #include "imageAnalysisDHI.h"
+#include "abelInversionDHI.h"
 #include "magnetic.h"
 #include "plasmaParam.h"
+#include "holoParam.h"
+
 
 int testBoxCarSmooth();
 int unwrapTest();
@@ -52,5 +59,7 @@ int testGetMaxIndexComplex(gsl_vector_complex *vIn);
 int testMagneticData();
 int testPlotImageData();
 int testPlasmaParam();
+int testRealFFT();
+
 
 #endif

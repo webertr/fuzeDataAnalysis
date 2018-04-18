@@ -965,3 +965,54 @@ int testModifyJPEG() {
   return 0;
 
 }
+
+
+int testRealFFT() {
+  
+  int i, n = 100;
+  double data[n];
+
+  gsl_matrix *testData = gsl_matrix_alloc(1, n+1);
+  
+  gsl_fft_real_wavetable * real;
+  gsl_fft_real_workspace * work;
+
+  for (i = 0; i < n; i++)
+    {
+      data[i] = 0.0;
+      gsl_matrix_set(testData, 0, i+1, 0.0);
+    }
+
+  for (i = n / 3; i < 2 * n / 3; i++)
+    {
+      data[i] = 1.0;
+      gsl_matrix_set(testData, 0, i+1, 1.0);
+    }
+
+  work = gsl_fft_real_workspace_alloc (n);
+  real = gsl_fft_real_wavetable_alloc (n);
+
+  gsl_fft_real_transform (data, 1, n, real, work);
+
+  for (i = 0; i < n; i++)
+    {
+      
+    }
+  printf ("\n");
+
+
+  gsl_fft_real_workspace_free (work);
+
+  gsl_matrix_set(testData, 0, 0, 0.0);
+  
+  getAzimuthalArrayModes(testData);
+
+  for (i = 0; i < n-1; i++)
+    {
+      printf("%d: %g \t\t%g\n", i, gsl_matrix_get(testData, 0, i+1), data[i]);
+    }
+
+
+  return 0;
+
+}

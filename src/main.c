@@ -4,6 +4,7 @@
 #include "imageAnalysisDHI.h"
 #include "testing.h"
 #include "analysis.h"
+#include "holoParam.h"
 
 
 /******************************************************************************
@@ -67,6 +68,11 @@ int main(int argc, char *argv[]) {
    * Plotting mode data for talk
    */
   plotModeApril2018Talk();
+
+  /*
+   * Testing real FFT
+   */
+  //testRealFFT();
   
   return 0;
 

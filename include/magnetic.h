@@ -19,7 +19,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
+#include <gsl/gsl_fft_real.h>
+
 #include "plot.h"
+
 
 int initializeMagneticDataAndTime(int shotNumber, char *nodeName, gsl_vector *data,
 				  gsl_vector *time);
@@ -27,5 +30,7 @@ int saveVectorData(gsl_vector *xVec, gsl_vector *yVec, char *fileName);
 int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector *data);
 int getSignalLengthMDSplus(const char *signal, int shotNumber);
 gsl_matrix *getAzimuthalArrayP15(int shotNumber);
+int getAzimuthalArrayModes(gsl_matrix *mIn);
+
 
 #endif
