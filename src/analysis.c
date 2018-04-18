@@ -381,7 +381,6 @@ title 'Pinch Current' axes x1y2\n", modeFile);
 
 
 
-
 /******************************************************************************
  * Function: plotDHIApril2018Talk
  * Inputs: int
@@ -435,6 +434,84 @@ int plotDHIApril2018Talk() {
   fprintf(fp, "set ylabel 'Impact Parameter (cm)' font 'Times Bold,20' offset 0,0\n\n");
   fprintf(fp, "show title\n");
   fprintf(fp, "plot 'data/lineIntegratedPosition.dat' binary matrix with image title ''\n");
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+
+  
+  return 0;
+
+
+}
+
+
+/******************************************************************************
+ * Function: plotSpecApril2018Talk
+ * Inputs: int
+ * Returns: int
+ * Description: This will use gnu plot to plot for spectroscoy data
+ * for a talk that I'm giving on April 28th, 2018
+ ******************************************************************************/
+
+int plotSpecApril2018Talk() {
+
+  int status;
+
+  char *gnuPlotFile = "script/temp.sh";
+  
+  saveLightFieldImageWithWavelength("/home/webertr/Spectroscopy/Data/180222/180222  036.spe",
+				    "data/lightField.dat");
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set palette rgb 33,13,10\n");
+  //fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
+  //fprintf(fp, "set output 'data/dhiData.png'\n");
+  fprintf(fp, "set size ratio -1\n");
+  fprintf(fp, "set title 'Pulse 180222036' font 'Times Bold, 20'\n");
+  fprintf(fp, "show title\n");
+  fprintf(fp, "plot 'data/lightField.dat' binary matrix with image title ''\n");
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

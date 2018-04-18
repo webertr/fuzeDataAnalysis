@@ -3,6 +3,20 @@
 /* Char buffer to write xml */
 #define MAX_BUFFER 1000
  
+/******************************************************************************
+ * Example Usage:
+ *
+ * int test() {
+ *
+ * plotLightFieldImageWithWavelength("/home/webertr/Spectroscopy/Data/171212/171212  020.spe");
+ *
+ * return 0;
+ *
+ *}
+ *
+ ******************************************************************************/
+
+
 
 /******************************************************************************
  * Function: xmlParserSPE
@@ -382,24 +396,22 @@ int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileNa
 
 
 /******************************************************************************
- * Function: plotLightFieldImageWithWavelength
+ * Function: saveLightFieldImageWithWavelength
  * Inputs: char *fileName
  * Returns: int
- * Description: This will plot the image in an SPE file with the wavelength
+ * Description: This will save the image in an SPE file with the wavelength
  ******************************************************************************/
 
-int plotLightFieldImageWithWavelength(char *fileName) {
+int saveLightFieldImageWithWavelength(char *speFile, char *saveFile) {
 
   lightFieldData dataStruct = LIGHT_FIELD_DATA_DEFAULT;
 
-  getLightFieldData(&dataStruct, fileName);
+  getLightFieldData(&dataStruct, speFile);
 
-  saveImageWithWavelength(dataStruct.image, dataStruct.waveLengthVector, "data/imageWV.dat");
+  saveImageWithWavelength(dataStruct.image, dataStruct.waveLengthVector, saveFile);
 
   gsl_matrix_free(dataStruct.image);
   gsl_vector_free(dataStruct.waveLengthVector);
-
-  system("script/plot_image_wavelength.sh");
 
   return 0;
 

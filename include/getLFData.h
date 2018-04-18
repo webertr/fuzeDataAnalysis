@@ -41,6 +41,6 @@ static const lightFieldData LIGHT_FIELD_DATA_DEFAULT = {
 int getLightFieldData(lightFieldData *dataStruct, char *fileName);
 int xmlParserSPE(char *fileName, float *dataArray, int dim);
 int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileName);
-int plotLightFieldImageWithWavelength(char *fileName);
+int saveLightFieldImageWithWavelength(char *speFile, char *saveFile);
 
 #endif
