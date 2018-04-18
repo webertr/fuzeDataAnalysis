@@ -24,6 +24,43 @@
  * Description: Returns 1 if OK, 0 otherwise. Status is OK if the LSB is set.
  ******************************************************************************/
 
+static char *replaceWord(const char *s, const char *oldW, const char *newW) {
+
+  char *result;
+  int i, cnt = 0;
+  int newWlen = strlen(newW);
+  int oldWlen = strlen(oldW);
+ 
+  // Counting the number of times old word
+  // occur in the string
+  for (i = 0; s[i] != '\0'; i++) {
+    if (strstr(&s[i], oldW) == &s[i]) {
+      cnt++;
+ 
+      // Jumping to index after the old word.
+      i += oldWlen - 1;
+    }
+  }
+ 
+  // Making new string of enough length
+  result = (char *)malloc(i + cnt * (newWlen - oldWlen) + 1);
+ 
+  i = 0;
+  while (*s) {
+    
+    // compare the substring with the result
+    if (strstr(s, oldW) == s) {
+      strcpy(&result[i], newW);
+      i += newWlen;
+      s += oldWlen;
+    } else
+      result[i++] = *s++;
+  }
+ 
+  result[i] = '\0';
+  return result;
+}
+
 static int status_ok( int status ) {
 
   return ( (status & 1) == 1 );
@@ -342,7 +379,7 @@ int getSignalLengthMDSplus(const char *signal, int shotNumber) {
  * moving forward in time.
  ******************************************************************************/
 
-gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
+gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName) {
   
   int sigSize = getSignalLengthMDSplus("\\b_p15_000", shotNumber);
   
@@ -359,16 +396,24 @@ gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
     *p15_270 = gsl_vector_alloc(sigSize),
     *p15_315 = gsl_vector_alloc(sigSize);
 
+  char *nodeName0 = nodeName,
+    *nodeName45 = replaceWord(nodeName, "000", "045"),
+    *nodeName90 = replaceWord(nodeName, "000", "090"),
+    *nodeName135 = replaceWord(nodeName, "000", "135"),
+    *nodeName180 = replaceWord(nodeName, "000", "180"),
+    *nodeName225 = replaceWord(nodeName, "000", "225"),
+    *nodeName270 = replaceWord(nodeName, "000", "270"),
+    *nodeName315 = replaceWord(nodeName, "000", "315");
 
   /* Geting Data */
-  initializeMagneticDataAndTime(shotNumber, "\\b_p15_000_sm", p15_000, time);
-  initializeMagneticData(shotNumber, "\\b_p15_045_sm", p15_045);
-  initializeMagneticData(shotNumber, "\\b_p15_090_sm", p15_090);
-  initializeMagneticData(shotNumber, "\\b_p15_135_sm", p15_135);
-  initializeMagneticData(shotNumber, "\\b_p15_180_sm", p15_180);
-  initializeMagneticData(shotNumber, "\\b_p15_225_sm", p15_225);
-  initializeMagneticData(shotNumber, "\\b_p15_270_sm", p15_270);
-  initializeMagneticData(shotNumber, "\\b_p15_315_sm", p15_315);
+  initializeMagneticDataAndTime(shotNumber, nodeName0, p15_000, time);
+  initializeMagneticData(shotNumber, nodeName45, p15_045);
+  initializeMagneticData(shotNumber, nodeName90, p15_090);
+  initializeMagneticData(shotNumber, nodeName135, p15_135);
+  initializeMagneticData(shotNumber, nodeName180, p15_180);
+  initializeMagneticData(shotNumber, nodeName225, p15_225);
+  initializeMagneticData(shotNumber, nodeName270, p15_270);
+  initializeMagneticData(shotNumber, nodeName315, p15_315);
   
   gsl_matrix_set_col(azimuthArray, 0, time);
   gsl_matrix_set_col(azimuthArray, 1, p15_000);
@@ -405,9 +450,11 @@ gsl_matrix *getAzimuthalArrayP15(int shotNumber) {
  * Returns: int
  * Description: Receives a matrix that has 9 columns, the first being the time
  * value, and the next 8 being the 8 different azimuthal magnetic probe data
- * This function will calculate the m = 1, 2 and 3 modes, and overwrite them
- * into the old matrix: the first being the time, and the next
- * 3 being the modes m = 1, 2 and 3.
+ * This function will calculate the normalized m = 0, 1, 2 and 3 modes, and 
+ * overwrite them into the old matrix: the first being the time, and the next
+ * 4 being the modes m = 0, 1, 2 and 3 all divided by the m = 0 mode
+ * Power gets divided between the positive and negative frequcnes, so you
+ * should be off by a factor of 2 for the amplitude
  ******************************************************************************/
 
 int getAzimuthalArrayModes(gsl_matrix *mIn) {
@@ -416,7 +463,8 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
     numRows = mIn->size1,
     numCols = mIn->size2;
 
-  double *data;
+  double *data,
+    norm;
   
   gsl_fft_real_wavetable * wavetableCols;
   gsl_fft_real_workspace * workspaceCols;
@@ -426,15 +474,18 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
 
   /* 
    * 1D FFT of each row, stride = 1 
+   * Dividide by n and multiply by two to get the amplitude
    */
   for (ii = 0; ii < numRows; ii++) {
 
     data = &(mIn->data[ii*numCols+1]);
     gsl_fft_real_transform(data, 1, (size_t) numCols - 1, wavetableCols, workspaceCols);
     data = &(mIn->data[ii*numCols+1]);
-    data[1] = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))/data[0];
-    data[2] = sqrt(gsl_pow_2(data[3]) + gsl_pow_2(data[4]))/data[0];
-    data[3] = sqrt(gsl_pow_2(data[5]) + gsl_pow_2(data[6]))/data[0];
+    data[0] = data[0]/8;
+    norm = 2/8.0/data[0];
+    data[1] = sqrt(gsl_pow_2(data[8]) + gsl_pow_2(data[2]))*norm;
+    data[2] = sqrt(gsl_pow_2(data[3]) + gsl_pow_2(data[4]))*norm;
+    data[3] = sqrt(gsl_pow_2(data[5]) + gsl_pow_2(data[6]))*norm;
     
   }
 

@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing real FFT
    */
-  //testRealFFT();
+  //testAziMode();
   
   return 0;
 

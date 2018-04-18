@@ -23,7 +23,7 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
-
+#include <gsl/gsl_sf_trig.h>
 
 #include "plot.h"
 #include "imageAnalysisDHI.h"
@@ -60,6 +60,7 @@ int testMagneticData();
 int testPlotImageData();
 int testPlasmaParam();
 int testRealFFT();
+int testAziMode();
 
 
 #endif

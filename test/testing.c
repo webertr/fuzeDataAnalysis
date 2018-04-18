@@ -1016,3 +1016,51 @@ int testRealFFT() {
   return 0;
 
 }
+
+
+int testAziMode() {
+  
+  int ii, n = 8;
+  double data[n];
+  double val;
+
+  gsl_matrix *testData = gsl_matrix_alloc(1, n+1);
+
+  double m0 = 3.4,
+    m1 = 1.4,
+    m2 = 0,
+    m3 = 1.8;
+  
+  for (ii = 0; ii < n; ii++) {
+
+    val = m0 +m1*gsl_sf_sin(1*ii*2*M_PI/8)+m2*gsl_sf_sin(2*ii*2*M_PI/8)+m3*gsl_sf_sin(3*ii*2*M_PI/8);
+    data[ii] = val;
+    gsl_matrix_set(testData, 0, ii+1, val);
+    //printf("Value for %d: %g\n", ii, val);
+
+  }
+    
+  getAzimuthalArrayModes(testData);
+
+  printf("m = 0: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 1), m0);
+  printf("m = 1: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 2), m1/m0);
+  printf("m = 2: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 3), m2/m0);
+  printf("m = 3: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 4), m3/m0);
+
+  gsl_fft_real_wavetable * real;
+  gsl_fft_real_workspace * work;
+
+  work = gsl_fft_real_workspace_alloc (n);
+  real = gsl_fft_real_wavetable_alloc (n);
+
+  gsl_fft_real_transform (data, 1, n, real, work);
+
+  for (ii = 0; ii < n; ii++) {
+    //printf("Data[%d]: %g\n", ii, data[ii]);
+  }
+
+  gsl_fft_real_workspace_free (work);
+  
+  return 0;
+
+}
