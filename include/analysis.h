@@ -21,5 +21,7 @@ int plotPostShotData(int shotNumber);
 int plotIPApril2018Talk(int shotNumber);
 int plotAccelApril2018Talk();
 int plotModeApril2018Talk();
+int plotDHIApril2018Talk();
+int hologramAnalysis();
 
 #endif

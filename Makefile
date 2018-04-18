@@ -2,6 +2,8 @@ CC = gcc
 INCL = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS = -g -Wall
 LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
+HEADERS = include/holoParam.h \
+	include/imageAnalysisDHI.h
 
 SOURCE = src/magnetic.c \
 	src/main.c \
@@ -19,7 +21,7 @@ PROD = run
 
 all: $(PROD)
 
-run: $(SOURCE)
+run: $(SOURCE) $(HEADERS)
 	$(CC) $(FLAGS) $(INCL) \
 	$(SOURCE) $(LIBRY) -o $(PROD)
 

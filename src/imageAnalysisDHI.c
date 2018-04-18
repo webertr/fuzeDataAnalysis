@@ -3,48 +3,16 @@
 /******************************************************************************
  * Example Usage:
  *
+ * int test() {
+ *
  * holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
  *
- * param.res = 3.85E-6;             // CCD Resolution
- * param.lambda = 532E-9;           // Wavelength of laser
- * param.d = 0.37;                  // Reconstruction distance
- * param.deltaN = 1E23;             // Density offset delta for inversion
- * param.hyperbolicWin = 8;         // Hyperbolic window parameter
- * param.sampleInterval = 10;       // Sampling interval of line-integrated density 
- * param.centroidNum = 10;          // number of centroids to vary +/- around maximum (10)
- * param.offsetIter = 10;           // Number of offset iterations (15)
- * param.boxCarSmoothWidth = 10;    // Width of box car smoothing on phase
- * param.unwrapThresh = 1.0*M_PI;   // Threshold to trigger the phase unwrapping
- * param.signTwin = 1;              // Sign to density conversion +/-1. Depends on laser setup (-1)
- * param.debugPhase = 0;            // 1 means save and plot a col profile of phase 
- * param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
- * param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
- * param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
- * param.invertImage = 0;           // 1 means to invert the image.
- * param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice throu
- * param.plotColNum = 20;          // Column number to plot for the inverted radial profile and a 
- * param.plotLineIntegrated = 1;    // 1 means to plot the line integrated data
- * param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
- * param.plotRawHologramRow = 100;  // 1 means it will plot a row of the raw hologram
- * param.plotRawHologramCol = 100;  // 1 means it will plot a column of the raw hologram
- * param.plotTwinImage = 0;         // 1 means it will plot a column of the twin image  
- * param.rotateImage = 1;           // 1 means to rotate the image by 90 degrees CW
- * param.flipImageRows = 0;         // 1 means to flip the rows 0 <-> end index
- * param.flipImageCols = 0;         // 1 means to flip the cols 0 <-> end index
- * param.refSubtract = 1;           // 1 means to subtract the reference image
- * param.zPosition = .145;          // Z position of the hologram at the center of the image
- * char *filenameRef = "/home/fuze/DHI_Images/Calibration/DSC_0087.JPG";
- * char *filenamePlasma = "/home/fuze/DHI_Images/Calibration/DSC_0088.JPG";
+ * hologramMain(&param, "data/leftProfile.dat", "data/rightProfile.dat",
+ *		"data/centroidLocation.dat");
  *
- * param.xLL = 306;          // Lower left x pixel value of phase reconstruction
- * param.yLL = 1686;          // Lower left y pixel value of phase reconstruction
- * param.xUR = 1300;          // Upper right x pixel value of phase reconstruction
- * param.yUR = 3506;          // Upper right y pixel value of phase reconstruction
+ * return 0;
  *
- * hologramAnalysis(filenameRef, filenamePlasma, 
- *		   &param,
- *		   "data/leftProfile.dat", "data/rightProfile.dat",
- *		   "data/centroidLocation.dat");
+ *}
  *
  ******************************************************************************/
 
@@ -1685,21 +1653,19 @@ int save2DInvertedProfile (char *imageSave, char *fileLeftProfile, char* fileRig
 
 
 /******************************************************************************
- * Function: hologramAnalysis
- * Inputs: char *, char, char*, double, double, double, int, int
+ * Function: hologramMain
+ * Inputs: holographParameters*, char*, char*, char*
  * Returns: int
  * Description: This does the full hologram analysis of a hologram and saves the file
  * so you can look it at it in gnuplot.
  ******************************************************************************/
 
-int hologramAnalysis(char* baseFileName, char *plasmaFileName,
-		     holographyParameters* param,
-		     char* fileLeftProfile, char* fileRightProfile,
-		     char* fileCentroidLocation) {
+int hologramMain(holographyParameters* param, char* fileLeftProfile, char* fileRightProfile,
+		 char* fileCentroidLocation) {
 
   /* Reading in the jpeg file and getting cols/rows */
-  gsl_matrix* imagePlasma = readJPEGImage(plasmaFileName);
-  gsl_matrix* imageRef = readJPEGImage(baseFileName);
+  gsl_matrix* imagePlasma = readJPEGImage(param->filePlasma);
+  gsl_matrix* imageRef = readJPEGImage(param->fileRef);
 
   /* Rotating image by 90 degrees CW if specified */
   if (param->rotateImage == 1) {
@@ -1887,76 +1853,6 @@ int hologramAnalysis(char* baseFileName, char *plasmaFileName,
 
 }
 
-
-/******************************************************************************
- * Function: hologramAnalysis
- * Inputs: char *, char, char*, double, double, double, int, int
- * Returns: int
- * Description: This does the full hologram analysis of a hologram and saves the file
- * so you can look it at it in gnuplot.
- ******************************************************************************/
-
-int hologramMain() {
-
-  /* 
-   * struct containing all the holography parameters.
-   * Setting to default values.
-   */
-  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
-
-  param.res = 3.85E-6;             // CCD Resolution
-  param.lambda = 532E-9;           // Wavelength of laser
-  param.d = 0.37;                  // Reconstruction distance
-  param.deltaN = 1E23;             // Density offset delta for inversion
-  param.hyperbolicWin = 8;         // Hyperbolic window parameter
-  param.sampleInterval = 10;       // Sampling interval of line-integrated density 
-  param.centroidNum = 10;          // number of centroids to vary +/- around maximum (10)
-  param.offsetIter = 10;           // Number of offset iterations (15)
-  param.boxCarSmoothWidth = 10;    // Width of box car smoothing on phase
-  param.unwrapThresh = 1.0*M_PI;   // Threshold to trigger the phase unwrapping
-  param.signTwin = 1;              // Sign to density conversion +/-1. Depends on laser setup (-1)
-  param.debugPhase = 0;            // 1 means save and plot a col profile of phase 
-                                   // and unwrapped phase
-  param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
-  param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
-  param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
-  param.invertImage = 0;           // 1 means to invert the image.
-  param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice through
-                                   // the line integrated image (at plotColNum)
-  param.plotColNum = 20;          // Column number to plot for the inverted radial profile and a 
-                                   // slice of line integrated data
-  param.plotLineIntegrated = 1;    // 1 means to plot the line integrated data
-  param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
-  param.plotRawHologramRow = 100;  // 1 means it will plot a row of the raw hologram
-  param.plotRawHologramCol = 100;  // 1 means it will plot a column of the raw hologram
-  param.plotTwinImage = 0;         // 1 means it will plot a column of the twin image  
-  param.rotateImage = 1;           // 1 means to rotate the image by 90 degrees CW
-  param.flipImageRows = 0;         // 1 means to flip the rows 0 <-> end index
-  param.flipImageCols = 0;         // 1 means to flip the cols 0 <-> end index
-  param.refSubtract = 1;           // 1 means to subtract the reference image
-  param.zPosition = .145;          // Z position of the hologram at the center of the image
-
-  /******** Holography Analysis *************/
-
-  char *filenameRef = "/home/webertr/DHI_Images/180417/180417004.JPG";
-  char *filenamePlasma = "/home/webertr/DHI_Images/180417/180417004_Baseline.JPG";
-
-  /* Setting bounds of reconstructed image */
-  param.xLL = 2758;          // Lower left x pixel value of phase reconstruction
-  param.yLL = 2733;          // Lower left y pixel value of phase reconstruction
-  param.xUR = 3771;          // Upper right x pixel value of phase reconstruction
-  param.yUR = 4797;          // Upper right y pixel value of phase reconstruction
-
-
-  /* Obtained line integrated data and do an abel inversion */
-  hologramAnalysis(filenameRef, filenamePlasma, 
-		   &param,
-		   "data/leftProfile.dat", "data/rightProfile.dat",
-		   "data/centroidLocation.dat");
-
-  return 0;
-
-}
 
 /*
  * Holography Parameters:

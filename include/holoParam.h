@@ -49,6 +49,8 @@ struct holographyparameters {
   int flipImageCols;     // 1 means to flip the images cols
   int refSubtract;       // 1 means to subtract the reference image
   double zPosition;      // The z position of the hologram at the center of the image
+  char filePlasma[100];  // The name of the baseline image
+  char fileRef[100];     // The name of the plasma image
 };
 
 typedef struct holographyparameters holographyParameters;
@@ -61,42 +63,85 @@ typedef struct holographyparameters holographyParameters;
 static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .res = 3.85E-6, 
   .lambda = 532E-9,
-  .d = 0.5,
-  .deltaN = 5E21,
+  .d = 0.45,
+  .deltaN = 1E23,
   .numRows = 4000,
   .numCols = 6016,
-  .xLL = 700,
-  .yLL = 2400,
-  .xUR = 1400,
-  .yUR = 3650,
+  .xLL = 2531,
+  .yLL = 2437,
+  .xUR = 3356,
+  .yUR = 4349,
   .hyperbolicWin = 8,
   .sampleInterval = 10,
   .centroidNum = 10,
-  .offsetIter = 15,
-  .boxCarSmoothWidth = 8,
-  .unwrapThresh = 1.0 * M_PI,
-  .signTwin = -1,
+  .offsetIter = 10,
+  .boxCarSmoothWidth = 10,
+  .unwrapThresh = 1.0*M_PI,
+  .signTwin = 1,
   .deltaX = 0.000115,
   .deltaY = 0.000115,
   .debugPhase = 0,
   .debugPhaseColNum = 10,
-  .debugPhaseRowNum = 10,
+  .debugPhaseRowNum = 61,
   .hologramPreview = 0,
-  .plotRadialProfile = 1,
-  .invertImage = 1,
-  .plotColNum = 5,
-  .plotLineIntegrated = 0,
+  .plotRadialProfile = 0,
+  .invertImage = 0,
+  .plotColNum = 100,
+  .plotLineIntegrated = 1,
   .plotRawHologram = 0,
-  .plotRawHologramRow = 20,
-  .plotRawHologramCol = 20,
-  .plotTwinImage = 1,
+  .plotRawHologramRow = 100,
+  .plotRawHologramCol = 100,
+  .plotTwinImage = 0,
   .R_electrode = 0.100838,
-  .rotateImage = 0,
+  .rotateImage = 1,
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
-  .zPosition = 0.0
+  .zPosition = 0.145,
+  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG"
 };
 
+/******************************************************************************
+ * Example Usage:
+ *
+ * holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
+ *
+ * param.res = 3.85E-6;             // CCD Resolution
+ * param.lambda = 532E-9;           // Wavelength of laser
+ * param.d = 0.37;                  // Reconstruction distance
+ * param.deltaN = 1E23;             // Density offset delta for inversion
+ * param.hyperbolicWin = 8;         // Hyperbolic window parameter
+ * param.sampleInterval = 10;       // Sampling interval of line-integrated density 
+ * param.centroidNum = 10;          // number of centroids to vary +/- around maximum (10)
+ * param.offsetIter = 10;           // Number of offset iterations (15)
+ * param.boxCarSmoothWidth = 10;    // Width of box car smoothing on phase
+ * param.unwrapThresh = 1.0*M_PI;   // Threshold to trigger the phase unwrapping
+ * param.signTwin = 1;              // Sign to density conversion +/-1. Depends on laser setup (-1)
+ * param.debugPhase = 0;            // 1 means save and plot a col profile of phase 
+ * param.debugPhaseColNum = 10;     // Col number to save for the phase and unwrapped phase
+ * param.debugPhaseRowNum = 61;     // Row number to save for the phase and unwrapped phase
+ * param.hologramPreview = 0;       // 1 means to preview the hologram before extracting twin image
+ * param.invertImage = 0;           // 1 means to invert the image.
+ * param.plotRadialProfile = 1;     // 1 means to plot the inverted radial profile and slice throu
+ * param.plotColNum = 20;          // Column number to plot for the inverted radial profile and a 
+ * param.plotLineIntegrated = 1;    // 1 means to plot the line integrated data
+ * param.plotRawHologram = 0;       // 1 means it will plot the raw hologram
+ * param.plotRawHologramRow = 100;  // 1 means it will plot a row of the raw hologram
+ * param.plotRawHologramCol = 100;  // 1 means it will plot a column of the raw hologram
+ * param.plotTwinImage = 0;         // 1 means it will plot a column of the twin image  
+ * param.rotateImage = 1;           // 1 means to rotate the image by 90 degrees CW
+ * param.flipImageRows = 0;         // 1 means to flip the rows 0 <-> end index
+ * param.flipImageCols = 0;         // 1 means to flip the cols 0 <-> end index
+ * param.refSubtract = 1;           // 1 means to subtract the reference image
+ * param.zPosition = .145;          // Z position of the hologram at the center of the image
+ * char *filenameRef = "/home/fuze/DHI_Images/Calibration/DSC_0087.JPG";
+ * char *filenamePlasma = "/home/fuze/DHI_Images/Calibration/DSC_0088.JPG";
+ *
+ * param.xLL = 306;          // Lower left x pixel value of phase reconstruction
+ * param.yLL = 1686;          // Lower left y pixel value of phase reconstruction
+ * param.xUR = 1300;          // Upper right x pixel value of phase reconstruction
+ * param.yUR = 3506;          // Upper right y pixel value of phase reconstruction
+ ************************************************************************************************/
 
 #endif

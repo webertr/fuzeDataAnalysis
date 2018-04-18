@@ -45,10 +45,8 @@ gsl_vector* binVector (gsl_vector *vInput, int width);
 gsl_matrix* getMatlabImage (char *fileName, int numRows, int numCols);
 int saveHologramImageBinaryOne(gsl_matrix *mInput, char *fileName);
 gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param);
-int hologramAnalysis(char* baseFileName, char *plasmaFileName,
-		     holographyParameters* param,
-		     char* fileLeftProfile, char* fileRightProfile,
-		     char* fileCentroidLocation);
+int hologramMain(holographyParameters* param, char* fileLeftProfile, char* fileRightProfile,
+		 char* fileCentroidLocation);
 int lineIntegratedCenterLine(gsl_matrix *mInput, char *fileNameImage, char* fileNameCentroid);
 int saveRadialProfileWithPosition(char *fileLeftMatrix, char *fileRightMatrix,
 				  int numRows, int numCols,
@@ -69,6 +67,5 @@ gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
 gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
 gsl_matrix *flipImageRows(gsl_matrix *imagePlasma);
 gsl_matrix *flipImageCols(gsl_matrix *imagePlasma);
-int hologramMain();
 
 #endif

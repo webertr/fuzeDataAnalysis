@@ -8,6 +8,30 @@
 
 
 /******************************************************************************
+ * Function: hologramAnalysis
+ * Inputs: 
+ * Returns: int
+ * Description: This does the full hologram analysis of a hologram and saves the file
+ * so you can look it at it in gnuplot.
+ ******************************************************************************/
+
+int hologramAnalysis() {
+
+  /* 
+   * struct containing all the holography parameters.
+   */
+  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
+
+  /* Obtained line integrated data and do an abel inversion */
+  hologramMain(&param, "data/leftProfile.dat", "data/rightProfile.dat",
+	       "data/centroidLocation.dat");
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plotPostShotData
  * Inputs: int
  * Returns: int
@@ -347,6 +371,95 @@ title 'Pinch Current' axes x1y2\n", modeFile);
   
   /* Freeing vectors */
   gsl_matrix_free(azimuthArray);
+
+  
+  return 0;
+
+
+}
+
+
+
+
+/******************************************************************************
+ * Function: plotDHIApril2018Talk
+ * Inputs: int
+ * Returns: int
+ * Description: This will use gnu plot to plot for DHI Data 
+ * for a talk that I'm giving on April 28th, 2018
+ ******************************************************************************/
+
+int plotDHIApril2018Talk() {
+
+  int shotNumber = 180222040,
+    status;
+
+  char *gnuPlotFile = "script/temp.sh",
+    *modeFile = "data/mode.txt";
+
+  
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set output 'data/dhiData.png'\n");
+  fprintf(fp, "set xrange[15:45]\n");
+  fprintf(fp, "set yrange[0:1]\n");
+  fprintf(fp, "set y2range[0:]\n");
+  fprintf(fp, "set tics font 'Times Bold, 14'\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set arrow from 15,0.2 to 45,0.2 nohead dt 3 lw 2 lc rgb 'green'\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Normalized modes at z=15 cm for pulse #%d' font '0,14'\n", shotNumber);
+  fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Normalized modes' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "set y2tics nomirror tc lt 2\n");
+  fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "plot '%s' using (($1+15.2E-6)*1E6):($3)\n", modeFile);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
 
   
   return 0;
