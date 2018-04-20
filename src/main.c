@@ -59,13 +59,13 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting spectrscopy data for talk
    */
-  plotSpecCIIIImageApril2018Talk();
+  //plotSpecCIIIImageApril2018Talk();
 
 
   /*
    * CII emission line
    */
-  //plotCIIILineApril2018Talk();
+  plotCIIILineApril2018Talk();
 
   
   /*

@@ -332,7 +332,7 @@ int getLightFieldData(gsl_matrix **image, gsl_vector **waveLength, lightFieldPar
 
 
 /******************************************************************************
- * Function: saveImageWithWavelength
+ * Function: saveImageWithWavelengthLF
  * Inputs: gsl_matrix *, gsl_vector *, gsl_vector *, char *
  * Returns: int
  * Description: Save binary matrix data to be read by gnuplot such as:
@@ -350,7 +350,7 @@ int getLightFieldData(gsl_matrix **image, gsl_vector **waveLength, lightFieldPar
  * plot 'data/lineIntegrated.dat' binary matrix with image title "Line Integrated"
  ******************************************************************************/
 
-int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileName) {
+int saveImageWithWavelengthLF(gsl_matrix *mInput, gsl_vector* wavVec, char *fileName) {
 
   int numRows = mInput->size1;
   int numCols = mInput->size2;
@@ -397,13 +397,78 @@ int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileNa
 
 
 /******************************************************************************
- * Function: saveLightFieldImageWithWavelength
+ * Function: saveImageLF
+ * Inputs: gsl_matrix *, char *
+ * Returns: int
+ * Description: Save binary matrix data to be read by gnuplot such as:
+ * MS = zeros(length(x)+1,length(y)+1);
+ * MS(1,1) = length(x);
+ * MS(1,2:end) = y;
+ * MS(2:end,1) = x;
+ * MS(2:end,2:end) = M';
+ * % Write data into the file
+ * fid = fopen(file,'w');
+ * fwrite(fid,MS,'float');
+ * fclose(fid);
+ * plot 'color_map.bin' binary matrix with image
+ * Example:
+ * plot 'data/lineIntegrated.dat' binary matrix with image title "Line Integrated"
+ ******************************************************************************/
+
+int saveImageLF(gsl_matrix *mInput, char *fileName) {
+
+  int numRows = mInput->size1;
+  int numCols = mInput->size2;
+
+  /* Creates matrix to get written */
+  gsl_matrix_float* temp = gsl_matrix_float_alloc(numRows+1, numCols+1);
+
+  /* Set number of columns to 0,0 elements */
+  gsl_matrix_float_set(temp,0,0,(float) numCols);
+
+  
+  int ii,jj;
+  /* Setting y vector values */
+  for (ii = 1; ii < numRows+1; ii++) {
+    gsl_matrix_float_set(temp, ii, 0,
+			 (float) ii);
+  }
+  /* Setting x vector values */
+  for (ii = 1; ii < numCols+1; ii++) {
+    gsl_matrix_float_set(temp, 0, ii,
+			 (float) ii);
+  }
+  /* Setting matrix values */
+  for (ii = 1; ii < numRows+1; ii++) {
+    for (jj = 1; jj < numCols + 1; jj++) {
+
+      gsl_matrix_float_set(temp, ii, jj,
+			   (float) gsl_matrix_get(mInput,ii-1, jj-1));
+
+    }
+  }
+  
+  /* Writting temp matrix to a file */
+  FILE *fp2;
+  fp2 = fopen(fileName, "wb");
+  gsl_matrix_float_fwrite (fp2, temp);
+  fclose(fp2);
+
+  gsl_matrix_float_free(temp);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: saveLFImageWithWavelength
  * Inputs: char *fileName
  * Returns: int
  * Description: This will save the image in an SPE file with the wavelength
  ******************************************************************************/
 
-int saveLightFieldImageWithWavelength(char *speFile, char *saveFile) {
+int saveLFImageWithWavelength(char *speFile, char *saveFile) {
 
   lightFieldParameters param = LIGHT_FIELD_PARAMETERS_DEFAULT;
 
@@ -414,7 +479,36 @@ int saveLightFieldImageWithWavelength(char *speFile, char *saveFile) {
   
   getLightFieldData(&image, &waveLength, &param);
   
-  saveImageWithWavelength(image, waveLength, saveFile);
+  saveImageWithWavelengthLF(image, waveLength, saveFile);
+
+  gsl_matrix_free(image);
+  gsl_vector_free(waveLength);
+
+  return 0;
+
+}
+
+
+
+/******************************************************************************
+ * Function: saveLF
+ * Inputs: char *, char *
+ * Returns: int
+ * Description: This will save the image in an SPE file
+ ******************************************************************************/
+
+int saveLFImage(char *speFile, char *saveFile) {
+
+  lightFieldParameters param = LIGHT_FIELD_PARAMETERS_DEFAULT;
+
+  strcpy(param.speFile, speFile);
+  
+  gsl_matrix *image = 0;
+  gsl_vector *waveLength = 0;
+  
+  getLightFieldData(&image, &waveLength, &param);
+  
+  saveImageLF(image, saveFile);
 
   gsl_matrix_free(image);
   gsl_vector_free(waveLength);

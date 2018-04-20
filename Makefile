@@ -15,6 +15,7 @@ SOURCE = src/magnetic.c \
 	src/plasmaParam.c \
 	src/analysis.c \
 	src/save.c \
+	src/fit.c \
 	test/testing.c
 
 PROD = run

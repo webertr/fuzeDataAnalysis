@@ -6,7 +6,7 @@
  *
  ******************************************************************************/
 
-
+  
 /******************************************************************************
  * Function: hologramAnalysis
  * Inputs: 
@@ -487,8 +487,8 @@ int plotSpecCIIIImageApril2018Talk() {
 
   char *gnuPlotFile = "script/temp.sh";
   
-  saveLightFieldImageWithWavelength("/home/webertr/Spectroscopy/Data/180222/180222  036.spe",
-				    "data/lightField.dat");
+  saveLFImageWithWavelength("/home/webertr/Spectroscopy/Data/180222/180222  036.spe",
+			    "data/lightField.dat");
   
   /* Creating gnuplot file */
   if (remove(gnuPlotFile) != 0) {
@@ -571,9 +571,62 @@ int plotCIIILineApril2018Talk() {
   int status;
 
   char *gnuPlotFile = "script/temp.sh";
+
+  lightFieldParameters param = LIGHT_FIELD_PARAMETERS_DEFAULT;
+
+  strcpy(param.speFile, "/home/webertr/Spectroscopy/Data/180222/180222  036.spe");
   
-  saveLightFieldImageWithWavelength("/home/webertr/Spectroscopy/Data/180222/180222  036.spe",
-				    "data/lightField.dat");
+  gsl_matrix *image = 0;
+  gsl_vector *waveLength = 0;
+  
+  getLightFieldData(&image, &waveLength, &param);
+
+  gsl_vector *sumRow = gsl_vector_alloc(image->size1);
+
+  int ii, jj;
+  double val;
+  for (ii = 0; ii < image->size1; ii++) {
+    val = 0;
+    for (jj = 792; jj <  811; jj++) {
+      val = gsl_matrix_get(image, ii, jj)+val;
+    }
+    gsl_vector_set(sumRow, ii, val);
+  }
+
+  int center[20] = {43,98,141,193,246,296,342,393,445,491,534,585,635,687,735,779,836,882,936,983};
+  for (ii = 0; ii < sumRow->size; ii++) {
+    //printf("Value (%d): %g\n", ii, gsl_vector_get(sumRow, ii));
+    // Centers: [43,98,141,193,246,296,342,393,445,491,534,585,635,687,735,779,836,882,936,983]
+    // 586 looks like a good one
+  }
+
+
+  for (ii = 0; ii < 20; ii++) {
+    for (jj = 792; jj < 811; jj++) {
+      gsl_matrix_set(image, center[ii], jj, 0);
+    }
+  }
+
+  int start = 785,
+    stop = 813;
+  
+  gsl_vector *ciiiLine = gsl_vector_alloc(stop - start);
+  gsl_vector *ciiiWL = gsl_vector_alloc(stop -start);
+
+  for (jj = 0; jj < ciiiLine->size; jj++) {
+    gsl_vector_set(ciiiLine, jj, gsl_matrix_get(image, 586, jj+start));
+    gsl_vector_set(ciiiWL, jj, gsl_vector_get(waveLength, jj+start));
+  }
+
+  
+  FILE *fp1;
+  fp1 = fopen("data/ciiiLine.txt", "w");
+  for (jj = 0; jj < ciiiLine->size; jj++) {
+    fprintf(fp1, "%g\t%g\n", gsl_vector_get(ciiiWL,jj),
+	    gsl_vector_get(ciiiLine, jj));
+  }
+  fclose(fp1);
+  
   
   /* Creating gnuplot file */
   if (remove(gnuPlotFile) != 0) {
@@ -591,19 +644,12 @@ int plotCIIILineApril2018Talk() {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set palette rgb 33,13,10\n");
-  fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
-  fprintf(fp, "set output 'data/ciiiImage.png'\n");
-  fprintf(fp, "set size ratio -1\n");
-  fprintf(fp, "set xrange[229.65:229.8]\n");
-  fprintf(fp, "set xtics 229.65, 0.05, 229.8\n");  
-  fprintf(fp, "set yrange[0:1024]\n");
-  fprintf(fp, "set cbrange [0:]\n");
-  fprintf(fp, "set tics font 'Times Bold, 14'\n");
-  fprintf(fp, "set xlabel 'Wavelength (nm)' font 'Times Bold,20' offset 0,0\n");
-  fprintf(fp, "set ylabel 'Pixel' font 'Times Bold,20' offset 0,0\n\n");
+  //fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
+  //fprintf(fp, "set output 'data/ciiiImage.png'\n");
+  //fprintf(fp, "set size ratio -1\n");
   fprintf(fp, "set title 'C^{+2} emission for Pulse 180222036' font 'Times Bold, 20'\n");
   fprintf(fp, "show title\n");
-  fprintf(fp, "plot 'data/lightField.dat' binary matrix with image title ''\n");
+  fprintf(fp, "plot 'data/ciiiLine.txt' using 1:2 with line title ''\n");
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

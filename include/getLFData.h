@@ -39,7 +39,9 @@ static const lightFieldParameters LIGHT_FIELD_PARAMETERS_DEFAULT = {
 
 int getLightFieldData(gsl_matrix **image, gsl_vector **waveLength, lightFieldParameters *param);
 int xmlParserSPE(char *fileName, float *dataArray, int dim);
-int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileName);
-int saveLightFieldImageWithWavelength(char *speFile, char *saveFile);
+int saveImageWithWavelengthLF(gsl_matrix *mInput, gsl_vector* wavVec, char *fileName);
+int saveLFImageWithWavelength(char *speFile, char *saveFile);
+int saveLFImage(char *speFile, char *saveFile);
+int saveImageLF(gsl_matrix *mInput, char *fileName);
 
 #endif
