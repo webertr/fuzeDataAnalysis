@@ -59,7 +59,14 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting spectrscopy data for talk
    */
-  plotSpecApril2018Talk();
+  plotSpecCIIIImageApril2018Talk();
+
+
+  /*
+   * CII emission line
+   */
+  //plotCIIILineApril2018Talk();
+
   
   /*
    * Testing real FFT
