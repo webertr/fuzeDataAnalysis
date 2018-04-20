@@ -623,6 +623,9 @@ int plotCIIILineApril2018Talk() {
     gsl_vector_set(ciiiLine, jj, gsl_vector_get(ciiiLine, jj)/lineMax);
   }
 
+  double deltaWL = gsl_vector_get(ciiiWL, 1) - gsl_vector_get(ciiiWL, 0);
+  double startWL = gsl_vector_get(ciiiWL, 0);
+  
   double ampParam = 1,
     centerParam = 9,
     sigmaParam = 4,
@@ -631,8 +634,8 @@ int plotCIIILineApril2018Talk() {
   fitGaussian(ciiiLine, &ampParam, &centerParam, &sigmaParam, &offsetParam);
 
   printf("Fit amplitude: %g\n", ampParam);
-  printf("Fit center WL: %g\n", centerParam);
-  printf("Fit sigma: %g\n", sigmaParam);
+  printf("Fit center WL (nm): %g nm\n", startWL+centerParam*deltaWL);
+  printf("Fit sigma WL (nm): %g nm\n", sigmaParam*deltaWL);
   printf("Fit offset: %g\n", offsetParam);
   
   FILE *fp1;
@@ -640,7 +643,8 @@ int plotCIIILineApril2018Talk() {
   for (jj = 0; jj < ciiiLine->size; jj++) {
     fprintf(fp1, "%g\t%g\t%g\n", gsl_vector_get(ciiiWL,jj),
 	    gsl_vector_get(ciiiLine, jj),
-	    offsetParam + ampParam*gsl_sf_exp(-gsl_pow_2((double) jj-centerParam)/gsl_pow_2(sigmaParam)));
+	    offsetParam + ampParam*\
+	    gsl_sf_exp(-gsl_pow_2((double) jj-centerParam)/gsl_pow_2(sigmaParam)));
   }
   fclose(fp1);
   
