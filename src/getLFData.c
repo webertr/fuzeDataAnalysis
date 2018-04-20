@@ -78,7 +78,7 @@ int xmlParserSPE(char *fileName, float *dataArray, int dim) {
  * all the light field data.
  ******************************************************************************/
 
-int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
+int getLightFieldData(gsl_matrix **image, gsl_vector **waveLength, lightFieldParameters *param) {
 
   FILE *fp;
   FILE *fXML;
@@ -97,13 +97,13 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
   /* 
    * Opening the file
    */
-  fp = fopen(fileName, "r");
+  fp = fopen(param->speFile, "r");
 
   /*
    * Pulling the 42th byte to get the width of the frame in pixels
    */
   fseek(fp, 42, SEEK_SET);
-  fb = fread((void *) &(dataStruct->xdim), (size_t) 2 , (size_t) 1, fp);
+  fb = fread((void *) &(param->xdim), (size_t) 2 , (size_t) 1, fp);
 
   /*
    * Verifying the read occurred correctly
@@ -125,7 +125,7 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
    * Pulling the 656th byte to get the height of the frame in pixels
    */
   fseek(fp, 656, SEEK_SET);
-  fb = fread((void *) &(dataStruct->ydim), (size_t) 2, (size_t) 1, fp);
+  fb = fread((void *) &(param->ydim), (size_t) 2, (size_t) 1, fp);
 
   /*
    * Verifying the read occurred correctly
@@ -138,7 +138,7 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
     
   }
 
-  dataStruct->imageSize = (dataStruct->xdim)*(dataStruct->ydim);
+  param->imageSize = (param->xdim)*(param->ydim);
 
   /*
    * Returning file to original position
@@ -149,7 +149,7 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
    * Pulling the 1446th byte to get the number of the frames
    */
   fseek(fp, 1446, SEEK_SET);
-  fb = fread((void *) &(dataStruct->frameNum), (size_t) 4, (size_t) 1, fp);
+  fb = fread((void *) &(param->frameNum), (size_t) 4, (size_t) 1, fp);
 
   /*
    * Verifying the read occurred correctly
@@ -171,7 +171,7 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
    * Pulling the 108th byte to get the pixel type. 0 means 32f = 32 bit floating type
    */
   fseek(fp, 108, SEEK_SET);
-  fb = fread((void *) &(dataStruct->pixelType), (size_t) 2, (size_t) 1, fp);
+  fb = fread((void *) &(param->pixelType), (size_t) 2, (size_t) 1, fp);
 
   /*
    * Verifying the read occurred correctly
@@ -192,14 +192,14 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
   /*
    * Pulling the 410th byte to get the binary image.
    */
-  data = (float *)malloc((dataStruct->xdim) * (dataStruct->ydim) * sizeof(float));
+  data = (float *)malloc((param->xdim) * (param->ydim) * sizeof(float));
   fseek(fp, 4100, SEEK_SET);
-  fb = fread((void *) data, (size_t) 4, (size_t) (dataStruct->imageSize), fp);
+  fb = fread((void *) data, (size_t) 4, (size_t) (param->imageSize), fp);
 
   /*
    * Verifying the read occurred correctly
    */
-  if (fb != (dataStruct->imageSize)) {
+  if (fb != (param->imageSize)) {
 
     free(data);
     printf("Error reading SPE file for image:\n");
@@ -213,17 +213,17 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
    * xdim = number of columns
    * ydim = number of rows
    */
-  dataStruct->image = gsl_matrix_alloc(dataStruct->ydim, dataStruct->xdim);
+  *image = gsl_matrix_alloc(param->ydim, param->xdim);
 
   /*
    * Moving data over to matrix
    */
   int ii, jj;
-  for (ii = 0; ii < (dataStruct->xdim); ii ++) {
+  for (ii = 0; ii < (param->xdim); ii ++) {
 
-    for (jj = 0; jj < (dataStruct->ydim); jj++) {
+    for (jj = 0; jj < (param->ydim); jj++) {
 
-      gsl_matrix_set(dataStruct->image, jj, ii, (double) data[(dataStruct->xdim)*jj+ii]);
+      gsl_matrix_set(*image, jj, ii, (double) data[(param->xdim)*jj+ii]);
       
     }
 
@@ -296,17 +296,17 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
   fclose(fXML);
   
   /* Parsing xml file */
-  wvData = (float *) malloc((dataStruct->xdim)*sizeof(float));
-  xmlParserSPE("data/xmlTemp.xml", wvData, dataStruct->xdim);
+  wvData = (float *) malloc((param->xdim)*sizeof(float));
+  xmlParserSPE("data/xmlTemp.xml", wvData, param->xdim);
 
   /*
    * Vector contain wavelengths
    */
-  dataStruct->waveLengthVector = gsl_vector_alloc(dataStruct->xdim);
+  *waveLength = gsl_vector_alloc(param->xdim);
 
-  for (ii = 0; ii < (dataStruct->xdim); ii++) {
+  for (ii = 0; ii < (param->xdim); ii++) {
 
-    gsl_vector_set(dataStruct->waveLengthVector, ii, (double) wvData[ii]);
+    gsl_vector_set(*waveLength, ii, (double) wvData[ii]);
       
   }
   
@@ -322,7 +322,7 @@ int getLightFieldData(lightFieldData *dataStruct, char *fileName) {
 
   /* free data */
   free(data);
-    
+
   /*
    * Returning Success
    */
@@ -361,6 +361,7 @@ int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileNa
   /* Set number of columns to 0,0 elements */
   gsl_matrix_float_set(temp,0,0,(float) numCols);
 
+  
   int ii,jj;
   /* Setting y vector values */
   for (ii = 1; ii < numRows+1; ii++) {
@@ -404,14 +405,19 @@ int saveImageWithWavelength(gsl_matrix *mInput, gsl_vector* wavVec, char *fileNa
 
 int saveLightFieldImageWithWavelength(char *speFile, char *saveFile) {
 
-  lightFieldData dataStruct = LIGHT_FIELD_DATA_DEFAULT;
+  lightFieldParameters param = LIGHT_FIELD_PARAMETERS_DEFAULT;
 
-  getLightFieldData(&dataStruct, speFile);
+  strcpy(param.speFile, speFile);
+  
+  gsl_matrix *image = 0;
+  gsl_vector *waveLength = 0;
+  
+  getLightFieldData(&image, &waveLength, &param);
+  
+  saveImageWithWavelength(image, waveLength, saveFile);
 
-  saveImageWithWavelength(dataStruct.image, dataStruct.waveLengthVector, saveFile);
-
-  gsl_matrix_free(dataStruct.image);
-  gsl_vector_free(dataStruct.waveLengthVector);
+  gsl_matrix_free(image);
+  gsl_vector_free(waveLength);
 
   return 0;
 

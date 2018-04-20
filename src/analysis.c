@@ -506,8 +506,8 @@ int plotSpecCIIIImageApril2018Talk() {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set palette rgb 33,13,10\n");
-  fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
-  fprintf(fp, "set output 'data/ciiiImage.png'\n");
+  //fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
+  //fprintf(fp, "set output 'data/ciiiImage.png'\n");
   fprintf(fp, "set size ratio -1\n");
   fprintf(fp, "set xrange[229.65:229.8]\n");
   fprintf(fp, "set xtics 229.65, 0.05, 229.8\n");  
