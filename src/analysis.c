@@ -630,16 +630,17 @@ int plotCIIILineApril2018Talk() {
 
   fitGaussian(ciiiLine, &ampParam, &centerParam, &sigmaParam, &offsetParam);
 
-  //printf("Fit amplitude: %g\n", ampParam);
-  //printf("Fit center WL: %g\n", centerParam);
-  //printf("Fit sigma: %g\n", sigmaParam);
-  //printf("Fit offset: %g\n", offsetParam);
+  printf("Fit amplitude: %g\n", ampParam);
+  printf("Fit center WL: %g\n", centerParam);
+  printf("Fit sigma: %g\n", sigmaParam);
+  printf("Fit offset: %g\n", offsetParam);
   
   FILE *fp1;
   fp1 = fopen("data/ciiiLine.txt", "w");
   for (jj = 0; jj < ciiiLine->size; jj++) {
-    fprintf(fp1, "%g\t%g\n", gsl_vector_get(ciiiWL,jj),
-	    gsl_vector_get(ciiiLine, jj));
+    fprintf(fp1, "%g\t%g\t%g\n", gsl_vector_get(ciiiWL,jj),
+	    gsl_vector_get(ciiiLine, jj),
+	    offsetParam + ampParam*gsl_sf_exp(-gsl_pow_2((double) jj-centerParam)/gsl_pow_2(sigmaParam)));
   }
   fclose(fp1);
   
@@ -660,8 +661,8 @@ int plotCIIILineApril2018Talk() {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set palette rgb 33,13,10\n");
-  fprintf(fp, "set terminal pngcairo\n");
-  fprintf(fp, "set output 'data/ciiiLine.png'\n");
+  //fprintf(fp, "set terminal pngcairo\n");
+  //fprintf(fp, "set output 'data/ciiiLine.png'\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
   fprintf(fp, "set xlabel 'Wavelength (nm)' font 'Times Bold,20' offset 0,0\n");
   fprintf(fp, "set ylabel 'Photon Counts (arb.)' font 'Times Bold,20' offset 0,0\n\n");
@@ -671,8 +672,9 @@ int plotCIIILineApril2018Talk() {
   fprintf(fp, "set xtics 229.65, 0.05, 229.8\n");
   fprintf(fp, "set yrange[0:1.1]\n");
   fprintf(fp, "show title\n");
-  fprintf(fp, "plot 'data/ciiiLine.txt' using 1:2 with points ps 2 pt 7 lc rgb 'black'");
-  fprintf(fp, "title '1s^{2}2p^{2} {/Symbol \256} 1s^{2}2s2p'\n");
+  fprintf(fp, "plot 'data/ciiiLine.txt' using 1:2 with points ps 2 pt 7 lc rgb 'black' ");
+  fprintf(fp, "title '1s^{2}2p^{2} {/Symbol \256} 1s^{2}2s2p',\\\n");
+  fprintf(fp, "     'data/ciiiLine.txt' using 1:3 with lines dt 2 title 'fit'\n");
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

@@ -140,6 +140,12 @@ int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
   paramInit[1] = *center;
   paramInit[2] = *width;
   paramInit[3] = *offset;
+
+  /* Setting the weights to 1/sigma, where sigma is the error in the ith measurements */
+  int ii;
+  for (ii = 0; ii < numPoints; ii++) {
+    weights[ii] = yValues[ii];
+  }
   
   gsl_vector_view paramInitVec = gsl_vector_view_array(paramInit, numParameters);
   gsl_vector_view wts = gsl_vector_view_array(weights, numPoints);
@@ -152,7 +158,7 @@ int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
 
   /* define the function to be minimized */
   fdf.f = gaussian_f;
-  fdf.df = NULL;   /* set to NULL for finite-difference Jacobian */
+  fdf.df = NULL;            /* set to NULL for finite-difference Jacobian */
   //fdf.df = gaussian_df;   /* set to NULL for finite-difference Jacobian */
   fdf.fvv = NULL;     /* not using geodesic acceleration */
   fdf.n = numPoints;
@@ -170,8 +176,8 @@ int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
   costFun = gsl_multifit_nlinear_residual(workSpace);
   gsl_blas_ddot(costFun, costFun, &chisq0);
 
-  /* solve the system with a maximum of 20 iterations */
-  status = gsl_multifit_nlinear_driver(20, xtol, gtol, ftol,
+  /* solve the system with a maximum of 50 iterations */
+  status = gsl_multifit_nlinear_driver(50, xtol, gtol, ftol,
                                        iterCallBack, NULL, &info, workSpace);
 
   /* compute covariance of best fit parameters */
