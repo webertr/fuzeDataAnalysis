@@ -618,6 +618,22 @@ int plotCIIILineApril2018Talk() {
     gsl_vector_set(ciiiWL, jj, gsl_vector_get(waveLength, jj+start));
   }
 
+  double lineMax = gsl_vector_max(ciiiLine);
+  for (jj = 0; jj < ciiiLine->size; jj++) {
+    gsl_vector_set(ciiiLine, jj, gsl_vector_get(ciiiLine, jj)/lineMax);
+  }
+
+  double ampParam = 1,
+    centerParam = 9,
+    sigmaParam = 4,
+    offsetParam = 0.1;
+
+  fitGaussian(ciiiLine, &ampParam, &centerParam, &sigmaParam, &offsetParam);
+
+  //printf("Fit amplitude: %g\n", ampParam);
+  //printf("Fit center WL: %g\n", centerParam);
+  //printf("Fit sigma: %g\n", sigmaParam);
+  //printf("Fit offset: %g\n", offsetParam);
   
   FILE *fp1;
   fp1 = fopen("data/ciiiLine.txt", "w");
@@ -644,12 +660,19 @@ int plotCIIILineApril2018Talk() {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set palette rgb 33,13,10\n");
-  //fprintf(fp, "set terminal pngcairo size 19cm,25cm\n");
-  //fprintf(fp, "set output 'data/ciiiImage.png'\n");
-  //fprintf(fp, "set size ratio -1\n");
+  fprintf(fp, "set terminal pngcairo\n");
+  fprintf(fp, "set output 'data/ciiiLine.png'\n");
+  fprintf(fp, "set tics font 'Times Bold, 14'\n");
+  fprintf(fp, "set xlabel 'Wavelength (nm)' font 'Times Bold,20' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Photon Counts (arb.)' font 'Times Bold,20' offset 0,0\n\n");
   fprintf(fp, "set title 'C^{+2} emission for Pulse 180222036' font 'Times Bold, 20'\n");
+  fprintf(fp, "set size ratio 0.75\n");
+  fprintf(fp, "set xrange[229.65:229.8]\n");
+  fprintf(fp, "set xtics 229.65, 0.05, 229.8\n");
+  fprintf(fp, "set yrange[0:1.1]\n");
   fprintf(fp, "show title\n");
-  fprintf(fp, "plot 'data/ciiiLine.txt' using 1:2 with line title ''\n");
+  fprintf(fp, "plot 'data/ciiiLine.txt' using 1:2 with points ps 2 pt 7 lc rgb 'black'");
+  fprintf(fp, "title '1s^{2}2p^{2} {/Symbol \256} 1s^{2}2s2p'\n");
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

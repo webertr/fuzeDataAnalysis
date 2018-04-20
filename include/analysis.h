@@ -17,6 +17,7 @@
 #include "plasmaParam.h"
 #include "save.h"
 #include "getLFData.h"
+#include "fit.h"
 
 int plotPostShotData(int shotNumber);
 int plotIPApril2018Talk(int shotNumber);

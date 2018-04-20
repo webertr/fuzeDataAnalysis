@@ -23,11 +23,7 @@
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_wavelet.h>
 #include <gsl/gsl_multifit_nlinear.h>
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
 
-static int expb_f(const gsl_vector * x, void *data, gsl_vector * f);
-static int expb_df(const gsl_vector * x, void *data, gsl_matrix * J);
-static void callback(const size_t iter, void *params, const gsl_multifit_nlinear_workspace *w);
+int fitGaussian (gsl_vector *vecY, double *amplitude, double *center, double *width, double *offset);
 
 #endif
