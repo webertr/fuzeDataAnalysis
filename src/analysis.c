@@ -608,7 +608,7 @@ int plotCIIILineApril2018Talk() {
   }
 
   int start = 785,
-    stop = 813;
+    stop = 808;
   
   gsl_vector *ciiiLine = gsl_vector_alloc(stop - start);
   gsl_vector *ciiiWL = gsl_vector_alloc(stop -start);
@@ -623,20 +623,19 @@ int plotCIIILineApril2018Talk() {
     gsl_vector_set(ciiiLine, jj, gsl_vector_get(ciiiLine, jj)/lineMax);
   }
 
-  double deltaWL = gsl_vector_get(ciiiWL, 1) - gsl_vector_get(ciiiWL, 0);
-  double startWL = gsl_vector_get(ciiiWL, 0);
   
-  double ampParam = 1,
-    centerParam = 9,
-    sigmaParam = 4,
-    offsetParam = 0.1;
+  double ampParam = 0.95,
+    centerParam = 229.705,
+    sigmaParam = 0.0184,
+    offsetParam = 0.05;
 
-  fitGaussian(ciiiLine, &ampParam, &centerParam, &sigmaParam, &offsetParam);
+  fitGaussian(ciiiWL, ciiiLine, &ampParam, &centerParam, &sigmaParam, &offsetParam);
 
   printf("Fit amplitude: %g\n", ampParam);
-  printf("Fit center WL (nm): %g nm\n", startWL+centerParam*deltaWL);
-  printf("Fit sigma WL (nm): %g nm\n", sigmaParam*deltaWL);
+  printf("Fit center WL (nm): %g nm\n", centerParam);
+  printf("Fit sigma WL (nm): %g nm\n", sigmaParam);
   printf("Fit offset: %g\n", offsetParam);
+  printf("Fit ion Temperature: %g keV\n", carbonIonTemperature(centerParam, sigmaParam));
   
   FILE *fp1;
   fp1 = fopen("data/ciiiLine.txt", "w");
@@ -644,7 +643,7 @@ int plotCIIILineApril2018Talk() {
     fprintf(fp1, "%g\t%g\t%g\n", gsl_vector_get(ciiiWL,jj),
 	    gsl_vector_get(ciiiLine, jj),
 	    offsetParam + ampParam*\
-	    gsl_sf_exp(-gsl_pow_2((double) jj-centerParam)/gsl_pow_2(sigmaParam)));
+	    gsl_sf_exp(-gsl_pow_2(gsl_vector_get(ciiiWL, jj)-centerParam)/gsl_pow_2(sigmaParam)));
   }
   fclose(fp1);
   
@@ -672,13 +671,14 @@ int plotCIIILineApril2018Talk() {
   fprintf(fp, "set ylabel 'Photon Counts (arb.)' font 'Times Bold,20' offset 0,0\n\n");
   fprintf(fp, "set title 'C^{+2} emission for Pulse 180222036' font 'Times Bold, 20'\n");
   fprintf(fp, "set size ratio 0.75\n");
-  fprintf(fp, "set xrange[229.65:229.8]\n");
-  fprintf(fp, "set xtics 229.65, 0.05, 229.8\n");
+  fprintf(fp, "set yrange[0:1.1]\n");
+  fprintf(fp, "set xrange[229.65:229.77]\n");
+  fprintf(fp, "set xtics 229.65, 0.025, 229.8\n");
   fprintf(fp, "set yrange[0:1.1]\n");
   fprintf(fp, "show title\n");
   fprintf(fp, "plot 'data/ciiiLine.txt' using 1:2 with points ps 2 pt 7 lc rgb 'black' ");
   fprintf(fp, "title '1s^{2}2p^{2} {/Symbol \256} 1s^{2}2s2p',\\\n");
-  fprintf(fp, "     'data/ciiiLine.txt' using 1:3 with lines dt 2 title 'fit'\n");
+  fprintf(fp, "     'data/ciiiLine.txt' using 1:3 with lines dt 2 lw 3 title 'Gaussian fit'\n");
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

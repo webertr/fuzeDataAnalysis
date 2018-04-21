@@ -45,5 +45,24 @@ int gyroFrequencies(double bField) {
 
 }
   
+/******************************************************************************
+ * Function: carbonIonTemperature
+ * Inputs: double
+ * Returns: double, double
+ * Description: You pass it a center wavelength, and a wavelength half width,
+ * and this will return the temperature assuming thermal doppler broadening. 
+ * 
+ ******************************************************************************/
+
+double carbonIonTemperature(double centerWL, double widthWL) {
+
+  double ionTemp;
+  double carbonMassAMU = 12.01;
+  ionTemp = gsl_pow_2(widthWL/centerWL)/gsl_pow_2(1.46E-3)*carbonMassAMU;
+
+  return ionTemp;
+
+}
+  
 
   

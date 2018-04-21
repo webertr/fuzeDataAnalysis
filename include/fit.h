@@ -24,6 +24,7 @@
 #include <gsl/gsl_wavelet.h>
 #include <gsl/gsl_multifit_nlinear.h>
 
-int fitGaussian (gsl_vector *vecY, double *amplitude, double *center, double *width, double *offset);
+int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *center,
+		 double *width, double *offset);
 
 #endif

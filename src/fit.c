@@ -41,7 +41,7 @@ static int gaussian_f(const gsl_vector *paramVec, void *dataStruct, gsl_vector *
     x = (double) ii;
     ex = gsl_pow_2(x-center)/gsl_pow_2(sigma);
     Yi = A * gsl_sf_exp(-ex) + b;
-    gsl_vector_set (costFun, ii, (Yi - yValues[ii])*yValues[ii]);
+    gsl_vector_set (costFun, ii, (Yi - yValues[ii]));
       
     }
 
@@ -73,13 +73,13 @@ static void iterCallBack(const size_t iter, void *params,
 
 /******************************************************************************
  * Function: fitGaussian
- * Inputs: gsl_vector *, gsl_vector *, double, double
+ * Inputs: gsl_vector *, gsl_vector *, double, double, double, double
  * Returns: int
  * Description: This will fit a gaussian to the passed x vs. y vectors and
  * set the amplitude and width parameters
  ******************************************************************************/
 
-int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
+int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *center,
 		 double *width, double *offset) {
 
   /* 
@@ -101,13 +101,18 @@ int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
   
   gsl_matrix *covar = gsl_matrix_alloc (numParameters, numParameters);
   double *yValues = vecY->data;
+  double weights[numPoints];
+  gsl_vector_view weightVector = gsl_vector_view_array(weights, numPoints);
   struct dataStruct dataStruct = { numPoints, yValues };
+
+  double deltaX = gsl_vector_get(vecX,1)-gsl_vector_get(vecX,0),
+    xInitial = gsl_vector_get(vecX, 0);
   
   /* Initial guess at parameters */
   double paramInit[numParameters];
   paramInit[0] = *amplitude;
-  paramInit[1] = *center;
-  paramInit[2] = *width;
+  paramInit[1] = (*center-xInitial)/deltaX;
+  paramInit[2] = *width/deltaX;
   paramInit[3] = *offset;
 
   
@@ -128,11 +133,20 @@ int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
   fdf.params = &dataStruct;
 
 
+  /* Setting weights */
+  int ii;
+  double sigmai;
+  for (ii = 0; ii < numPoints; ii++) {
+    //sigmai = yValues[ii];
+    sigmai = 1;
+    gsl_vector_set(&weightVector.vector, ii, 1/(sigmai));
+  }
+  
   /* allocate workspace with default parameters */
   workSpace = gsl_multifit_nlinear_alloc (trustRegionMethod, &fdf_params, numPoints, numParameters);
 
   /* initialize solver with starting point and weights */
-  gsl_multifit_nlinear_init(&paramInitVec.vector, &fdf, workSpace);
+  gsl_multifit_nlinear_winit(&paramInitVec.vector, &weightVector.vector, &fdf, workSpace);
 
   /* compute initial cost function */
   costFun = gsl_multifit_nlinear_residual(workSpace);
@@ -153,26 +167,33 @@ int fitGaussian (gsl_vector *vecY, double *amplitude, double *center,
   *center = gsl_vector_get(workSpace->x, 1);
   *width = gsl_vector_get(workSpace->x, 2);
   *offset = gsl_vector_get(workSpace->x, 3);
-  
-#define FIT(i) gsl_vector_get(workSpace->x, i)
-#define ERR(i) sqrt(gsl_matrix_get(covar,i,i))
-
 
   double dof = numPoints - numParameters;
   double c = GSL_MAX_DBL(1, sqrt(chisq / dof));
 
-  fprintf(stderr, "chisq/dof = %g\n", chisq / dof);
+  int showResults = 0;
+  if (showResults == 1 ) {
+    
+    fprintf(stderr, "chisq/dof = %g\n", chisq / dof);
 
-  fprintf (stderr, "A      = %.5f +/- %.5f\n", FIT(0), c*ERR(0));
-  fprintf (stderr, "center = %.5f +/- %.5f\n", FIT(1), c*ERR(1));
-  fprintf (stderr, "width  = %.5f +/- %.5f\n", FIT(2), c*ERR(2));
-  fprintf (stderr, "offset = %.5f +/- %.5f\n", FIT(3), c*ERR(3));
+    fprintf (stderr, "A      = %.5f +/- %.5f\n", gsl_vector_get(workSpace->x, 0),
+	     c*sqrt(gsl_matrix_get(covar,0,0)));
+    fprintf (stderr, "center = %.5f +/- %.5f\n", gsl_vector_get(workSpace->x, 1),
+	     c*sqrt(gsl_matrix_get(covar,1,1)));
+    fprintf (stderr, "width  = %.5f +/- %.5f\n", gsl_vector_get(workSpace->x, 2),
+	     c*sqrt(gsl_matrix_get(covar,2,2)));
+    fprintf (stderr, "offset = %.5f +/- %.5f\n", gsl_vector_get(workSpace->x, 3),
+	     c*sqrt(gsl_matrix_get(covar,3,3)));
+    fprintf (stderr, "status = %s\n", gsl_strerror (status));
 
-  fprintf (stderr, "status = %s\n", gsl_strerror (status));
-
+  }
   gsl_multifit_nlinear_free(workSpace);
   gsl_matrix_free(covar);
 
+  /* Converting to the passed units */
+  *width = *width * deltaX;
+  *center = deltaX*(*center) + xInitial;
+  
   return 0;
   
 }
