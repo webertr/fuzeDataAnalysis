@@ -593,28 +593,22 @@ int plotCIIILineApril2018Talk() {
     gsl_vector_set(sumRow, ii, val);
   }
 
-  int center[20] = {43,98,141,193,246,296,342,393,445,491,534,585,635,687,735,779,836,882,936,983};
-  for (ii = 0; ii < sumRow->size; ii++) {
-    //printf("Value (%d): %g\n", ii, gsl_vector_get(sumRow, ii));
-    // Centers: [43,98,141,193,246,296,342,393,445,491,534,585,635,687,735,779,836,882,936,983]
-    // 586 looks like a good one
-  }
-
-
-  for (ii = 0; ii < 20; ii++) {
-    for (jj = 792; jj < 811; jj++) {
-      gsl_matrix_set(image, center[ii], jj, 0);
-    }
-  }
-
-  int start = 785,
-    stop = 808;
+  /* int center[20]={43,98,141,193,246,296,342,393,445,491,534,585,635,687,735,779,836,882,936,983}; */
+  /* for (ii = 0; ii < sumRow->size; ii++) { */
+  /*   //printf("Value (%d): %g\n", ii, gsl_vector_get(sumRow, ii)); */
+  /*   // Centers: [43,98,141,193,246,296,342,393,445,491,534,585,635,687,735,779,836,882,936,983] */
+  /*   // 586 looks like a good one */
+  /*   // 837 is the other one I'm trying */
+  /* } */
+  
+  int start = 788,
+    stop = 810;
   
   gsl_vector *ciiiLine = gsl_vector_alloc(stop - start);
   gsl_vector *ciiiWL = gsl_vector_alloc(stop -start);
 
   for (jj = 0; jj < ciiiLine->size; jj++) {
-    gsl_vector_set(ciiiLine, jj, gsl_matrix_get(image, 586, jj+start));
+    gsl_vector_set(ciiiLine, jj, gsl_matrix_get(image, 837, jj+start));
     gsl_vector_set(ciiiWL, jj, gsl_vector_get(waveLength, jj+start));
   }
 
@@ -629,7 +623,9 @@ int plotCIIILineApril2018Talk() {
     sigmaParam = 0.0184,
     offsetParam = 0.05;
 
-  fitGaussian(ciiiWL, ciiiLine, &ampParam, &centerParam, &sigmaParam, &offsetParam);
+  gsl_vector *gaussFit = gsl_vector_alloc(ciiiWL->size);
+  
+  fitGaussian(ciiiWL, ciiiLine, gaussFit, &ampParam, &centerParam, &sigmaParam, &offsetParam, 0);
 
   printf("Fit amplitude: %g\n", ampParam);
   printf("Fit center WL (nm): %g nm\n", centerParam);
@@ -641,9 +637,7 @@ int plotCIIILineApril2018Talk() {
   fp1 = fopen("data/ciiiLine.txt", "w");
   for (jj = 0; jj < ciiiLine->size; jj++) {
     fprintf(fp1, "%g\t%g\t%g\n", gsl_vector_get(ciiiWL,jj),
-	    gsl_vector_get(ciiiLine, jj),
-	    offsetParam + ampParam*\
-	    gsl_sf_exp(-gsl_pow_2(gsl_vector_get(ciiiWL, jj)-centerParam)/gsl_pow_2(sigmaParam)));
+	    gsl_vector_get(ciiiLine, jj),gsl_vector_get(gaussFit, jj));
   }
   fclose(fp1);
   

@@ -79,8 +79,8 @@ static void iterCallBack(const size_t iter, void *params,
  * set the amplitude and width parameters
  ******************************************************************************/
 
-int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *center,
-		 double *width, double *offset) {
+int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit, double *amplitude,
+		 double *center, double *width, double *offset, int printOption) {
 
   /* 
    * Specifies the type of algorhtym used to solve non linear least squares problem.
@@ -90,7 +90,7 @@ int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *
   gsl_multifit_nlinear_workspace *workSpace;
   gsl_multifit_nlinear_fdf fdf;
   gsl_multifit_nlinear_parameters fdf_params = gsl_multifit_nlinear_default_parameters();
-  const size_t numPoints = vecY->size;
+  const size_t numPoints = yVec->size;
   const size_t numParameters = 4;
 
   /* Cost function */
@@ -100,13 +100,13 @@ int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *
   gsl_matrix *jacobMatrix;
   
   gsl_matrix *covar = gsl_matrix_alloc (numParameters, numParameters);
-  double *yValues = vecY->data;
+  double *yValues = yVec->data;
   double weights[numPoints];
   gsl_vector_view weightVector = gsl_vector_view_array(weights, numPoints);
   struct dataStruct dataStruct = { numPoints, yValues };
 
-  double deltaX = gsl_vector_get(vecX,1)-gsl_vector_get(vecX,0),
-    xInitial = gsl_vector_get(vecX, 0);
+  double deltaX = gsl_vector_get(xVec,1)-gsl_vector_get(xVec,0),
+    xInitial = gsl_vector_get(xVec, 0);
   
   /* Initial guess at parameters */
   double paramInit[numParameters];
@@ -153,8 +153,14 @@ int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *
   gsl_blas_ddot(costFun, costFun, &chisq0);
 
   /* solve the system with a maximum of 50 iterations */
-  status = gsl_multifit_nlinear_driver(50, xtol, gtol, ftol,
-                                       iterCallBack, NULL, &info, workSpace);
+  if (printOption == 1) {
+    
+    status = gsl_multifit_nlinear_driver(50, xtol, gtol, ftol,
+					 iterCallBack, NULL, &info, workSpace);
+  } else {
+    status = gsl_multifit_nlinear_driver(50, xtol, gtol, ftol,
+					 NULL, NULL, &info, workSpace);
+  }
 
   /* compute covariance of best fit parameters */
   jacobMatrix = gsl_multifit_nlinear_jac(workSpace);
@@ -171,8 +177,7 @@ int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *
   double dof = numPoints - numParameters;
   double c = GSL_MAX_DBL(1, sqrt(chisq / dof));
 
-  int showResults = 0;
-  if (showResults == 1 ) {
+  if (printOption == 1 ) {
     
     fprintf(stderr, "chisq/dof = %g\n", chisq / dof);
 
@@ -193,7 +198,13 @@ int fitGaussian (gsl_vector *vecX, gsl_vector *vecY, double *amplitude, double *
   /* Converting to the passed units */
   *width = *width * deltaX;
   *center = deltaX*(*center) + xInitial;
-  
+
+  for (ii = 0; ii < numPoints; ii++) {
+    gsl_vector_set(gaussFit, ii,
+		   *offset + *amplitude*\
+		   gsl_sf_exp(-gsl_pow_2(gsl_vector_get(xVec, ii)-*center)/gsl_pow_2(*width)));
+  }
+
   return 0;
   
 }
