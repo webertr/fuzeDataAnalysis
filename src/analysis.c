@@ -603,12 +603,14 @@ int plotCIIILineApril2018Talk() {
   
   int start = 788,
     stop = 810;
+
+  int centerRow = 837;
   
   gsl_vector *ciiiLine = gsl_vector_alloc(stop - start);
   gsl_vector *ciiiWL = gsl_vector_alloc(stop -start);
 
   for (jj = 0; jj < ciiiLine->size; jj++) {
-    gsl_vector_set(ciiiLine, jj, gsl_matrix_get(image, 837, jj+start));
+    gsl_vector_set(ciiiLine, jj, gsl_matrix_get(image, centerRow, jj+start));
     gsl_vector_set(ciiiWL, jj, gsl_vector_get(waveLength, jj+start));
   }
 

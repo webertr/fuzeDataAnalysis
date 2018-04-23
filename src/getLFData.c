@@ -365,8 +365,7 @@ int saveImageWithWavelengthLF(gsl_matrix *mInput, gsl_vector* wavVec, char *file
   int ii,jj;
   /* Setting y vector values */
   for (ii = 1; ii < numRows+1; ii++) {
-    gsl_matrix_float_set(temp, ii, 0,
-			 (float) ii);
+    gsl_matrix_float_set(temp, ii, 0,(float) ii);
   }
   /* Setting x vector values */
   for (ii = 1; ii < numCols+1; ii++) {
@@ -430,13 +429,11 @@ int saveImageLF(gsl_matrix *mInput, char *fileName) {
   int ii,jj;
   /* Setting y vector values */
   for (ii = 1; ii < numRows+1; ii++) {
-    gsl_matrix_float_set(temp, ii, 0,
-			 (float) ii);
+    gsl_matrix_float_set(temp, ii, 0,(float) ii);
   }
   /* Setting x vector values */
   for (ii = 1; ii < numCols+1; ii++) {
-    gsl_matrix_float_set(temp, 0, ii,
-			 (float) ii);
+    gsl_matrix_float_set(temp, 0, ii,(float) ii);
   }
   /* Setting matrix values */
   for (ii = 1; ii < numRows+1; ii++) {

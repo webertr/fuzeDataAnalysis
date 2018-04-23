@@ -1,9 +1,10 @@
 #include "fit.h"
 
-static int gaussian_f(const gsl_vector *paramVec, void *dataStruct, gsl_vector *costFun);
-static void iterCallBack(const size_t iter, void *params,
-			 const gsl_multifit_nlinear_workspace *workSpace);
-
+static int gaussianFunc(const gsl_vector *paramVec, void *dataStruct, gsl_vector *costFun);
+static void iterCallBackGauss(const size_t iter, void *params,
+			      const gsl_multifit_nlinear_workspace *workSpace);
+static int gaussianDerivFunc(const gsl_vector *paramVec, void *dataStruct,
+			     gsl_matrix *jacobianMatrix);
 
 
 /******************************************************************************
@@ -22,7 +23,14 @@ struct dataStruct {
 };
 
 
-static int gaussian_f(const gsl_vector *paramVec, void *dataStruct, gsl_vector *costFun) {
+/******************************************************************************
+ * Function: gaussianFunc
+ * Inputs: gsl_vector *, void *, gsl_vector *
+ * Returns: int
+ * Description: This is the gaussian function to be fit
+ ******************************************************************************/
+
+static int gaussianFunc(const gsl_vector *paramVec, void *dataStruct, gsl_vector *costFun) {
   
   size_t numPoints = ((struct dataStruct *)dataStruct)->numPoints;
   double *yValues = ((struct dataStruct *)dataStruct)->yValues;
@@ -49,8 +57,55 @@ static int gaussian_f(const gsl_vector *paramVec, void *dataStruct, gsl_vector *
 }
 
 
-static void iterCallBack(const size_t iter, void *params,
-			 const gsl_multifit_nlinear_workspace *workSpace) {
+/******************************************************************************
+ * Function: gaussianDerivFunc
+ * Inputs: gsl_vector *, void *, gsl_vector *
+ * Returns: int
+ * Description: This is the derivative of the gaussian function to be fit
+ ******************************************************************************/
+
+static int gaussianDerivFunc(const gsl_vector *paramVec, void *dataStruct,
+			     gsl_matrix *jacobianMatrix) {
+  
+  size_t n = ((struct dataStruct *)dataStruct)->numPoints;
+
+  double A = gsl_vector_get(paramVec, 0);
+  double center = gsl_vector_get(paramVec, 1);
+  double sigma = gsl_vector_get(paramVec, 2);
+
+  size_t ii;
+
+  double val, ex, x;
+
+  for (ii = 0; ii < n; ii++) {
+    /* Jacobian matrix J(i,j) = dfi / dxj, */
+    /* where fi = (Yi - yi)/sigma[i],      */
+    /*       Yi = A * exp(-(x-center)^2/sigma^2 ) + b  */
+    /* and the xj are the parameters (A,center, sigma,b) */
+
+    x = (double) ii;
+    ex = gsl_pow_2(x-center)/gsl_pow_2(sigma);
+    val = gsl_sf_exp(-ex);
+    gsl_matrix_set (jacobianMatrix, ii, 0, val); 
+    gsl_matrix_set (jacobianMatrix, ii, 1, 2 * A/gsl_pow_2(sigma) * (x - center) * val);
+    gsl_matrix_set (jacobianMatrix, ii, 2, 2 * A /gsl_pow_3(sigma) *gsl_pow_2(x-center) * val);
+    gsl_matrix_set (jacobianMatrix, ii, 3, 1.0);
+    }
+  return GSL_SUCCESS;
+
+}
+
+
+/******************************************************************************
+ * Function: iterCallBack
+ * Inputs: size_t, void *, gsl_multifi_nlinear_workspace *
+ * Returns: int
+ * Description: This is called during the iteration process to print out informaton
+ * for the Gaussian fit
+ ******************************************************************************/
+
+static void iterCallBackGauss(const size_t iter, void *params,
+			      const gsl_multifit_nlinear_workspace *workSpace) {
   
   gsl_vector *f = gsl_multifit_nlinear_residual(workSpace);
   gsl_vector *x = gsl_multifit_nlinear_position(workSpace);
@@ -125,9 +180,10 @@ int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit, doubl
   const double ftol = 0.0;
 
   /* define the function to be minimized */
-  fdf.f = gaussian_f;
-  fdf.df = NULL;            /* set to NULL for finite-difference Jacobian */
-  fdf.fvv = NULL;           /* not using geodesic acceleration */
+  fdf.f = gaussianFunc;
+  //fdf.df = NULL;             /* set to NULL for finite-difference Jacobian */
+  fdf.df = gaussianDerivFunc;  /* set to NULL for finite-difference Jacobian */
+  fdf.fvv = NULL;              /* not using geodesic acceleration */
   fdf.n = numPoints;
   fdf.p = numParameters;
   fdf.params = &dataStruct;
@@ -156,7 +212,7 @@ int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit, doubl
   if (printOption == 1) {
     
     status = gsl_multifit_nlinear_driver(50, xtol, gtol, ftol,
-					 iterCallBack, NULL, &info, workSpace);
+					 iterCallBackGauss, NULL, &info, workSpace);
   } else {
     status = gsl_multifit_nlinear_driver(50, xtol, gtol, ftol,
 					 NULL, NULL, &info, workSpace);
