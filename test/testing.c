@@ -23,7 +23,6 @@ int testMagneticData() {
 
   plotVectorData(time, data, "set xrange[0:50E-6]");
 
-  saveVectorData(time, data, "data/temp.dat");
 
   gsl_vector_free(data);
   gsl_vector_free(time);

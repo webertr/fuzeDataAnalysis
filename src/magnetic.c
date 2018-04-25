@@ -110,39 +110,6 @@ static int get_signal_length(const char *signal) {
 
 
 /******************************************************************************
- * Function: saveVectorData
- * Inputs: gsl_vector *, gsl_vector *
- * Returns: int
- * Description: Save vector data
- ******************************************************************************/
-
-int saveVectorData (gsl_vector *xVec, gsl_vector *yVec, char *fileName) {
-
-  FILE *fp = fopen(fileName, "w");
-
-  if ( (fp == NULL) ) {
-
-    printf("Error opening files!\n");
-    exit(1);
-
-  }
-
-  int ii;
-  for (ii = 0; ii < xVec->size; ii++) {
-
-    fprintf(fp, "%g \t %g\n", gsl_vector_get(xVec, ii), 
-	    gsl_vector_get(xVec, ii));
-
-  }
-
-  fclose(fp);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
  * Function: getMagneticDataAndTime
  * Inputs: dataVector*, char*
  * Returns: dataVector *
