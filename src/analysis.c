@@ -739,7 +739,7 @@ int plotModeCompApril2018Talk() {
   getAzimuthalArrayModes(azimuthArray);
   gsl_vector *time = gsl_vector_alloc(sigSize);
   gsl_vector *data = gsl_vector_alloc(sigSize);
-  initializeMagneticDataAndTime(shotNumber, "\\m_2_p15_norm_sm", data, time);
+  initializeMagneticDataAndTime(shotNumber, "\\m_3_p15_norm_sm", data, time);
 
   /* Saving data */
   saveMatrixData(azimuthArray, modeFile);
@@ -771,7 +771,7 @@ int plotModeCompApril2018Talk() {
   fprintf(fp, "set title 'Normalized modes at z=15 cm for pulse #%d' font '0,14'\n", shotNumber);
   fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using (($1+15.2E-6)*1E6):($4) with line dt 2 lw 3 lc rgb 'red' \
+  fprintf(fp, "plot '%s' using (($1+15.2E-6)*1E6):($5) with line dt 2 lw 3 lc rgb 'red' \
 title 'm=1',\\\n", modeFile);
   fprintf(fp, "     '%s' using (($1+15.2E-6)*1E6):($2) with line dt 3 lw 3 lc rgb 'blue' \
 title 'm=1 mds'\n", mdsFile);
