@@ -1745,7 +1745,15 @@ int hologramMain(holographyParameters* param) {
     saveHologramImageBinary(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
     
   }
-  
+
+  /*
+   * If specified, perform an abel inversion on the image
+   */
+  if (param->invertImage == 1) {
+
+    invertImage(twinImageUnwrap, param);
+    
+  }
 
   gsl_matrix_free(imagePlasma);
   gsl_matrix_free(imageRef);

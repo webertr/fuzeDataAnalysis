@@ -24,6 +24,7 @@
 #include <gsl/gsl_wavelet.h>
 
 #include "holoParam.h"
+#include "abelInversionDHI.h"
 
 
 gsl_matrix *readJPEGImage(char *fileName);

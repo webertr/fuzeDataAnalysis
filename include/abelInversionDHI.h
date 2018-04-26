@@ -43,5 +43,6 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
 			    gsl_matrix* projectMatrix,
 			    int centroidIterations,  int centroidIndexTest,
 			    int colNumber, holographyParameters* param);
+int invertImage(gsl_matrix* imageM, holographyParameters* param);
 
 #endif

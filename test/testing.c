@@ -854,13 +854,22 @@ int testAziMode() {
   gsl_matrix *testData = gsl_matrix_alloc(1, n+1);
 
   double m0 = 3.4,
-    m1 = 1.4,
-    m2 = 0,
-    m3 = 1.8;
+    ms1 = 1.4,
+    mc1 = 0.8,
+    ms2 = 0.65,
+    mc2 = 0.4,
+    ms3 = 1.8,
+    mc3 = 0.6,
+    m1 = sqrt(gsl_pow_2(ms1) + gsl_pow_2(mc1)),
+    m2 = sqrt(gsl_pow_2(ms2) + gsl_pow_2(mc2)),
+    m3 = sqrt(gsl_pow_2(ms3) + gsl_pow_2(mc3));
   
   for (ii = 0; ii < n; ii++) {
 
-    val = m0 +m1*gsl_sf_sin(1*ii*2*M_PI/8)+m2*gsl_sf_sin(2*ii*2*M_PI/8)+m3*gsl_sf_sin(3*ii*2*M_PI/8);
+    val = m0 +ms1*gsl_sf_sin(1*ii*2*M_PI/8)+ms2*gsl_sf_sin(2*ii*2*M_PI/8)\
+      +ms3*gsl_sf_sin(3*ii*2*M_PI/8)\
+      +mc1*gsl_sf_cos(1*ii*2*M_PI/8)+mc2*gsl_sf_cos(2*ii*2*M_PI/8)\
+      +mc3*gsl_sf_cos(3*ii*2*M_PI/8);
     data[ii] = val;
     gsl_matrix_set(testData, 0, ii+1, val);
     //printf("Value for %d: %g\n", ii, val);

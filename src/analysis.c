@@ -317,8 +317,8 @@ int plotModeApril2018Talk() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal pngcairo\n");
-  fprintf(fp, "set output 'data/modeData.png'\n");
+  //fprintf(fp, "set terminal pngcairo\n");
+  //fprintf(fp, "set output 'data/modeData.png'\n");
   fprintf(fp, "set xrange[15:45]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
@@ -331,11 +331,11 @@ int plotModeApril2018Talk() {
   fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set y2tics nomirror tc lt 2\n");
   fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using (($1+16E-6)*1E6):($3) with line dt 2 lw 3 lc rgb 'red' \
+  fprintf(fp, "plot '%s' using (($1+15.2E-6)*1E6):($3) with line dt 2 lw 3 lc rgb 'red' \
 title 'm=1',\\\n", modeFile);
-  fprintf(fp, "     '%s' using (($1+16E-6)*1E6):($4) with line dt 3 lw 3 lc rgb 'blue' \
+  fprintf(fp, "     '%s' using (($1+15.2E-6)*1E6):($4) with line dt 3 lw 3 lc rgb 'blue' \
 title 'm=2',\\\n", modeFile);
-  fprintf(fp, "     '%s' using (($1+16E-6)*1E6):($2/0.002) with line lw 3 lc rgb 'black' \
+  fprintf(fp, "     '%s' using (($1+15.2E-6)*1E6):($2/0.002) with line lw 3 lc rgb 'black' \
 title 'Pinch Current' axes x1y2\n", modeFile);
   fprintf(fp, "pause -1\n");
   

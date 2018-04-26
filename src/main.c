@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting mode data for talk
    */
-  //plotModeApril2018Talk();
+  plotModeApril2018Talk();
 
   /*
    * Plotting DHI data for talk
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
   /*
    * CII emission line
    */
-  plotCIIILineApril2018Talk();
+  //plotCIIILineApril2018Talk();
 
   
   /*

@@ -47,6 +47,9 @@ struct holographyparameters {
                               // slice of the line integrated image.
   int saveLineIntPos;         // 1 means to save the line integrated data with position info
   char fileLineIntPos[100];   // The name of the file for the line integrated data with positon info
+  char fileLeftInvert[100];   // The name of the file for the left abel inverted data
+  char fileRightInvert[100];  // The name of the file for the right abel inverted data
+  char fileCentroid[100];     // The name of the file for the centroid file
   double R_electrode;         // value of the radius of the inner electrode
   int rotateImage;            // 1 means to rotate the image by 90 degrees CW
   int flipImageRows;          // 1 means to flip the image rows
@@ -93,19 +96,22 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .debugPhase = 0,
   .debugPhaseColNum = 10,
   .debugPhaseRowNum = 61,
-  .saveHologram = 0,
-  .fileHologram = "data/hologram.dat",
   .plotRadialProfile = 0,
-  .invertImage = 0,
   .plotColNum = 100,
-  .saveLineIntPos = 1,
-  .fileLineIntPos = "data/lineIntegratedPosition.dat",
   .rotateImage = 1,
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
   .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG"
+  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG",
+  .saveHologram = 0,
+  .fileHologram = "data/hologram.dat",
+  .saveLineIntPos = 1,
+  .fileLineIntPos = "data/lineIntegratedPosition.dat",
+  .invertImage = 0,
+  .fileLeftInvert = "data/leftAbelInvert.dat",
+  .fileRightInvert = "data/rightAbelInvert.dat",
+  .fileCentroid = "data/centroid.dat"
 };
 
 /******************************************************************************

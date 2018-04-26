@@ -1,7 +1,5 @@
 #include "abelInversionDHI.h"
 
-void saveVectorTest(gsl_vector *vecIn, char *fileName);
-
 /******************************************************************************
  * Function: invertImage
  * Inputs: gsl_matrix*
@@ -13,8 +11,7 @@ void saveVectorTest(gsl_vector *vecIn, char *fileName);
  * is greater then the shell, it can't have any contribution
  ******************************************************************************/
 
-int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfile,
-		char* fileCentroid, holographyParameters* param) {
+int invertImage(gsl_matrix* imageM, holographyParameters* param) {
 
   int jj,
     maxIndex,
@@ -126,11 +123,8 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
      * It will also set the centroidLocation vector which represents the plasma center in
      * each cross section
      */
-    getRadialDensityProfile(leftCrossSection, rightCrossSection, 
-			    crossSection, centroidLocation, 
-			    projectMatrix,
-			    centroidIterations, centroidIndexTest, 
-			    jj, param);
+    getRadialDensityProfile(leftCrossSection, rightCrossSection, crossSection, centroidLocation, 
+			    projectMatrix, centroidIterations, centroidIndexTest, jj, param);
 
   }
 
@@ -147,23 +141,22 @@ int invertImage(gsl_matrix* imageM, char *fileLeftProfile, char* fileRightProfil
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
   FILE *fp1;
-  fp1 = fopen(fileLeftProfile, "wb");
+  fp1 = fopen(param->fileLeftInvert, "wb");
   gsl_matrix_fwrite (fp1, leftDensityProfile);
   fclose(fp1);
 
   FILE *fp2;
-  fp2 = fopen(fileRightProfile, "wb");
+  fp2 = fopen(param->fileRightInvert, "wb");
   gsl_matrix_fwrite (fp2, rightDensityProfile);
   fclose(fp2);
 
   FILE *fp3;
-  fp3 = fopen(fileCentroid, "wb");
+  fp3 = fopen(param->fileCentroid, "wb");
   gsl_vector_fwrite (fp3, centroidLocation);
   fclose(fp3);
 
   /* Deleting vectors and matrices */
   gsl_vector_free(centroidLocation);
-
   gsl_matrix_free(leftDensityProfile);
   gsl_matrix_free(rightDensityProfile);
   gsl_matrix_free(projectMatrix);

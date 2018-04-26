@@ -450,7 +450,7 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
     data = &(mIn->data[ii*numCols+1]);
     data[0] = data[0]/8;
     norm = 2/8.0/data[0];
-    data[1] = sqrt(gsl_pow_2(data[8]) + gsl_pow_2(data[2]))*norm;
+    data[1] = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))*norm;
     data[2] = sqrt(gsl_pow_2(data[3]) + gsl_pow_2(data[4]))*norm;
     data[3] = sqrt(gsl_pow_2(data[5]) + gsl_pow_2(data[6]))*norm;
     
