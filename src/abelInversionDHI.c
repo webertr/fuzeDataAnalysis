@@ -134,8 +134,7 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
    * then convert it to density (divide by maximum length at that axial point before the circle
    * 2*(sqrt(R^2 - y^2), and add that to both the left and right radial density profiles.
    */
-  axialVariationCorrection(leftDensityProfile, rightDensityProfile, 
-   			   imageM, centroidLocation, param);
+  axialVariationCorrection(leftDensityProfile, rightDensityProfile, imageM, centroidLocation, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
@@ -180,8 +179,7 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
 
 int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
 			    gsl_vector* crossSection, gsl_vector* centroidLocation,
-			    gsl_matrix* projectMatrix,
-			    int centroidIterations,  int centroidIndexTest,
+			    gsl_matrix* projectMatrix, int centroidIterations,  int centroidIndexTest,
 			    int colNumber, holographyParameters* param) {
 
   int ii,jj,

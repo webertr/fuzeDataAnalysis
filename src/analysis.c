@@ -317,8 +317,8 @@ int plotModeApril2018Talk() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  //fprintf(fp, "set terminal pngcairo\n");
-  //fprintf(fp, "set output 'data/modeData.png'\n");
+  fprintf(fp, "set terminal pngcairo\n");
+  fprintf(fp, "set output 'data/modeData.png'\n");
   fprintf(fp, "set xrange[15:45]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
