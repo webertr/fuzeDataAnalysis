@@ -712,3 +712,107 @@ int plotCIIILineApril2018Talk() {
 
 
 }
+
+
+/******************************************************************************
+ * Function: plotModeCompApril2018Talk
+ * Inputs: int
+ * Returns: int
+ * Description: This will use gnu plot to plot for mode data 
+ * for a talk that I'm giving on April 28th, 2018
+ ******************************************************************************/
+
+int plotModeCompApril2018Talk() {
+
+  int shotNumber = 180222040,
+    status,
+    sigSize = getSignalLengthMDSplus("\\b_p15_000_sm", shotNumber);
+
+  char *gnuPlotFile = "script/temp.sh",
+    *modeFile = "data/mode.txt",
+    *mdsFile = "data/mdsplus.txt";
+
+
+  
+  /* Getting data */
+  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000_sm");
+  getAzimuthalArrayModes(azimuthArray);
+  gsl_vector *time = gsl_vector_alloc(sigSize);
+  gsl_vector *data = gsl_vector_alloc(sigSize);
+  initializeMagneticDataAndTime(shotNumber, "\\m_2_p15_norm_sm", data, time);
+
+  /* Saving data */
+  saveMatrixData(azimuthArray, modeFile);
+  save2VectorData(time, data, mdsFile);
+
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  //fprintf(fp, "set terminal pngcairo\n");
+  //fprintf(fp, "set output 'data/modeData.png'\n");
+  fprintf(fp, "set xrange[15:45]\n");
+  fprintf(fp, "set yrange[0:1]\n");
+  fprintf(fp, "set tics font 'Times Bold, 14'\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Normalized modes at z=15 cm for pulse #%d' font '0,14'\n", shotNumber);
+  fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "plot '%s' using (($1+15.2E-6)*1E6):($4) with line dt 2 lw 3 lc rgb 'red' \
+title 'm=1',\\\n", modeFile);
+  fprintf(fp, "     '%s' using (($1+15.2E-6)*1E6):($2) with line dt 3 lw 3 lc rgb 'blue' \
+title 'm=1 mds'\n", mdsFile);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+
+  
+  /* Freeing vectors */
+  gsl_matrix_free(azimuthArray);
+
+  
+  return 0;
+
+
+}

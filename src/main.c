@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting mode data for talk
    */
-  plotModeApril2018Talk();
+  //plotModeApril2018Talk();
 
   /*
    * Plotting DHI data for talk
@@ -72,7 +72,11 @@ int main(int argc, char *argv[]) {
    * Testing real FFT
    */
   //testAziMode();
-  
+
+  /*
+   * test mode data with mdsplus
+   */
+  plotModeCompApril2018Talk();
   return 0;
 
 }

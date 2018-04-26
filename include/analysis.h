@@ -27,5 +27,6 @@ int plotDHIApril2018Talk();
 int plotSpecCIIIImageApril2018Talk();
 int hologramAnalysis();
 int plotCIIILineApril2018Talk();
+int plotModeCompApril2018Talk();
 
 #endif
