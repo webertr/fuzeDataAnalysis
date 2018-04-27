@@ -29,12 +29,12 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  hologramAnalysis();
+  //hologramAnalysis();
 
   /*
    * Plotting plasma parameters
    */
-  //testPlasmaParam();
+  testPlasmaParam();
 
   /* 
    * Plotting post shot data

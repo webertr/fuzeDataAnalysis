@@ -66,7 +66,7 @@ double carbonIonTemperature(double centerWL, double widthWL) {
 
 
 /******************************************************************************
- * Function: larmorRadius
+ * Function: gyroRadius
  * Inputs: double
  * Returns: double, double
  * Description: This will calculate the gyro radius for a proton and electron.
@@ -88,6 +88,30 @@ int gyroRadius(double bField, double temperature) {
   printf("\nProton Gyro Radius: %g cm at %g Tesla\n", ionGyroRadius, bFieldTesla);
   printf("\n**************************************************\n");
 
+
+  return 1;
+
+}
+
+
+/******************************************************************************
+ * Function: alfvenVelocity
+ * Inputs: double
+ * Returns: double, double
+ * Description: This will calculate the plasma alfven velocity for a given
+ * plasma with some magnetic field B, in Gauss, and ion density, ni, in
+ * particles per cm^-3. Mu is the mi / mp mass ratio.
+ * Should see 6.9E6 for B= 1 Tesla, n= 1E17 cm-3, and mu = 1 (hydrogen plasmas)
+ ******************************************************************************/
+
+int alfvenVelocity(double bField, double ionDensity, double mu) {
+
+  double alfvenVelocity = 2.18E11/sqrt(mu)/sqrt(ionDensity)*bField;
+  double bFieldTesla = bField/1E4;
+
+  printf("\n**************************************************\n");
+  printf("\nAlven Velocity: %g cm/sec at %g Tesla\n", alfvenVelocity, bFieldTesla);
+  printf("\n**************************************************\n");
 
   return 1;
 

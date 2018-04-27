@@ -5,6 +5,8 @@ int testPlasmaParam() {
   gyroFrequencies(1E4);
 
   gyroRadius(1E4, 100);
+
+  alfvenVelocity(1E4, 1E17, 1);
   
   return 0;
 
