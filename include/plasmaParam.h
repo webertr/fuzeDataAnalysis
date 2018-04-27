@@ -9,5 +9,6 @@
 
 int gyroFrequencies(double bField);
 double carbonIonTemperature(double centerWL, double widthWL);
+int gyroRadius(double bField, double temperature);
 
 #endif

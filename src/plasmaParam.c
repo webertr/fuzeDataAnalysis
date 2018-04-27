@@ -63,6 +63,35 @@ double carbonIonTemperature(double centerWL, double widthWL) {
   return ionTemp;
 
 }
-  
+
+
+/******************************************************************************
+ * Function: larmorRadius
+ * Inputs: double
+ * Returns: double, double
+ * Description: This will calculate the gyro radius for a proton and electron.
+ * Temperature is in eV, magnetic field is in Gauss.
+ * For a bField of 1E4 Gauss and a temperature of 100 eV, you should get:
+ * Electron Gyro Radius = 0.00238 cm
+ * Proton Gyro Radius = 0.102 cm 
+ ******************************************************************************/
+
+int gyroRadius(double bField, double temperature) {
+
+  double ionGyroRadius = 1.02E2*sqrt(temperature)/bField;
+  double elecGyroRadius = 2.38*sqrt(temperature)/bField;
+  double bFieldTesla = bField/1E4;
+
+  printf("\n**************************************************\n");
+  printf("\nElectron Gyro Radius: %g cm at %g Tesla\n", elecGyroRadius, bFieldTesla);
+  printf("\n**************************************************\n");
+  printf("\nProton Gyro Radius: %g cm at %g Tesla\n", ionGyroRadius, bFieldTesla);
+  printf("\n**************************************************\n");
+
+
+  return 1;
+
+}
+
 
   
