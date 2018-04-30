@@ -1751,7 +1751,7 @@ int hologramMain(holographyParameters* param) {
    */
   if (param->invertImage == 1) {
 
-    invertImage(twinImageUnwrap, param);
+    invertImageDHI(twinImageUnwrap, param);
     
   }
 

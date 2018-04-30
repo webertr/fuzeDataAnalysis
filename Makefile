@@ -16,7 +16,7 @@ SOURCE = src/magnetic.c \
 	src/analysis.c \
 	src/save.c \
 	src/fit.c \
-	test/testing.c
+	test/testAbelInversionDHI.c
 
 PROD = run
 

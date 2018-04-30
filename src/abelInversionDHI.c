@@ -1,5 +1,6 @@
 #include "abelInversionDHI.h"
 
+
 /******************************************************************************
  * Function: invertImage
  * Inputs: gsl_matrix*
@@ -11,7 +12,7 @@
  * is greater then the shell, it can't have any contribution
  ******************************************************************************/
 
-int invertImage(gsl_matrix* imageM, holographyParameters* param) {
+int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 
   int jj,
     maxIndex,
@@ -33,7 +34,7 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
 
 
   /* Get the matrix that will project the radial profile to the line integrated density */
-  gsl_matrix *projectMatrix = getProjectMatrix(numRows, param->deltaY);
+  gsl_matrix *projectMatrix = getProjectMatrixDHI(numRows, param->deltaY);
   
 
   /*
@@ -123,9 +124,12 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
      * It will also set the centroidLocation vector which represents the plasma center in
      * each cross section
      */
-    getRadialDensityProfile(leftCrossSection, rightCrossSection, crossSection, centroidLocation, 
-			    projectMatrix, centroidIterations, centroidIndexTest, jj, param);
+    getRadialDensityProfileDHI(leftCrossSection, rightCrossSection, crossSection, centroidLocation, 
+			       projectMatrix, centroidIterations, centroidIndexTest, jj, param);
 
+    gsl_matrix_set_col(leftDensityProfile, jj, leftCrossSection);
+    gsl_matrix_set_col(rightDensityProfile, jj, rightCrossSection);
+    
   }
 
   /*
@@ -134,7 +138,8 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
    * then convert it to density (divide by maximum length at that axial point before the circle
    * 2*(sqrt(R^2 - y^2), and add that to both the left and right radial density profiles.
    */
-  axialVariationCorrection(leftDensityProfile, rightDensityProfile, imageM, centroidLocation, param);
+  axialVariationCorrectionDHI(leftDensityProfile, rightDensityProfile, imageM,
+			      centroidLocation, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
@@ -156,6 +161,9 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
 
   /* Deleting vectors and matrices */
   gsl_vector_free(centroidLocation);
+  gsl_vector_free(crossSection);
+  gsl_vector_free(leftCrossSection);
+  gsl_vector_free(rightCrossSection);
   gsl_matrix_free(leftDensityProfile);
   gsl_matrix_free(rightDensityProfile);
   gsl_matrix_free(projectMatrix);
@@ -166,7 +174,7 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
 
 
 /******************************************************************************
- * Function: getRadialDensityProfile
+ * Function: getRadialDensityProfileDHI
  * Inputs: gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_matrix*, 
  * gsl_matrix*, int, int
  * Returns: int
@@ -177,10 +185,11 @@ int invertImage(gsl_matrix* imageM, holographyParameters* param) {
  * centroid_abs vector which represents the plasma center in each cross section
  ******************************************************************************/
 
-int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			    gsl_vector* crossSection, gsl_vector* centroidLocation,
-			    gsl_matrix* projectMatrix, int centroidIterations,  int centroidIndexTest,
-			    int colNumber, holographyParameters* param) {
+int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
+			       gsl_vector* crossSection, gsl_vector* centroidLocation,
+			       gsl_matrix* projectMatrix, int centroidIterations,
+			       int centroidIndexTest, int colNumber,
+			       holographyParameters* param) {
 
   int ii,jj,
     numRows = crossSection->size,
@@ -210,9 +219,9 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
      * b is the radial density profile, and M is the matrix 
      * that projects the radial density onto the line integrated density profile
      */
-    solveRightSystemLinearEq(projectMatrix, crossSection, rightCrossSection, rightSize);
+    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightCrossSection, rightSize);
 
-    solveLeftSystemLinearEq(projectMatrix, crossSection, leftCrossSection, leftSize);
+    solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftCrossSection, leftSize);
 
 
     /* 
@@ -225,11 +234,11 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
      */
     if (leftSize > rightSize) {
       sizeTot = rightSize;
-      findDensityOffset(rightCrossSection, leftCrossSection, param);
+      findDensityOffsetDHI(rightCrossSection, leftCrossSection, param);
     }
     else {
       sizeTot = leftSize;
-      findDensityOffset(leftCrossSection, rightCrossSection, param);
+      findDensityOffsetDHI(leftCrossSection, rightCrossSection, param);
     }
 
     /* Zeroing check sum value */
@@ -265,8 +274,7 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
 
 
   /* 
-   * Then just zero out everything else in the vector in case it was written to
-   * previously
+   * Then just zero out everything else in the vector in case it was written to previously
    */
   for (ii = minLeftSize; ii < numRows; ii++) {
     
@@ -286,160 +294,7 @@ int getRadialDensityProfile(gsl_vector* leftCrossSection, gsl_vector* rightCross
 
 
 /******************************************************************************
- * Function: getInvertedMatrixLeft
- * Inputs: int
- * Returns: gsl_matrix*
- * Description: For an onion model, with each shell/layer being given by the column
- * number, j, and each impact parameter given by the row number, i, find the
- * matrix that represents the amount each shell contributes to the impact
- * parameter, i. M(i,j), where M = 0 for j<i because if the impact parameter
- * is greater then the shell, it can't have any contribution. Then it inverts
- * this matrix. Each row is flipped left-right, so that the left line-
- * integrated density vector doesn't have to be flipped.
- ******************************************************************************/
-
-gsl_matrix* getInvertedMatrixLeft(int sizeM, double res) {
-
-  int ii, jj;
-  double num;
-
-  gsl_matrix *projectMatrix = gsl_matrix_alloc(sizeM,sizeM);
-  gsl_matrix *invertedMatrixFlipped = gsl_matrix_alloc(sizeM,sizeM);
-
-  /* 
-   * Here is the method I came up with to get the length of the
-   * chord of impact parameter ii, through the shell, jj. The chord
-   * is the chord through the center of the 1 pixel width rectangle
-   * that passes through the plasma
-   */
-  for (jj = 0; jj < sizeM; jj++) {
-    for (ii = 0; ii <= jj; ii++) {
-
-	num = sqrt(gsl_pow_2(jj+1)-
-		   gsl_pow_2(ii+0.5))
-	  -sqrt(gsl_pow_2(jj)-
-		gsl_pow_2(ii+0.5));
-
-	num = 2*num*res;
-
-	gsl_matrix_set(projectMatrix, ii, jj, num);
-	
-    }
-  }
-
-  /* 
-   * Double back over cases where i = j, because the formula doesn't work
-   * for that case.
-   */
-  for (jj = 0; jj < sizeM; jj++) {
-
-	num = sqrt(gsl_pow_2(jj+1)-
-		   gsl_pow_2(jj+0.5));
-	
-	num = 2*num*res;
-
-	gsl_matrix_set(projectMatrix, jj, jj, num);
-	
-  }
-
-  /* Inverting the matrix */
-  gsl_permutation *p = gsl_permutation_alloc (sizeM);
-  gsl_matrix *invertedMatrix = gsl_matrix_alloc(sizeM, sizeM);
-  int s;
-
-  gsl_linalg_LU_decomp (projectMatrix, p, &s);    
-  gsl_linalg_LU_invert (projectMatrix, p, invertedMatrixFlipped);
-
-  /* Flipping each row left-right so it can multiple left side of profile */
-  for (ii = 0; ii < sizeM; ii++) {
-    for (jj = 0; jj < sizeM; jj++) {
-
-      gsl_matrix_set(invertedMatrix, ii, jj,
-		     gsl_matrix_get(invertedMatrixFlipped, ii, sizeM-jj-1));
-      
-    }
-  }
-		     
-  gsl_matrix_free(projectMatrix);
-  gsl_matrix_free(invertedMatrixFlipped);
-
-  return invertedMatrix;
-
-}
-
-
-/******************************************************************************
- * Function: getInvertedMatrixRight
- * Inputs: int
- * Returns: gsl_matrix*
- * Description: For an onion model, with each shell/layer being given by the column
- * number, j, and each impact parameter given by the row number, i, find the
- * matrix that represents the amount each shell contributes to the impact
- * parameter, i. M(i,j), where M = 0 for j<i because if the impact parameter
- * is greater then the shell, it can't have any contribution. Then it inverts
- * this matrix
- ******************************************************************************/
-
-gsl_matrix* getInvertedMatrixRight(int sizeM, double res) {
-
-  int ii, jj;
-  double num;
-
-  gsl_matrix *projectMatrix = gsl_matrix_alloc(sizeM,sizeM);
-
-  /* 
-   * Here is the method I came up with to get the length of the
-   * chord of impact parameter ii, through the shell, jj. The chord
-   * is the chord through the center of the 1 pixel width rectangle
-   * that passes through the plasma
-   */
-  for (jj = 0; jj < sizeM; jj++) {
-    for (ii = 0; ii <= jj; ii++) {
-
-	num = sqrt(gsl_pow_2(jj+1)-
-		   gsl_pow_2(ii+0.5))
-	  -sqrt(gsl_pow_2(jj)-
-		gsl_pow_2(ii+0.5));
-
-	num = 2*num*res;
-
-	gsl_matrix_set(projectMatrix, ii, jj, num);
-	
-    }
-  }
-
-  /* 
-   * Double back over cases where i = j, because the formula doesn't work
-   * for that case.
-   */
-  for (jj = 0; jj < sizeM; jj++) {
-
-	num = sqrt(gsl_pow_2(jj+1)-
-		   gsl_pow_2(jj+0.5));
-	
-	num = 2*num*res;
-
-	gsl_matrix_set(projectMatrix, jj, jj, num);
-	
-  }
-
-  /* Inverting the matrix */
-  gsl_permutation *p = gsl_permutation_alloc (sizeM);
-  gsl_matrix *invertedMatrix = gsl_matrix_alloc(sizeM, sizeM);
-  int s;
-
-  gsl_linalg_LU_decomp (projectMatrix, p, &s);    
-  gsl_linalg_LU_invert (projectMatrix, p, invertedMatrix);
-
-  gsl_matrix_free(projectMatrix);
-
-  return invertedMatrix;
-
-}
-
-
-/******************************************************************************
- * Function: findDensityOffset
+ * Function: findDensityOffsetDHI
  * Inputs: gsl_vector*, gsl_vector*
  * Returns: double
  * Description: This function should determine what is the appropriate offset
@@ -447,8 +302,8 @@ gsl_matrix* getInvertedMatrixRight(int sizeM, double res) {
  * defined by the L2 norm of the vector, which is the just the vector length.
  ******************************************************************************/
 
-int findDensityOffset(gsl_vector* smallCrossSection, gsl_vector* largeCrossSection,
-		      holographyParameters* param) {
+int findDensityOffsetDHI(gsl_vector* smallCrossSection, gsl_vector* largeCrossSection,
+			 holographyParameters* param) {
 
   double  offsetValue,          // The actual offset value
     val1,                       // Value to set the vector to
@@ -475,9 +330,8 @@ int findDensityOffset(gsl_vector* smallCrossSection, gsl_vector* largeCrossSecti
      */
     for (jj = 0; jj < length; jj++) {
 
-      val1 = gsl_vector_get(largeCrossSection, jj) -
-	(gsl_vector_get(smallCrossSection, jj) +
-	 offsetValue);
+      val1 = gsl_vector_get(largeCrossSection, jj) - (gsl_vector_get(smallCrossSection, jj) +
+						      offsetValue);
       checkSum = checkSum + gsl_pow_2(val1);
 	
     }
@@ -500,10 +354,7 @@ int findDensityOffset(gsl_vector* smallCrossSection, gsl_vector* largeCrossSecti
    */
   for (jj = 0; jj < length; jj++) {
 
-    gsl_vector_set(smallCrossSection,
-		   jj,
-		   gsl_vector_get(smallCrossSection, jj) +
-		   minOffsetValue);
+    gsl_vector_set(smallCrossSection, jj, gsl_vector_get(smallCrossSection, jj) + minOffsetValue);
 
   }
 
@@ -513,7 +364,7 @@ int findDensityOffset(gsl_vector* smallCrossSection, gsl_vector* largeCrossSecti
 
 
 /******************************************************************************
- * Function: solveRightSystemLinearEq
+ * Function: solveRightSystemLinearEqDHI
  * Inputs: gsl_matrix*, gsl_vector*, gsl_vector*
  * Returns: int
  * Description: This will go through and solve the linear system,
@@ -524,8 +375,8 @@ int findDensityOffset(gsl_vector* smallCrossSection, gsl_vector* largeCrossSecti
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-			     int rightSize) {
+int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
+				int rightSize) {
 
   int ii,
     jj,
@@ -593,7 +444,7 @@ int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector*
 
 
 /******************************************************************************
- * Function: solveLeftSystemLinearEq
+ * Function: solveLeftSystemLinearEqDHI
  * Inputs: gsl_matrix*, gsl_vector*, gsl_vector*
  * Returns: int
  * Description: This will go through and solve the linear system,
@@ -604,8 +455,8 @@ int solveRightSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector*
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-			    int leftSize) {
+int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
+			       int leftSize) {
 
   int ii,
     jj,
@@ -674,7 +525,7 @@ int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* 
 
 
 /******************************************************************************
- * Function: getProjectMatrix
+ * Function: getProjectMatrixDHI
  * Inputs: int, double
  * Returns: gsl_matrix*
  * Description: For an onion model, with each shell/layer being given by the column
@@ -684,7 +535,7 @@ int solveLeftSystemLinearEq(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* 
  * is greater then the shell, it can't have any contribution.
  ******************************************************************************/
 
-gsl_matrix* getProjectMatrix(int sizeM, double res) {
+gsl_matrix* getProjectMatrixDHI(int sizeM, double res) {
 
   int ii, jj;
   double num;
@@ -733,7 +584,7 @@ gsl_matrix* getProjectMatrix(int sizeM, double res) {
  
 
 /******************************************************************************
- * Function: axialVariationCorrection
+ * Function: axialVariationCorrectionDHI
  * Inputs: gsl_matrix*, gsl_matrix*, gsl_matrix*, gsl_vector*
  * Returns: int
  * Description: This will go through and correct for any axial phase variations. It 
@@ -743,9 +594,9 @@ gsl_matrix* getProjectMatrix(int sizeM, double res) {
  * that to both the left and right radial density profiles.
  ******************************************************************************/
 
-int axialVariationCorrection(gsl_matrix *leftDensityProfile, gsl_matrix *rightDensityProfile,
-			     gsl_matrix *imageM, gsl_vector *centroidLocation,
-			     holographyParameters* param) {
+int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, gsl_matrix *rightDensityProfile,
+				gsl_matrix *imageM, gsl_vector *centroidLocation,
+				holographyParameters* param) {
 
   int numRows = param->numRows, // Number of Rows, pixels along the y-direction
     numCols = param->numCols,   // Number of Cols, pixels along the x-direction 

@@ -2,9 +2,9 @@
 #include "getLFData.h"
 #include "getSVFData.h"
 #include "imageAnalysisDHI.h"
-#include "testing.h"
 #include "analysis.h"
 #include "holoParam.h"
+#include "testAbelInversionDHI.h"
 
 
 /******************************************************************************
@@ -16,16 +16,11 @@
 
 int main(int argc, char *argv[]) {
 
-  /* 
-   * Demonstrating how to get and plot mdsplus data.
-   */
-  //testMagneticData();
-
   /*
-   * Doing testing of synthetic data 
+   * Testing DHI abel inverison code 
    */
-  //getTestData();
-
+  testInvertImageDHI();
+  
   /*
    * Running the DHI analysis
    */
@@ -34,7 +29,7 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting plasma parameters
    */
-  testPlasmaParam();
+  //testPlasmaParam();
 
   /* 
    * Plotting post shot data
