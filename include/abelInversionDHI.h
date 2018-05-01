@@ -24,23 +24,24 @@
 #include <gsl/gsl_wavelet.h>
 
 #include "holoParam.h"
+#include "save.h"
 
 
 int invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
 int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			    gsl_vector* crossSection, gsl_vector* centroidLocation,
-			    gsl_matrix* projectMatrix, int centroidIterations,
-			    int centroidIndexTest, int colNumber,
-			    holographyParameters* param);
+			       gsl_vector* crossSection, gsl_vector* centroidLocation,
+			       gsl_matrix* projectMatrix, int centroidIterations,
+			       int centroidIndexTest, int colNumber,
+			       holographyParameters* param);
 int findDensityOffsetDHI(gsl_vector* smallCrossSection, gsl_vector* largeCrossSection,
-		      holographyParameters* param);
+			 holographyParameters* param);
 int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-			     int rightSize);
+				int rightSize);
 int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-			    int leftSize);
+			       int leftSize);
 int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, gsl_matrix *rightDensityProfile,
-			     gsl_matrix *imageM, gsl_vector *centroidLocation,
-			     holographyParameters* param);
+				gsl_matrix *imageM, gsl_vector *centroidLocation,
+				holographyParameters* param);
 gsl_matrix* getProjectMatrixDHI(int sizeM, double res);
 
 

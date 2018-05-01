@@ -25,6 +25,7 @@
 
 #include "holoParam.h"
 #include "abelInversionDHI.h"
+#include "save.h"
 
 
 gsl_matrix *readJPEGImage(char *fileName);

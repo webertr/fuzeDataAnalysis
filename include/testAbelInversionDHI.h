@@ -25,6 +25,7 @@
 
 #include "holoParam.h"
 #include "abelInversionDHI.h"
+#include "plot.h"
 
 int testInvertImageDHI();
 

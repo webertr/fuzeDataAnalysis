@@ -111,7 +111,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .invertImage = 0,
   .fileLeftInvert = "data/leftAbelInvert.dat",
   .fileRightInvert = "data/rightAbelInvert.dat",
-  .fileCentroid = "data/centroid.dat"
+  .fileCentroid = "data/centroid.txt"
 };
 
 /******************************************************************************

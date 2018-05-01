@@ -55,8 +55,10 @@ int testInvertImageDHI() {
     radialProfileVec = gsl_matrix_column(radialProfile, jj);
     
     testVec = testMatrixMult(projectMatrix, &radialProfileVec.vector);
-    leftLength = (int) (20 + (float) jj /numCols*60);
-    offset = (double) (0 + (double) jj / numCols * 0.005);
+    leftLength = (int) (50 + (float) jj /numCols*0);
+    //leftLength = (int) (20 + (float) jj /numCols*60);
+    offset = (double) (0 + (double) jj / numCols * 0.00);
+    //offset = (double) (0 + (double) jj / numCols * 0.005);
     
     for (ii = 0; ii < numRows; ii++) {
     
@@ -78,7 +80,13 @@ int testInvertImageDHI() {
   param.centroidNum = 10;
   param.offsetIter = 20;
 
+  plotImageData(testData);
+  
+  invertImageDHI(testData, &param);
 
+  plotImageDataFile(param.fileLeftInvert, "");
+  plotImageDataFile(param.fileRightInvert, "");
+  
   return 0;
 
 }

@@ -2,6 +2,70 @@
 
 
 /******************************************************************************
+ * Function: saveImageData
+ * Inputs: gsl_matrix *, char *
+ * Returns: int
+ * Description: Save binary matrix data to be read by gnuplot such as:
+ * MS = zeros(length(x)+1,length(y)+1);
+ * MS(1,1) = length(x);
+ * MS(1,2:end) = y;
+ * MS(2:end,1) = x;
+ * MS(2:end,2:end) = M';
+ * % Write data into the file
+ * fid = fopen(file,'w');
+ * fwrite(fid,MS,'float');
+ * fclose(fid);
+ * plot 'color_map.bin' binary matrix with image
+ * Example:
+ * plot 'data/test.dat' binary matrix with image title "Line Integrated"
+ ******************************************************************************/
+
+int saveImageData(gsl_matrix *mInput, char *fileName) {
+
+  int numRows = mInput->size1;
+  int numCols = mInput->size2;
+
+  /* Allocating the matrix to save */  
+  gsl_matrix_float* temp = gsl_matrix_float_alloc(numRows+1, numCols+1);
+
+  /* Set number of columns to 0,0 elements */
+  gsl_matrix_float_set(temp,0,0,(float) numCols);
+
+  int ii,jj;
+  /* Setting y vector values to indices*/
+  for (ii = 1; ii < numRows+1; ii++) {
+    gsl_matrix_float_set(temp, ii, 0,
+			 (float) ii);
+  }
+  /* Setting x vector values to indices*/
+  for (ii = 1; ii < numCols+1; ii++) {
+    gsl_matrix_float_set(temp, 0, ii,
+			 (float) ii);
+  }
+  /* Setting matrix values */
+  for (ii = 1; ii < numRows+1; ii++) {
+    for (jj = 1; jj < numCols + 1; jj++) {
+
+      gsl_matrix_float_set(temp, ii, jj,
+			   (float) gsl_matrix_get(mInput,ii-1, jj-1));
+
+    }
+  }
+
+  /* Writting temp matrix to a file */
+  FILE *fp2;
+  fp2 = fopen(fileName, "wb");
+  gsl_matrix_float_fwrite (fp2, temp);
+  fclose(fp2);
+
+  gsl_matrix_float_free(temp);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: save2VectorData
  * Inputs: gsl_vector*, gsl_vector*, char *
  * Returns: int
@@ -113,6 +177,44 @@ int saveMatrixData(gsl_matrix *mIn, char *fileName) {
 
     }
     fprintf(fp, "\n");
+  }
+
+  fclose(fp);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: saveVectorData
+ * Inputs: gsl_vector*, char *
+ * Returns: int
+ * Description: This will first delete the file that it is passed, then save 
+ * the 1 vectors in a single text file for gnuplot to plot 
+ ******************************************************************************/
+
+int saveVectorData(gsl_vector *vecIn, char *fileName) {
+
+  int ii;
+  
+  if (remove(fileName) != 0) {
+    printf("Unable to delete the file");
+  }
+  
+  FILE *fp = fopen(fileName, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files to save for 3 vector save!\n");
+    exit(1);
+
+  }
+
+  for (ii = 0; ii < vecIn->size; ii++) {
+
+    fprintf(fp, "%g\n", gsl_vector_get(vecIn, ii));
+
   }
 
   fclose(fp);

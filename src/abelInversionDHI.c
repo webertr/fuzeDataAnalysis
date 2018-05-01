@@ -138,26 +138,16 @@ int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
    * then convert it to density (divide by maximum length at that axial point before the circle
    * 2*(sqrt(R^2 - y^2), and add that to both the left and right radial density profiles.
    */
-  axialVariationCorrectionDHI(leftDensityProfile, rightDensityProfile, imageM,
-			      centroidLocation, param);
+  //axialVariationCorrectionDHI(leftDensityProfile, rightDensityProfile, imageM,
+  //			      centroidLocation, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
-  FILE *fp1;
-  fp1 = fopen(param->fileLeftInvert, "wb");
-  gsl_matrix_fwrite (fp1, leftDensityProfile);
-  fclose(fp1);
+  saveImageData(leftDensityProfile, param->fileLeftInvert);
+  saveImageData(rightDensityProfile, param->fileRightInvert);
+  saveVectorData(centroidLocation, param->fileCentroid);
 
-  FILE *fp2;
-  fp2 = fopen(param->fileRightInvert, "wb");
-  gsl_matrix_fwrite (fp2, rightDensityProfile);
-  fclose(fp2);
-
-  FILE *fp3;
-  fp3 = fopen(param->fileCentroid, "wb");
-  gsl_vector_fwrite (fp3, centroidLocation);
-  fclose(fp3);
 
   /* Deleting vectors and matrices */
   gsl_vector_free(centroidLocation);
@@ -213,8 +203,7 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
     rightSize = numRows-(centroidIndexTest+1);
     
     /*
-     * Solves the linear system of equations that is,
-     * a = M x b
+     * Solves the linear system of equations that is, a = M x b
      * where a is the line integrated density vector, and
      * b is the radial density profile, and M is the matrix 
      * that projects the radial density onto the line integrated density profile
@@ -222,7 +211,6 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
     solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightCrossSection, rightSize);
 
     solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftCrossSection, leftSize);
-
 
     /* 
      * The shorter profile will have a large offset, and we want to vary the density
@@ -375,15 +363,17 @@ int findDensityOffsetDHI(gsl_vector* smallCrossSection, gsl_vector* largeCrossSe
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
+int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vector* vOutput,
 				int rightSize) {
+
+  gsl_vector_view vInputView = gsl_vector_subvector(vInput, vInput->size-rightSize, rightSize);
 
   int ii,
     jj,
     numRows = rightSize,
     numCols = rightSize,
-    vecSize1 = vInput->size,
-    vecSize2 = vInput->size;
+    vecSize1 = (&vInputView.vector)->size,
+    vecSize2 = (&vInputView.vector)->size;
 
   double vec,
     sum1;
@@ -431,7 +421,7 @@ int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vect
     }
 
     /* Subtracting constant value */
-    sum1 = gsl_vector_get(vInput, ii) - vec;
+    sum1 = gsl_vector_get(&vInputView.vector, ii) - vec;
     sum1 = sum1 / gsl_matrix_get(&rightProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
@@ -455,15 +445,18 @@ int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vect
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
+int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vector *vOutput,
 			       int leftSize) {
 
+  
+  gsl_vector_view vInputView = gsl_vector_subvector(vInput, 0, leftSize);
+  
   int ii,
     jj,
     numRows = leftSize,
     numCols = leftSize,
-    vecSize1 = vInput->size,
-    vecSize2 = vInput->size;
+    vecSize1 = (&vInputView.vector)->size,
+    vecSize2 = (&vInputView.vector)->size;
 
   double vec,
     sum1;
@@ -512,7 +505,7 @@ int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vecto
     }
 
     /* Subtracting constant value */
-    sum1 = gsl_vector_get(vInput, (numRows-1)-ii) - vec;
+    sum1 = gsl_vector_get(&vInputView.vector, (numRows-1)-ii) - vec;
     sum1 = sum1 / gsl_matrix_get(&leftProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
