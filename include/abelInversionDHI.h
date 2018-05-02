@@ -27,9 +27,9 @@
 #include "save.h"
 
 
-int invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
+gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
 int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			       gsl_vector* crossSection, double* centroidLocation,
+			       gsl_vector* crossSection, int* centroidLocation,
 			       gsl_matrix* projectMatrix, int centroidIterations,
 			       int centroidIndexTest, int colNumber, holographyParameters* param);
 int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,

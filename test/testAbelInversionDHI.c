@@ -22,10 +22,7 @@ int testInvertImageDHI() {
 
   gsl_matrix *radialProfile = gsl_matrix_alloc(numRows, numCols);
 
-  gsl_vector *radialProfileVec = gsl_vector_alloc(numCols),
-    *vec1 = gsl_vector_alloc(numCols),
-    *vec2 = gsl_vector_alloc(numCols),
-    *vec3 = gsl_vector_alloc(numCols);
+  gsl_vector *radialProfileVec = gsl_vector_alloc(numCols);
   
   gsl_vector *testVec;
   gsl_vector *xVec = gsl_vector_alloc(numCols);
@@ -75,23 +72,13 @@ int testInvertImageDHI() {
 
   plotImageData(testData);
     
-  invertImageDHI(testData, &param);
+  gsl_matrix *invertedImage = invertImageDHI(testData, &param);
 
-  int colPlot = 10;
+  saveImageData(invertedImage, param.fileFullInvert);
   
-  gsl_matrix *invDataLeft = gsl_matrix_alloc(numRows, numCols);
-  readImageData(invDataLeft, param.fileLeftInvert);
-  gsl_matrix_get_col(vec1, invDataLeft, colPlot);
-  gsl_matrix_get_col(vec2, radialProfile, colPlot);
-  plot2VectorData(xVec, vec1, vec2, "");
+  plotMatrixDataFile(param.fileLeftInvert, 50, "");
   
-  gsl_matrix *invDataRight = gsl_matrix_alloc(numRows, numCols);
-  readImageData(invDataRight, param.fileRightInvert);
-  gsl_matrix_get_col(vec3, invDataRight, colPlot);
-  plot2VectorData(xVec, vec3, vec2, "");
-
-  //plotImageDataFile(param.fileLeftInvert, "");
-  //plotImageDataFile(param.fileRightInvert, "");
+  plotImageDataFile(param.fileFullInvert, "");
   
   return 0;
 

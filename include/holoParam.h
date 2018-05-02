@@ -8,56 +8,57 @@
  * A structure to pass around the necessary parameters for hologram reconstruction and inversion
  */
 struct holographyparameters { 
-  double res;                 // Resolution of Camera CCD Pixels (3.85E-6 m)
-  double lambda;              // Wavelength of laser (532E-9 m)
-  double d;                   // Reconstruction distance (0.5 m)
-  double deltaN;              // Density offset delta (5E18)
-  int numRows;                // Number of rows of image (6016)
-  int numCols;                // Number of columns of image (4000)
-  double e0;                 // The permitivity of free space
-  double q;                   // The electron Charge
-  double c;                   // The speed of light
-  double me;                  // The electro mass
-  int xLL;                    // X/Column number of far left pixel defining first order image
-                              // to extract from the holographic reconstruction
-  int yLL;                    // Y/Row number of bottom most pixel defining first order image
-                              // to extract from the holographic reconstruction
-  int xUR;                    // X/Column number of far right pixel defining first order image
-                              // to extract from the holographic reconstruction
-  int yUR;                    // Y/Row number of top most pixel defining first order image
-                              // to extract from the holographic reconstruction
-  int hyperbolicWin;          // The fitting parameter for the hyperbolic smooth parameters (8)
-  int sampleInterval;         // Sampling interval of line-integrated density (10)
-  int centroidNum;            // number of centroids to vary +/- around maximum (10)
-  int offsetIter;             // Number of offset iterations (15)
-  int boxCarSmoothWidth;      // Box car smoothing width to apply to unwrapped phase (8)
-  double unwrapThresh;        // Threshold to trigger the phase unwrapping
-  int signTwin;               // Sign to density conversion +/-1. Depends on laser setup (-1)
-  double deltaX;              // The distance between column pixels for the current 2d image
-  double deltaY;              // The distance between row pixels for the current 2d image
-  int debugPhase;             // 1 means save and plot a col profile of the phase and unwrapped phase
-  int debugPhaseColNum;       // Col number to save for the phase and unwrapped phase plot
-  int debugPhaseRowNum;       // Row number to save for the phase and unwrapped phase plot
-  int saveHologram;           // 1 means to save the hologram before extracting twin image
-  char fileHologram[100];     // The name of the file for the hologram data
-  int plotRadialProfile;      // 1 means to plot the inverted radial profile and slice through
-                              // the line integrated image (at plotColNum)
-  int invertImage;            // 1 means to perform an inversion
-  int plotColNum;             // The column number to plot for the inverted radial profile and
-                              // slice of the line integrated image.
-  int saveLineIntPos;         // 1 means to save the line integrated data with position info
-  char fileLineIntPos[100];   // The name of the file for the line integrated data with positon info
-  char fileLeftInvert[100];   // The name of the file for the left abel inverted data
-  char fileRightInvert[100];  // The name of the file for the right abel inverted data
-  char fileCentroid[100];     // The name of the file for the centroid file
-  double R_electrode;         // value of the radius of the inner electrode
-  int rotateImage;            // 1 means to rotate the image by 90 degrees CW
-  int flipImageRows;          // 1 means to flip the image rows
-  int flipImageCols;          // 1 means to flip the images cols
-  int refSubtract;            // 1 means to subtract the reference image
-  double zPosition;           // The z position of the hologram at the center of the image
-  char filePlasma[100];       // The name of the baseline image
-  char fileRef[100];          // The name of the plasma image
+  double res;                   // Resolution of Camera CCD Pixels (3.85E-6 m)
+  double lambda;                // Wavelength of laser (532E-9 m)
+  double d;                     // Reconstruction distance (0.5 m)
+  double deltaN;                // Density offset delta (5E18)
+  int numRows;                  // Number of rows of image (6016)
+  int numCols;                  // Number of columns of image (4000)
+  double e0;                    // The permitivity of free space
+  double q;                     // The electron Charge
+  double c;                     // The speed of light
+  double me;                    // The electro mass
+  int xLL;                      // X/Column number of far left pixel defining first order image
+                                // to extract from the holographic reconstruction
+  int yLL;                      // Y/Row number of bottom most pixel defining first order image
+                                // to extract from the holographic reconstruction
+  int xUR;                      // X/Column number of far right pixel defining first order image
+                                // to extract from the holographic reconstruction
+  int yUR;                      // Y/Row number of top most pixel defining first order image
+                                // to extract from the holographic reconstruction
+  int hyperbolicWin;            // The fitting parameter for the hyperbolic smooth parameters (8)
+  int sampleInterval;           // Sampling interval of line-integrated density (10)
+  int centroidNum;              // number of centroids to vary +/- around maximum (10)
+  int offsetIter;               // Number of offset iterations (15)
+  int boxCarSmoothWidth;        // Box car smoothing width to apply to unwrapped phase (8)
+  double unwrapThresh;          // Threshold to trigger the phase unwrapping
+  int signTwin;                 // Sign to density conversion +/-1. Depends on laser setup (-1)
+  double deltaX;                // The distance between column pixels for the current 2d image
+  double deltaY;                // The distance between row pixels for the current 2d image
+  int saveHologram;             // 1 means to save the hologram before extracting twin image
+  char fileHologram[100];       // The name of the file for the hologram data
+  int plotRadialProfile;        // 1 means to plot the inverted radial profile and slice through
+                                // the line integrated image (at plotColNum)
+  int invertImage;              // 1 means to perform an inversion
+  int plotColNum;               // The column number to plot for the inverted radial profile and
+                                // slice of the line integrated image.
+  int saveLineIntPos;           // 1 means to save the line integrated data with position info
+  char fileLineIntPos[100];     // The name of the file for the line integrated data with positon info
+  char fileLineInt[100];     // The name of the file for the line integrated data
+  char fileLeftInvert[100];     // The name of the file for the left abel inverted data
+  char fileRightInvert[100];    // The name of the file for the right abel inverted data
+  char fileFullInvert[100];     // The name of the file for the full abel inverted data
+  char fileFullInvertPos[100];  // The name of the file for the full abel inverted data with pos info
+  char fileFullInvertText[100]; // The name of the file for the full abel inverted data text file
+  char fileCentroid[100];       // The name of the file for the centroid file
+  double R_electrode;           // value of the radius of the inner electrode
+  int rotateImage;              // 1 means to rotate the image by 90 degrees CW
+  int flipImageRows;            // 1 means to flip the image rows
+  int flipImageCols;            // 1 means to flip the images cols
+  int refSubtract;              // 1 means to subtract the reference image
+  double zPosition;             // The z position of the hologram at the center of the image
+  char filePlasma[100];         // The name of the baseline image
+  char fileRef[100];            // The name of the plasma image
 };
 
 typedef struct holographyparameters holographyParameters;
@@ -89,13 +90,10 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .hyperbolicWin = 8,
   .sampleInterval = 10,
   .centroidNum = 10,
-  .offsetIter = 10,
+  .offsetIter = 1,
   .boxCarSmoothWidth = 10,
   .unwrapThresh = 1.0*M_PI,
   .signTwin = 1,
-  .debugPhase = 0,
-  .debugPhaseColNum = 10,
-  .debugPhaseRowNum = 61,
   .plotRadialProfile = 0,
   .plotColNum = 100,
   .rotateImage = 1,
@@ -108,9 +106,13 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .fileHologram = "data/hologram.dat",
   .saveLineIntPos = 1,
   .fileLineIntPos = "data/lineIntegratedPosition.dat",
-  .invertImage = 0,
-  .fileLeftInvert = "data/leftAbelInvert.dat",
-  .fileRightInvert = "data/rightAbelInvert.dat",
+  .fileLineInt = "data/lineIntegrated.dat",
+  .invertImage = 1,
+  .fileLeftInvert = "data/leftAbelInvert.txt",
+  .fileRightInvert = "data/rightAbelInvert.txt",
+  .fileFullInvert = "data/fullAbelInvert.dat",
+  .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
+  .fileFullInvertText = "data/fullAbelInvert.txt",
   .fileCentroid = "data/centroid.txt"
 };
 

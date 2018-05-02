@@ -12,9 +12,9 @@
  * is greater then the shell, it can't have any contribution
  ******************************************************************************/
 
-int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
+gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 
-  int jj,
+  int ii, jj, centroid,
     maxIndex,
     centroidIndexTest,
     centroidIterations,                // For loop to scan center vals to find best cen of plasma
@@ -25,6 +25,7 @@ int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   /* The matrices to hold the final radial profiles, both left and right, for each column */
   gsl_matrix *leftDensityProfile = gsl_matrix_alloc(numRows, numCols);
   gsl_matrix *rightDensityProfile = gsl_matrix_alloc(numRows, numCols);
+  gsl_matrix *fullDensityProfile = gsl_matrix_alloc(numRows, numCols);
 
   /* This is the centroid location in absolute pixel-space */
   gsl_vector *centroidLocation = gsl_vector_alloc(numCols),
@@ -35,8 +36,6 @@ int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 
   /* Get the matrix that will project the radial profile to the line integrated density */
   gsl_matrix *projectMatrix = getProjectMatrixDHI(numRows, param->deltaY);
-
-  double centroid;
 
   /*
    * Starting to iterate through the cross sections. Each
@@ -128,13 +127,36 @@ int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   //axialVariationCorrectionDHI(leftDensityProfile, rightDensityProfile, imageM,
   //			      centroidLocation, param);
 
+
+  /* 
+   * Assemblying full density profile image 
+   */
+  for (jj = 0; jj < numCols; jj++) {
+    gsl_matrix_get_col(leftCrossSection, leftDensityProfile, jj);
+    gsl_matrix_get_col(rightCrossSection, rightDensityProfile, jj);
+    centroid = (int) gsl_vector_get(centroidLocation, jj);
+
+    if ( (centroid == 0) || (centroid == (numRows - 1))) {
+      continue;
+    }
+    for (ii = centroid; ii > 0; ii--) {
+      gsl_matrix_set(fullDensityProfile, ii, jj,
+		     gsl_vector_get(leftCrossSection, centroid-ii));
+    }
+    for (ii = centroid+1; ii < numRows; ii++) {
+      gsl_matrix_set(fullDensityProfile, ii, jj,
+		     gsl_vector_get(rightCrossSection, ii-centroid));
+    }
+  }
+		     
+      
+  
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
-  saveImageData(leftDensityProfile, param->fileLeftInvert);
-  saveImageData(rightDensityProfile, param->fileRightInvert);
+  saveMatrixData(leftDensityProfile, param->fileLeftInvert);
+  saveMatrixData(rightDensityProfile, param->fileRightInvert);
   saveVectorData(centroidLocation, param->fileCentroid);
-
 
   /* Deleting vectors and matrices */
   gsl_vector_free(centroidLocation);
@@ -145,7 +167,7 @@ int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_free(rightDensityProfile);
   gsl_matrix_free(projectMatrix);
 
-  return 0;
+  return fullDensityProfile;
 
 }
 
@@ -163,7 +185,7 @@ int invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
  ******************************************************************************/
 
 int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			       gsl_vector* crossSection, double* centroidLocation,
+			       gsl_vector* crossSection, int* centroidLocation,
 			       gsl_matrix* projectMatrix, int centroidIterations,
 			       int centroidIndexTest, int colNumber, holographyParameters* param) {
 
@@ -240,7 +262,7 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
       minCheckSum = checkSum;
       minLeftSize = leftSize;
       minRightSize = rightSize;
-      *centroidLocation = (double) leftSize;
+      *centroidLocation = leftSize;
       gsl_vector_memcpy(rightCrossSection, rightCrossSectionTemp);
       gsl_vector_memcpy(leftCrossSection, leftCrossSectionTemp);
 

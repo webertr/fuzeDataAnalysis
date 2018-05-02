@@ -18,6 +18,7 @@
 
 static int quadSwapComplexImage (gsl_matrix_complex *mInput);
 static int hyperbolicWindow (gsl_matrix *mInput, int param);
+static int overlayCenterLine(gsl_matrix *mInput, char *fileCentroid);
 
 /*
  * Declare constants and ZaP-HD plasma parameters:
@@ -479,37 +480,6 @@ gsl_matrix *smoothUnwrapPhase (gsl_matrix *mInput, holographyParameters* param) 
     }
   }
 
-  /* 
-   * If debugPhase is on, this will write a radial profile plot of the phase
-   * then later, of the unwrapped phase
-   */
-  if (param->debugPhase == 1) {
-
-    FILE *fp1;
-    fp1 = fopen("data/phaseCol.txt", "w");
-    int ii;
-    for (ii = 0; ii < numRows; ii++) {
-
-      fprintf(fp1, "%f\n",
-	      gsl_matrix_get(mRet, ii, param->debugPhaseColNum));
-
-    }
-    fclose(fp1);
-
-    FILE *fp2;
-    fp2 = fopen("data/phaseRow.txt", "w");
-    int jj;
-    for (jj = 0; jj < numCols; jj++) {
-
-      fprintf(fp2, "%f\n",
-	      gsl_matrix_get(mRet, param->debugPhaseRowNum, jj));
-
-    }
-    fclose(fp2);
-
-    lineIntegratedSave(mRet, "data/lineIntegratedWrappedPhase.dat");
-
-  }
 
   /* Unwrapping the columns */
   unwrapCols(mRet, param);
@@ -517,41 +487,6 @@ gsl_matrix *smoothUnwrapPhase (gsl_matrix *mInput, holographyParameters* param) 
   /* Unwrapping the rows */
   unwrapRows(mRet, param);
 
-  /* 
-   * If debugPhase is on, this will write a radial profile plot of the unwrapped phase
-   * then exit and plot the phase and unwrapped phase.
-   */
-  if (param->debugPhase == 1) {
-
-    FILE *fp1;
-    fp1 = fopen("data/phaseUnwrapCol.txt", "w");
-    int ii;
-    for (ii = 0; ii < numRows; ii++) {
-
-      fprintf(fp1, "%f\n",
-	      gsl_matrix_get(mRet, ii, param->debugPhaseColNum));
-
-    }
-    fclose(fp1);
-    
-    FILE *fp2;
-    fp2 = fopen("data/phaseUnwrapRow.txt", "w");
-    int jj;
-    for (jj = 0; jj < numCols; jj++) {
-
-      fprintf(fp2, "%f\n",
-	      gsl_matrix_get(mRet, param->debugPhaseRowNum, jj));
-
-    }
-    fclose(fp2);
-
-    lineIntegratedSave(mRet, "data/lineIntegratedUnWrappedPhase.dat");
-
-    system("script/plot_phase.sh");
-
-    exit(1);
-    
-  }
 
   /* Freeing matrices no longer needed */
   gsl_matrix_free(mTempSin);
@@ -682,7 +617,7 @@ int unwrapCols(gsl_matrix *mInput, holographyParameters* param) {
  * Description: Returns the y positions for the reconstructed holograph
  ******************************************************************************/
 
-gsl_vector *getImageYVectorHol(gsl_matrix *mInput, holographyParameters* param) {
+gsl_vector *getImageYVectorHol(holographyParameters* param) {
 
   int ii,
     numRows = param->numRows;
@@ -717,7 +652,7 @@ gsl_vector *getImageYVectorHol(gsl_matrix *mInput, holographyParameters* param) 
  * Description: Returns the x positions for the reconstructed holograph
  ******************************************************************************/
 
-gsl_vector *getImageXVectorHol(gsl_matrix *mInput, holographyParameters* param) {
+gsl_vector *getImageXVectorHol(holographyParameters* param) {
 
   int ii,
     numCols = param->numCols;
@@ -742,71 +677,6 @@ gsl_vector *getImageXVectorHol(gsl_matrix *mInput, holographyParameters* param) 
   }
 
   return colVector;
-
-}
-
-
-/******************************************************************************
- * Function: saveHologramImageBinary
- * Inputs: gsl_matrix *, gsl_vector *, gsl_vector *, char *
- * Returns: int
- * Description: Save binary matrix data to be read by gnuplot such as:
- * MS = zeros(length(x)+1,length(y)+1);
- * MS(1,1) = length(x);
- * MS(1,2:end) = y;
- * MS(2:end,1) = x;
- * MS(2:end,2:end) = M';
- * % Write data into the file
- * fid = fopen(file,'w');
- * fwrite(fid,MS,'float');
- * fclose(fid);
- * plot 'color_map.bin' binary matrix with image
- * Example:
- * plot 'data/lineIntegrated.dat' binary matrix with image title "Line Integrated"
- ******************************************************************************/
-
-int saveHologramImageBinary(gsl_matrix *mInput, gsl_vector* xVec, gsl_vector* yVec,
-			    char *fileName) {
-
-  int numRows = yVec->size;
-  int numCols = xVec->size;
-
-  /* Creates matrix to get written */
-  gsl_matrix_float* temp = gsl_matrix_float_alloc(numRows+1, numCols+1);
-
-  /* Set number of columns to 0,0 elements */
-  gsl_matrix_float_set(temp,0,0,(float) numCols);
-
-  int ii,jj;
-  /* Setting y vector values */
-  for (ii = 1; ii < numRows+1; ii++) {
-    gsl_matrix_float_set(temp, ii, 0,
-			 (float) gsl_vector_get(yVec, ii-1));
-  }
-  /* Setting x vector values */
-  for (ii = 1; ii < numCols+1; ii++) {
-    gsl_matrix_float_set(temp, 0, ii,
-			 (float) gsl_vector_get(xVec, ii-1));
-  }
-  /* Setting matrix values */
-  for (ii = 1; ii < numRows+1; ii++) {
-    for (jj = 1; jj < numCols + 1; jj++) {
-
-      gsl_matrix_float_set(temp, ii, jj,
-			   (float) gsl_matrix_get(mInput,ii-1, jj-1));
-
-    }
-  }
-  
-  /* Writting temp matrix to a file */
-  FILE *fp2;
-  fp2 = fopen(fileName, "wb");
-  gsl_matrix_float_fwrite (fp2, temp);
-  fclose(fp2);
-
-  gsl_matrix_float_free(temp);
-
-  return 0;
 
 }
 
@@ -850,129 +720,6 @@ int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param) {
 
     }
   }
-
-  return 0;
-
-}
-
-
-/******************************************************************************
- * Function: saveRadialProfileWithPosition
- * Inputs: gsl_matrix *, gsl_vector *, int, char *
- * Returns: int
- * Description: This saves a radial profile along with position information.
- * You can read this using gnuplot with the following command:
- * plot 'data/leftRadialProfile.txt' using ($1*1000):2 title "Left Profile",\
- *      'data/rightRadialProfile.txt' using ($1*1000):2 title "Right Profile"
- ******************************************************************************/
-
-int saveRadialProfileWithPosition(char *fileLeftMatrix, char *fileRightMatrix,
-				  int numRows, int numCols,
-				  gsl_vector* yVec, int colNum, char *fileLeftProfile,
-				  char *fileRightProfile) {
-
-  int numRowsVector = yVec->size;
-
-  double offsetVector = gsl_vector_get(yVec, 0);
-
-  gsl_matrix* tempMatrixLeft = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix* tempMatrixRight = gsl_matrix_alloc(numRows, numCols);
-
-  FILE *fp1;
-  fp1 = fopen(fileLeftMatrix, "rb");
-  gsl_matrix_fread(fp1, tempMatrixLeft);
-  fclose(fp1);
-  FILE *fp2;
-  fp2 = fopen(fileRightMatrix, "rb");
-  gsl_matrix_fread(fp2, tempMatrixRight);
-  fclose(fp2);
-
-  FILE *fp3;
-  fp3 = fopen(fileLeftProfile, "w");
-  FILE *fp4;
-  fp4 = fopen(fileRightProfile, "w");
-
-  int ii;
-  for (ii = 0; ii < numRowsVector; ii++) {
-
-    fprintf(fp3, "%f %f\n",
-	    gsl_vector_get(yVec, ii)-offsetVector,
-	    gsl_matrix_get(tempMatrixLeft, ii, colNum));
-    fprintf(fp4, "%f %f\n",
-	    gsl_vector_get(yVec, ii)-offsetVector,
-	    gsl_matrix_get(tempMatrixRight, ii, colNum));
-
-  }
-  fclose(fp3);
-  fclose(fp4);
-
-  gsl_matrix_free(tempMatrixLeft);
-  gsl_matrix_free(tempMatrixRight);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
- * Function: saveRadialProfileWithPosition
- * Inputs: gsl_matrix *, gsl_vector *, int, char *
- * Returns: int
- * Description: This saves a radial profile along with position information.
- * You can read this using gnuplot with the following command:
- * plot 'data/leftRadialProfile.txt' using ($1*1000):2 title "Left Profile",\
- *      'data/rightRadialProfile.txt' using ($1*1000):2 title "Right Profile"
- ******************************************************************************/
-
-int saveLineIntegratedSlice(gsl_matrix *mInput, int colNumber, 
-			    char *fileSaveName) {
-
-
-  int numRows = mInput->size1;
-
-  FILE *fp1;
-  fp1 = fopen(fileSaveName, "w");
-
-  int ii;
-  for (ii = 0; ii < numRows; ii++) {
-
-    fprintf(fp1, "%f\n",
-	    gsl_matrix_get(mInput, ii, colNumber));
-
-  }
-  fclose(fp1);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
- * Function: saveRadialProfileWithPosition
- * Inputs: gsl_matrix *, gsl_vector *, int, char *
- * Returns: int
- * Description: This saves a radial profile along with position information.
- * You can read this using gnuplot with the following command:
- * plot 'data/leftRadialProfile.txt' using ($1*1000):2 title "Left Profile",\
- *      'data/rightRadialProfile.txt' using ($1*1000):2 title "Right Profile"
- ******************************************************************************/
-
-int saveLineIntegratedRow(gsl_matrix *mInput, int rowNumber, 
-			  char *fileSaveName) {
-
-  int numCols = mInput->size2;
-
-  FILE *fp1;
-  fp1 = fopen(fileSaveName, "w");
-
-  int jj;
-  for (jj = 0; jj < numCols; jj++) {
-
-    fprintf(fp1, "%f\n",
-	    gsl_matrix_get(mInput, rowNumber, jj));
-
-  }
-  fclose(fp1);
 
   return 0;
 
@@ -1107,134 +854,6 @@ gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param
 
 
 /******************************************************************************
- * Function: lineIntegratedCenterLine
- * Inputs: 
- * Returns: int
- * Description: This puts a varying center line across a line integrated
- * image and saves it. Read this with:
- * plot 'data/test.dat' binary matrix with image title ""
- ******************************************************************************/
-
-int lineIntegratedCenterLine(gsl_matrix *mInput, char *fileNameImage, char* fileNameCentroid) {
-
-  int numRows = mInput->size1;
-  int numCols = mInput->size2;
-
-  /* Temporary matrix to construct matrix to write */
-  gsl_matrix_float* temp = gsl_matrix_float_alloc(numRows+1, numCols+1);
-
-  /* Format so that gnuplot knows how many columns */
-  gsl_matrix_float_set(temp,0,0,(float) numCols);
-
-  int ii,jj;
-
-  /* Temporary vector to read centroid coordinates */
-  gsl_vector* tempVector = gsl_vector_alloc(numCols);
-
-  /* Reading in centroid coordinates */
-  FILE *fp3;
-  fp3 = fopen(fileNameCentroid, "rb");
-  gsl_vector_fread(fp3, tempVector);
-  fclose(fp3);
-  
-  /* Writting matrix to be read by gnuplot */
-  for (ii = 1; ii < numRows+1; ii++) {
-    gsl_matrix_float_set(temp, ii, 0,
-			 (float) ii);
-  }
-  for (ii = 1; ii < numCols+1; ii++) {
-    gsl_matrix_float_set(temp, 0, ii,
-			 (float) ii);
-  }
-  for (ii = 1; ii < numRows+1; ii++) {
-    for (jj = 1; jj < numCols + 1; jj++) {
-
-      gsl_matrix_float_set(temp, ii, jj,
-			   (float) gsl_matrix_get(mInput,ii-1, jj-1));
-
-    }
-  }
-
-  int val1;
-
-  /* Setting selected centroid values to 0 */
-  for (jj = 1; jj < numCols+1; jj++) {
-
-    val1 = 1 + (int) gsl_vector_get(tempVector, jj-1);
-    
-    for (ii = 1; ii < numRows+1; ii++) {
-      
-      if (ii == val1) {
-	gsl_matrix_float_set(temp, ii, jj, 0.0);
-      }
-
-    }
-  }
-
-  FILE *fp2;
-  fp2 = fopen(fileNameImage, "wb");
-  gsl_matrix_float_fwrite (fp2, temp);
-  fclose(fp2);
-
-  gsl_matrix_float_free(temp);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
- * Function: lineIntegratedSave
- * Inputs: 
- * Returns: int
- * Description: This saves it with no center line. Read this with:
- * plot 'data/test.dat' binary matrix with image title ""
- ******************************************************************************/
-
-int lineIntegratedSave(gsl_matrix *mInput, char *fileNameImage) {
-
-  int numRows = mInput->size1;
-  int numCols = mInput->size2;
-
-  /* Temporary matrix to construct matrix to write */
-  gsl_matrix_float* temp = gsl_matrix_float_alloc(numRows+1, numCols+1);
-
-  /* Format so that gnuplot knows how many columns */
-  gsl_matrix_float_set(temp,0,0,(float) numCols);
-
-  int ii,jj;
-
-  /* Writting matrix to be read by gnuplot */
-  for (ii = 1; ii < numRows+1; ii++) {
-    gsl_matrix_float_set(temp, ii, 0,
-			 (float) ii);
-  }
-  for (ii = 1; ii < numCols+1; ii++) {
-    gsl_matrix_float_set(temp, 0, ii,
-			 (float) ii);
-  }
-  for (ii = 1; ii < numRows+1; ii++) {
-    for (jj = 1; jj < numCols + 1; jj++) {
-
-      gsl_matrix_float_set(temp, ii, jj,
-			   (float) gsl_matrix_get(mInput,ii-1, jj-1));
-
-    }
-  }
-
-  FILE *fp2;
-  fp2 = fopen(fileNameImage, "wb");
-  gsl_matrix_float_fwrite (fp2, temp);
-  fclose(fp2);
-
-  gsl_matrix_float_free(temp);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
  * Function: rotateImage90CW
  * Inputs: gsl_matrix *
  * Returns: gsl_matrix *
@@ -1332,78 +951,53 @@ gsl_matrix *flipImageCols(gsl_matrix *imagePlasma) {
 
 
 /******************************************************************************
- * Function: save2DInvertedProfile
- * Inputs: gsl_matrix
+ * Function: overlayCenterLine
+ * Inputs: gsl_matrix, char *
  * Returns: int
- * Description: Takes the left inverted density profile, right inverted density
- * profile, and the centroid, and saves them into a 2D image to be plotted
- * by gnuplot using:
- * plot 'data/test.dat' binary matrix with image title ""
+ * Description: Overlays a center line on the inverted data
  ******************************************************************************/
 
-int save2DInvertedProfile (char *imageSave, char *fileLeftProfile, char* fileRightProfile, 
-			   char* fileCentroid, holographyParameters* param) {
+static int overlayCenterLine (gsl_matrix *mInput, char *fileCentroid) {
 
-  int numRows = param->numRows,
-    numCols = param->numCols;
+  int ii, jj, center,
+    numRows = mInput->size1,
+    numCols = mInput->size2;
 
-  gsl_matrix* mLeftTemp = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix* mRightTemp = gsl_matrix_alloc(numRows, numCols);
-  gsl_vector* tempVector = gsl_vector_alloc(numCols);
+  /* Temporary vector to read centroid coordinates */
+  gsl_vector* tempVector = gsl_vector_alloc(numRows);
 
-  /* Temporary matrix to construct matrix to write */
-  gsl_matrix_float* tempMatrix = gsl_matrix_float_alloc(numRows+1, numCols+1);
-
-  /* Format so that gnuplot knows how many columns */
-  gsl_matrix_float_set(tempMatrix,0,0,(float) numCols);
-
-  /*
-   * Reading binary matix information for left and right profiles
-   */
-  FILE *fp1;
-  fp1 = fopen(fileLeftProfile, "rb");
-  gsl_matrix_fread (fp1, mLeftTemp);
-  fclose(fp1);
-
-  FILE *fp2;
-  fp2 = fopen(fileRightProfile, "rb");
-  gsl_matrix_fread (fp2, mRightTemp);
-  fclose(fp2);
+  double val;
   
-  /*
-   * Reading vector information for the centroid
-   */
-  FILE *fp3;
-  fp3 = fopen(fileLeftProfile, "rb");
-  gsl_vector_fread (fp3, tempVector);
-  fclose(fp3);
-
-  int ii, jj;
-  /* Writting matrix to be read by gnuplot */
-  for (ii = 1; ii < numRows+1; ii++) {
-    gsl_matrix_float_set(tempMatrix, ii, 0,
-			 (float) ii);
+  /* Reading in centroid coordinates */
+  FILE *fp;
+  fp = fopen(fileCentroid, "r");
+  char buffer[100];
+  ii = 0;
+  while (fscanf(fp, "%s", buffer) == 1) {
+    sscanf(buffer, "%lf", &val);
+    gsl_vector_set(tempVector, ii, val);
+    ii++;
   }
-  for (ii = 1; ii < numCols+1; ii++) {
-    gsl_matrix_float_set(tempMatrix, 0, ii,
-			 (float) ii);
-  }
-  for (ii = 1; ii < numRows+1; ii++) {
-    for (jj = 1; jj < numCols + 1; jj++) {
+  fclose(fp);
 
-      gsl_matrix_float_set(tempMatrix, ii, jj,
-			   (float) gsl_matrix_get(mLeftTemp,ii-1, jj-1));
+  /* Setting selected centroid values to 0 */
+  for (jj = 0; jj < numCols; jj++) {
+
+    center = (int) gsl_vector_get(tempVector, jj);
+    
+    for (ii = 0; ii < numRows; ii++) {
+      
+      if (ii == center) {
+	gsl_matrix_set(mInput, ii, jj, 0.0);
+      }
 
     }
   }
 
-  gsl_matrix_float_free(tempMatrix);
-  gsl_matrix_free(mLeftTemp);
-  gsl_matrix_free(mRightTemp);
   gsl_vector_free(tempVector);
 
   return 0;
-
+  
 }
 
 
@@ -1489,15 +1083,17 @@ int hologramMain(holographyParameters* param) {
   convertPhaseDensity(twinImageUnwrap, param);
 
   /* Getting position vectors for line integrated image */
-  gsl_vector *yPhase = getImageYVectorHol(twinImageUnwrap, param); 
-  gsl_vector *xPhase = getImageXVectorHol(twinImageUnwrap, param); 
+  gsl_vector *yPhase = getImageYVectorHol(param); 
+  gsl_vector *xPhase = getImageXVectorHol(param); 
 
   /*
    * if specified, plotting the line integrated data with/without centroid or position information
    */
   if (param->saveLineIntPos == 1) {
 
-    saveHologramImageBinary(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
+    overlayCenterLine(twinImageUnwrap, param->fileCentroid);
+    saveImageDataWithPosition(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
+    saveImageData(twinImageUnwrap, param->fileLineInt);
     
   }
 
@@ -1506,7 +1102,12 @@ int hologramMain(holographyParameters* param) {
    */
   if (param->invertImage == 1) {
 
-    invertImageDHI(twinImageUnwrap, param);
+    gsl_matrix *invertedImage = invertImageDHI(twinImageUnwrap, param);
+    saveImageDataWithPosition(invertedImage, xPhase, yPhase, param->fileFullInvertPos);
+    saveImageData(invertedImage, param->fileFullInvert);
+    overlayCenterLine(twinImageUnwrap, param->fileCentroid);
+    saveImageData(twinImageUnwrap, param->fileLineInt);
+
     
   }
 
