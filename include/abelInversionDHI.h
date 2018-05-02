@@ -29,12 +29,11 @@
 
 int invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
 int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			       gsl_vector* crossSection, gsl_vector* centroidLocation,
+			       gsl_vector* crossSection, double* centroidLocation,
 			       gsl_matrix* projectMatrix, int centroidIterations,
-			       int centroidIndexTest, int colNumber,
-			       holographyParameters* param);
-int findDensityOffsetDHI(gsl_vector* smallCrossSection, gsl_vector* largeCrossSection,
-			 holographyParameters* param);
+			       int centroidIndexTest, int colNumber, holographyParameters* param);
+int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,
+			 int length, holographyParameters *param);
 int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
 				int rightSize);
 int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,

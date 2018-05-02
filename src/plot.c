@@ -6,6 +6,54 @@
  ******************************************************************************/
 
 /******************************************************************************
+ * Function: plot1DVectorData
+ * Inputs: gsl_vector*
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot1DVectorData (gsl_vector *vecIn, char *plotOptions) {
+
+  int ii, status;
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf (stderr,
+	     "incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "%s\n", plotOptions);
+  
+  fprintf(gnuplot, "plot '-'\n");
+
+  for (ii = 0; ii < vecIn->size; ii++) {
+
+    fprintf(gnuplot, "%d %g\n", ii, gsl_vector_get(vecIn, ii));
+
+  }
+
+  fprintf(gnuplot, "e\n");
+
+  fflush(gnuplot);
+
+  /* Pausing */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plotVectorData
  * Inputs: gsl_vector*
  * Returns: int
@@ -113,8 +161,8 @@ int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot 'data/temp.txt' using 1:2 title 'Testing this out',\
-                    'data/temp.txt' using 1:3 title 'Testing this out again'\n");
+  fprintf(gnuplot, "plot 'data/temp.txt' using 1:2 title 'Vector 1',\
+                    'data/temp.txt' using 1:3 title 'Vector 2'\n");
   
   fflush(gnuplot);
 

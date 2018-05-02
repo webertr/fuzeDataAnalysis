@@ -980,40 +980,6 @@ int saveLineIntegratedRow(gsl_matrix *mInput, int rowNumber,
 
 
 /******************************************************************************
- * Function: readRawFileHol
- * Inputs: char *
- * Returns: gsl_matrix*
- * Description: Read a raw file, and return a gsl matrix.
- ******************************************************************************/
-
-gsl_matrix *readRawFileHol (char * filename, int numRows, int numCols) {
-
-  char tempBuf;
-  int tempInt;
-  
-  FILE *fp1;
-  fp1 = fopen(filename, "rb");
-
-  gsl_matrix* tempMatrix = gsl_matrix_alloc(numRows,numCols);
-  int ii, jj;
-  for (ii = 0; ii < numRows; ii++ ) {
-    for (jj = 0; jj < numCols; jj++) {
-    
-      fread(&tempBuf, sizeof(char), 1, fp1);
-      tempInt = (int) tempBuf;
-      gsl_matrix_set(tempMatrix, ii, jj, tempInt);
-
-    }
-  }
-  
-  fclose(fp1);
-
-  return tempMatrix;
-
-}
-
-
-/******************************************************************************
  * Function: binMatrix
  * Inputs: gsl_matrix*, int width
  * Returns: gsl_matrix*
@@ -1092,58 +1058,6 @@ gsl_vector* binVector (gsl_vector *vInput, int width) {
   }
 
   return retVector;
-
-}
-
-
-/******************************************************************************
- * Function: getMatlabImage
- * Inputs: char*, int, int
- * Returns: gsl_matrix*
- * Description: Reads in a image file saved from matlab (octave). Save script in
- * octave or matlab:
- * fileName = '../../data/Base_Shot_26.JPG';
- * hol_base_rgb = imread(fileName);
- * rgb_red = 0.3;
- * rgb_green = 0.59;
- * rgb_blue = 0.11;
- * hol_base = double(hol_base_rgb(:,:,1).*rgb_red + hol_base_rgb(:,:,2).*rgb_green \
- * + hol_base_rgb(:,:,3).*rgb_blue)';
- * newFileName = strrep(fileName,'JPG','dat');
- * fidR = fopen(newFileName,'w');
- * fwrite(fidR,hol_base,'double');
- * fclose(fidR);
- * 
- * Or, once you have the hol_base matrix:
- * fidR = fopen(newFileName,'w');
- * fwrite(fidR,hol_base,'double');
- * fclose(fidR);
- ******************************************************************************/
-
-gsl_matrix* getMatlabImage (char *fileName, int numRows, int numCols) {
-
-  gsl_matrix* tempMatrix = gsl_matrix_alloc(numCols, numRows);
-  gsl_matrix* retMatrix = gsl_matrix_alloc(numRows, numCols);
-
-  FILE *fp;
-  fp = fopen(fileName, "rb");
-  gsl_matrix_fread(fp, tempMatrix);
-  fclose(fp);
-  
-  int ii, jj;
-  for (ii = 0; ii < numRows; ii++) {
-    for (jj = 0; jj < numCols; jj++) {
-
-      gsl_matrix_set(retMatrix, ii, jj,
-		     gsl_matrix_get(tempMatrix, jj, ii));
-
-    }
-  }
-
-  /* Freeing temporary matrix */
-  gsl_matrix_free(tempMatrix);
-
-  return retMatrix;
 
 }
 
@@ -1321,53 +1235,6 @@ int lineIntegratedSave(gsl_matrix *mInput, char *fileNameImage) {
 
 
 /******************************************************************************
- * Function: saveGSLMatrix
- * Inputs: gsl_matrix *, char *
- * Returns: int
- * Description: This saves a gsl matrix and the dimensions in a txt file
- * gsl_matrix* imagePlasma = readJPEGImage(plasmaFileName);
- * saveGSLMatrix(imagePlasma, "data/imagePlasma");
- * gsl_matrix *imagePlasma = readGSLMatrix("data/imagePlasma");
- ******************************************************************************/
-
-int saveGSLMatrix(gsl_matrix *mInput, char *fileName) {
-
-  int numRows = mInput->size1,
-    numCols = mInput->size2;
-
-  char fileNameDim[100];
-  char fileNameMatrix[100];
-
-  strcpy(fileNameDim, fileName);
-  strcat(fileNameDim, ".txt");
-
-  strcpy(fileNameMatrix, fileName);
-  strcat(fileNameMatrix, ".dat");
-
-  /* 
-   * Writting dimesion information into another file
-   */
-  FILE *fp1;
-  fp1 = fopen(fileNameDim, "w");
-  fprintf(fp1, "%d\n%d",
-	  numRows,
-	  numCols);
-  fclose(fp1);
-
-  /*
-   * Writting binary matix information
-   */
-  FILE *fp2;
-  fp2 = fopen(fileNameMatrix, "wb");
-  gsl_matrix_fwrite (fp2, mInput);
-  fclose(fp2);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
  * Function: rotateImage90CW
  * Inputs: gsl_matrix *
  * Returns: gsl_matrix *
@@ -1460,54 +1327,6 @@ gsl_matrix *flipImageCols(gsl_matrix *imagePlasma) {
   gsl_matrix_free(imagePlasma);
 
   return imagePlasmaReturn;
-
-}
-
-
-/******************************************************************************
- * Function: readGSLMatrix
- * Inputs: gsl_matrix *, char *
- * Returns: int
- * Description: This saves a gsl matrix and the dimensions in a txt file
- * Usage:
- * gsl_matrix* imagePlasma = readJPEGImage(plasmaFileName);
- * saveGSLMatrix(imagePlasma, "data/imagePlasma");
- * gsl_matrix *imagePlasma = readGSLMatrix("data/imagePlasma");
- ******************************************************************************/
-
-gsl_matrix *readGSLMatrix(char *fileName) {
-
-  int numRows, numCols;
-
-  char fileNameDim[100];
-  char fileNameMatrix[100];
-
-  strcpy(fileNameDim, fileName);
-  strcat(fileNameDim, ".txt");
-
-  strcpy(fileNameMatrix, fileName);
-  strcat(fileNameMatrix, ".dat");
-
-  /* 
-   * Writting dimesion information into another file
-   */
-  FILE *fp1;
-  fp1 = fopen(fileNameDim, "r");
-  fscanf(fp1, "%d", &numRows);
-  fscanf(fp1, "%d", &numCols);
-  fclose(fp1);
-
-  gsl_matrix* mRet = gsl_matrix_alloc(numRows, numCols);
-
-  /*
-   * Reading binary matix information
-   */
-  FILE *fp2;
-  fp2 = fopen(fileNameMatrix, "rb");
-  gsl_matrix_fread (fp2, mRet);
-  fclose(fp2);
-
-  return mRet;
 
 }
 

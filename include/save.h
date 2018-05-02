@@ -12,5 +12,6 @@ int save5VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
 		    gsl_vector *vec4In, gsl_vector *vec5In, char *fileName);
 int saveMatrixData(gsl_matrix *mIn, char *fileName);
 int saveImageData(gsl_matrix *mInput, char *fileName);
+int readImageData(gsl_matrix *mInput, char *fileName);
 
 #endif

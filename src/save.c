@@ -222,3 +222,39 @@ int saveVectorData(gsl_vector *vecIn, char *fileName) {
   return 0;
 
 }
+
+
+/******************************************************************************
+ * Function: readImageData
+ * Inputs: gsl_matrix *, char *
+ * Returns: int
+ * Description: Reads an imaged that was saved with the column and row information
+ * encoded in the file by, for example, saveImageData
+ ******************************************************************************/
+
+int readImageData(gsl_matrix *mInput, char *fileName) {
+
+  int numRows = mInput->size1,
+    numCols = mInput->size2,
+    ii, jj;
+
+  /* Allocating the matrix to read data into */  
+  gsl_matrix_float *tempMatrix = gsl_matrix_float_alloc(numRows+1, numCols+1);
+
+  FILE *fp;
+  fp = fopen(fileName, "rb");
+  gsl_matrix_float_fread(fp, tempMatrix);
+  fclose(fp);
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      gsl_matrix_set(mInput, ii, jj,
+		     gsl_matrix_float_get(tempMatrix, ii+1, jj+1));
+    }
+  }
+
+  gsl_matrix_float_free(tempMatrix);
+
+  return 0;
+
+}

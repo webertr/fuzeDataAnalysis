@@ -41,10 +41,8 @@ gsl_vector *getImageYVectorHol(gsl_matrix *mInput, holographyParameters* param);
 int saveHologramImageBinary(gsl_matrix *mInput, gsl_vector* xVec, gsl_vector* yVec,
 			    char *fileName);
 int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param);
-gsl_matrix *readRawFileHol (char * filename, int numRows, int numCols);
 gsl_matrix* binMatrix (gsl_matrix *mInput, int width);
 gsl_vector* binVector (gsl_vector *vInput, int width);
-gsl_matrix* getMatlabImage (char *fileName, int numRows, int numCols);
 int saveHologramImageBinaryOne(gsl_matrix *mInput, char *fileName);
 gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param);
 int hologramMain(holographyParameters* param);
@@ -58,8 +56,6 @@ int saveLineIntegratedSlice(gsl_matrix *mInput, int colNumber,
 int lineIntegratedSave(gsl_matrix *mInput, char *fileNameImage);
 int saveLineIntegratedRow(gsl_matrix *mInput, int rowNumber, 
 			  char *fileSaveName);
-gsl_matrix *readGSLMatrix(char *fileNameMatrix);
-int saveGSLMatrix(gsl_matrix *mInput, char *fileName);
 int unwrapCols(gsl_matrix *mInput, holographyParameters* param);
 int unwrapRows(gsl_matrix *mInput, holographyParameters* param);
 gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
