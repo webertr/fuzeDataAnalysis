@@ -189,7 +189,7 @@ int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
  * back to the parent process, and in gnuplot, it will open this binary file.
  ******************************************************************************/
 
-int plotImageData (gsl_matrix *mInput) {
+int plotImageData (gsl_matrix *mInput, char *plotOptions) {
 
   int numRows = mInput->size1;
   int numCols = mInput->size2;
@@ -238,6 +238,8 @@ int plotImageData (gsl_matrix *mInput) {
 	     "incorrect parameters or too many files.\n");
     return EXIT_FAILURE;
   }
+
+  fprintf(gnuplot, "%s\n", plotOptions);
 
   fprintf(gnuplot, "set palette rgb 33,13,10\n");
   fprintf(gnuplot, "plot 'data/temp.dat' binary matrix with image title ''\n");
@@ -312,7 +314,7 @@ int plotImageDataFile(char *fileName, char *plotOptions) {
  * then attach a pipe between that shell command and a stream
  ******************************************************************************/
 
-int plotMatrixDataFile (char *fileName, int colNum, char *plotOptions) {
+int plotMatrixColDataFile (char *fileName, int colNum, char *plotOptions) {
 
   int status;
   

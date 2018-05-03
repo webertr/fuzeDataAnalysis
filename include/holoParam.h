@@ -37,11 +37,7 @@ struct holographyparameters {
   double deltaY;                // The distance between row pixels for the current 2d image
   int saveHologram;             // 1 means to save the hologram before extracting twin image
   char fileHologram[100];       // The name of the file for the hologram data
-  int plotRadialProfile;        // 1 means to plot the inverted radial profile and slice through
-                                // the line integrated image (at plotColNum)
   int invertImage;              // 1 means to perform an inversion
-  int plotColNum;               // The column number to plot for the inverted radial profile and
-                                // slice of the line integrated image.
   int saveLineIntPos;           // 1 means to save the line integrated data with position info
   char fileLineIntPos[100];     // The name of file for the line integrated data with positon info
   char fileLineInt[100];        // The name of the file for the line integrated data
@@ -94,14 +90,12 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .boxCarSmoothWidth = 10,
   .unwrapThresh = 1.0*M_PI,
   .signTwin = 1,
-  .plotRadialProfile = 0,
-  .plotColNum = 100,
   .rotateImage = 1,
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
-  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG",
+  .fileRef = "/home/fuze/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG",
   .saveHologram = 0,
   .fileHologram = "data/hologram.dat",
   .saveLineIntPos = 1,

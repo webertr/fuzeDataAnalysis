@@ -2,7 +2,7 @@
 
 
 static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput);
-
+static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid);
 
 int testInvertImageDHI() {
   
@@ -70,16 +70,17 @@ int testInvertImageDHI() {
   param.centroidNum = 10;
   param.offsetIter = 10;
 
-  plotImageData(testData);
+  plotImageData(testData, "set title 'Forward Projected Data'\n");
     
   gsl_matrix *invertedImage = invertImageDHI(testData, &param);
-
+  overlayCenterLineTest(invertedImage, param.fileCentroid);
   saveImageData(invertedImage, param.fileFullInvert);
   
-  plotMatrixDataFile(param.fileLeftInvert, 50, "");
+  plotMatrixColDataFile(param.fileLeftInvert, 20, "");
+  plotMatrixColDataFile(param.fileRightInvert, 20, "");
   
-  plotImageDataFile(param.fileFullInvert, "");
-  
+  plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
+
   return 0;
 
 }
@@ -112,3 +113,52 @@ static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput) {
 
 }
 
+/******************************************************************************
+ * Function: overlayCenterLineTest
+ * Inputs: gsl_matrix, char *
+ * Returns: int
+ * Description: Overlays a center line on the inverted data
+ ******************************************************************************/
+
+static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid) {
+
+  int ii, jj, center,
+    numRows = mInput->size1,
+    numCols = mInput->size2;
+
+  /* Temporary vector to read centroid coordinates */
+  gsl_vector* tempVector = gsl_vector_alloc(numRows);
+
+  double val;
+  
+  /* Reading in centroid coordinates */
+  FILE *fp;
+  fp = fopen(fileCentroid, "r");
+  char buffer[100];
+  ii = 0;
+  while (fscanf(fp, "%s", buffer) == 1) {
+    sscanf(buffer, "%lf", &val);
+    gsl_vector_set(tempVector, ii, val);
+    ii++;
+  }
+  fclose(fp);
+
+  /* Setting selected centroid values to 0 */
+  for (jj = 0; jj < numCols; jj++) {
+
+    center = (int) gsl_vector_get(tempVector, jj);
+    
+    for (ii = 0; ii < numRows; ii++) {
+      
+      if (ii == center) {
+	gsl_matrix_set(mInput, ii, jj, 0.0);
+      }
+
+    }
+  }
+
+  gsl_vector_free(tempVector);
+
+  return 0;
+  
+}
