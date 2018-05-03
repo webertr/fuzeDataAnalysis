@@ -1060,7 +1060,6 @@ int hologramMain(holographyParameters* param) {
   /* Finding phase difference between plasma and reference reconstructions */
   gsl_matrix *phase = phaseDiffHolo(fftPlasma, fftRef);
   
-
   /*
    * If the saveHologram parameter is set, then save the file
    */
@@ -1106,6 +1105,7 @@ int hologramMain(holographyParameters* param) {
     saveImageDataWithPosition(invertedImage, xPhase, yPhase, param->fileFullInvertPos);
     saveImageData(invertedImage, param->fileFullInvert);
     overlayCenterLine(twinImageUnwrap, param->fileCentroid);
+    saveImageDataWithPosition(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
     saveImageData(twinImageUnwrap, param->fileLineInt);
     
   }

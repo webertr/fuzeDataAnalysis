@@ -148,9 +148,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 		     gsl_vector_get(rightCrossSection, ii-centroid));
     }
   }
-		     
-      
-  
+
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */

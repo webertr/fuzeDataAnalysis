@@ -49,6 +49,7 @@ int testInvertImageDHI() {
     }
   }  
   
+  saveMatrixData(radialProfile, "data/radialProfile.txt");
 
   int center;
 
@@ -76,8 +77,10 @@ int testInvertImageDHI() {
   overlayCenterLineTest(invertedImage, param.fileCentroid);
   saveImageData(invertedImage, param.fileFullInvert);
   
-  plotMatrixColDataFile(param.fileLeftInvert, 20, "");
-  plotMatrixColDataFile(param.fileRightInvert, 20, "");
+  plot2MatrixColDataFile(param.fileLeftInvert, 20,
+			 "data/radialProfile.txt", 20, "");
+  plot2MatrixColDataFile(param.fileRightInvert, 20,
+			 "data/radialProfile.txt", 20, "");
   
   plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
 

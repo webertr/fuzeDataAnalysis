@@ -15,5 +15,7 @@ int plot1DVectorData (gsl_vector *vecIn, char *plotOptions);
 int plotColumnImageDataFile(char *fileName, int numRows, int numCols, int colNum, 
 			    char *plotOptions);
 int plotMatrixColDataFile (char *fileName, int colNum, char *plotOptions);
+int plot2MatrixColDataFile (char *fileName1, int colNum1, char *fileName2, int colNum2, 
+			    char *plotOptions);
 
 #endif
