@@ -43,12 +43,12 @@ struct holographyparameters {
   int plotColNum;               // The column number to plot for the inverted radial profile and
                                 // slice of the line integrated image.
   int saveLineIntPos;           // 1 means to save the line integrated data with position info
-  char fileLineIntPos[100];     // The name of the file for the line integrated data with positon info
-  char fileLineInt[100];     // The name of the file for the line integrated data
+  char fileLineIntPos[100];     // The name of file for the line integrated data with positon info
+  char fileLineInt[100];        // The name of the file for the line integrated data
   char fileLeftInvert[100];     // The name of the file for the left abel inverted data
   char fileRightInvert[100];    // The name of the file for the right abel inverted data
   char fileFullInvert[100];     // The name of the file for the full abel inverted data
-  char fileFullInvertPos[100];  // The name of the file for the full abel inverted data with pos info
+  char fileFullInvertPos[100];  // The name of file for the full abel inverted data with pos info
   char fileFullInvertText[100]; // The name of the file for the full abel inverted data text file
   char fileCentroid[100];       // The name of the file for the centroid file
   double R_electrode;           // value of the radius of the inner electrode
@@ -76,9 +76,9 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .deltaY = 0.000115*CM_ADJUST,
   .zPosition = 0.145*CM_ADJUST,
   .R_electrode = 0.100838*CM_ADJUST,
-  .deltaN = 1E23/pow(CM_ADJUST,3),
+  .deltaN = 1E23/(CM_ADJUST*CM_ADJUST*CM_ADJUST),
   .c = 2.998E8*CM_ADJUST,
-  .e0 = 8.854e-12/pow(CM_ADJUST,3),
+  .e0 = 8.854e-12/(CM_ADJUST*CM_ADJUST*CM_ADJUST),
   .q = 1.602e-19,
   .me = 9.109E-31,
   .numRows = 4000,
