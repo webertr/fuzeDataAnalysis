@@ -18,6 +18,7 @@
 #include "save.h"
 #include "getLFData.h"
 #include "fit.h"
+#include "accelTrack.h"
 
 int plotPostShotData(int shotNumber);
 int plotIPApril2018Talk(int shotNumber);
@@ -28,5 +29,7 @@ int plotSpecCIIIImageApril2018Talk();
 int hologramAnalysis();
 int plotCIIILineApril2018Talk();
 int plotModeCompApril2018Talk();
+int plasmaParameters();
+int simluateAccel();
 
 #endif

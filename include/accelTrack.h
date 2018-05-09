@@ -26,6 +26,8 @@
 #include <gsl/gsl_errno.h>
 #include <gsl/gsl_odeiv2.h>
 
-int simulateParticleAccel(double V, double I);
+#include "save.h"
+
+int simulateParticleAccel(double V, double I, char *fileName);
 
 #endif

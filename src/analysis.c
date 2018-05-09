@@ -23,12 +23,49 @@ int hologramAnalysis() {
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
   /* Obtained line integrated data and do an abel inversion */
-  //hologramMain(&param);
+  hologramMain(&param);
 
   plot2MatrixColDataFile(param.fileRightInvert, 59, 
 			 param.fileLeftInvert, 59, "");
   plotImageDataFile(param.fileLineInt, "set size ratio -1");
   plotImageDataFile(param.fileFullInvert, "set size ratio -1\nset cbrange [0:2E17]");
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plasmaParameters
+ * Inputs: 
+ * Returns: int
+ * Description: This will call some functions to calculate some plasma parameters
+ ******************************************************************************/
+
+int plasmaParameters() {
+
+  gyroRadius(0.25E4, 5E3);
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: simluateAccel
+ * Inputs: 
+ * Returns: int
+ * Description: This will call a function to simulate a charged particles
+ * in the acceleration region of a marshall gun
+ ******************************************************************************/
+
+int simluateAccel() {
+
+  char *fileName = "data/simul.txt";
+
+  simulateParticleAccel(0, 0.1, fileName);
+  
+  plotMatrixColVColDataFile(fileName, 1, 2, "");
   
   return 0;
 

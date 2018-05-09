@@ -17,5 +17,6 @@ int plotColumnImageDataFile(char *fileName, int numRows, int numCols, int colNum
 int plotMatrixColDataFile (char *fileName, int colNum, char *plotOptions);
 int plot2MatrixColDataFile (char *fileName1, int colNum1, char *fileName2, int colNum2, 
 			    char *plotOptions);
+int plotMatrixColVColDataFile (char *fileName, int colNumX, int colNumY, char *plotOptions);
 
 #endif

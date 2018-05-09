@@ -7,14 +7,15 @@
  *
  ******************************************************************************/
 
-static const double QP   = 4.8032E-10;    // Charge of a proton in stat-columbs
-static const double MP   = 1.673E-24;     // Mass of proton in g
-//static const double ME   = 9.109e-28;   // Mass of electron in g
+#define DIM_SYS 6                         // Dimensions of system of equations  
+
+static const double QP   = 1.602E-19;     // Charge of a proton in columbs
+static const double MP   = 1.673E-27;     // Mass of proton in kg
+//static const double ME   = 9.109e-31;   // Mass of electron in kg
 static const double PI   = 3.1416;        // Value of pi
 static const double B_R  = .1008;         // ID of outer electrode
-static const double A_R  = .1008;         // OD of inner electrode
+static const double A_R  = .0508;         // OD of inner electrode
 static const double MU_0 = 1.257E-6;      // Permeability of free space in m kg s^-2 A^-2
-static const int DIM_SYS = 6;             // Dimensions of system of equations  
 
 /******************************************************************************
  * Function: equationSystem
@@ -41,13 +42,13 @@ static int equationSystem(double time, const double y[], double dydt[], void *pa
   paramCast++;
   double q = *paramCast;
 
-  double Bt = y[5]*MU_0*I/(2*PI*y[0]);
+  double Bt = MU_0*I/(2*PI*y[0]);
   double Er = V0/log(B_R/A_R)/y[0];
   
   dydt[0] = y[3];
   dydt[1] = y[4];
   dydt[2] = y[5];
-  dydt[3] = y[0]*gsl_pow_2(y[4]) + q/m*Er - q/m*Bt;
+  dydt[3] = y[0]*gsl_pow_2(y[4]) + q/m*Er - q/m*y[5]*Bt;
   dydt[4] = -2/y[0]*y[3]*y[4];
   dydt[5] = q/m*y[3]*Bt;
   
@@ -66,19 +67,51 @@ static int equationSystem(double time, const double y[], double dydt[], void *pa
 static int jacobian(double time, const double y[], double *dfdy, double dfdt[], void *params) {
   
   (void)(time); /* avoid unused parameter warning */
-  double mu = *(double *)params;
+  double *paramCast = (double *)params;
+  double V0 = *paramCast;
+  paramCast++;
+  double I = *paramCast;
+  paramCast++;
+  double m = *paramCast;
+  paramCast++;
+  double q = *paramCast;
+
+  double Bt = y[5]*MU_0*I/(2*PI*y[0]);
+  double dBtdr = -MU_0*I/(2*PI*gsl_pow_2(y[0]));
+  double dErdr = -V0/log(B_R/A_R)/gsl_pow_2(y[0]); 
+
   gsl_matrix_view dfdy_mat = gsl_matrix_view_array (dfdy, DIM_SYS, DIM_SYS);
-  gsl_matrix *m = &dfdy_mat.matrix; 
-  gsl_matrix_set(m, 0, 0, 0.0);
-  gsl_matrix_set(m, 0, 1, 0.0);
-  gsl_matrix_set(m, 0, 2, 0.0);
-  gsl_matrix_set(m, 0, 3, 0.0);
-  gsl_matrix_set(m, 0, 3, 0.0);
-  gsl_matrix_set(m, 1, 0, 0.0);
-  gsl_matrix_set(m, 1, 1, 0.0);
-  gsl_matrix_set(m, 1, 1, 0.0);
+  gsl_matrix *jacobMat = &dfdy_mat.matrix; 
+  int ii, jj;
+  for (ii = 0; ii < DIM_SYS; ii++) {
+    for (jj = 0; jj < DIM_SYS; jj++) {
+      gsl_matrix_set(jacobMat, ii, jj, 0.0);
+    }
+  }
+
+  /* Setting the jacobian values */
+  gsl_matrix_set(jacobMat, 0, 3, 1.0);
+  gsl_matrix_set(jacobMat, 1, 4, 1.0);
+  gsl_matrix_set(jacobMat, 2, 5, 1.0);
+
+  gsl_matrix_set(jacobMat, 3, 0, gsl_pow_2(y[4])+q/m*dErdr-q/m*y[5]*dBtdr);
+  gsl_matrix_set(jacobMat, 3, 4, 2*y[0]*y[4]);
+  gsl_matrix_set(jacobMat, 3, 5, -q/m*Bt);
+
+  gsl_matrix_set(jacobMat, 4, 0, 2/gsl_pow_2(y[0])*y[3]*y[4]);
+  gsl_matrix_set(jacobMat, 4, 3, -2/y[0]*y[4]);
+  gsl_matrix_set(jacobMat, 4, 4, -2/y[0]*y[3]);
+
+  gsl_matrix_set(jacobMat, 4, 0, q/m*dBtdr);
+  gsl_matrix_set(jacobMat, 4, 3, q/m*Bt);
+
   dfdt[0] = 0.0;
   dfdt[1] = 0.0;
+  dfdt[2] = 0.0;
+  dfdt[3] = 0.0;
+  dfdt[4] = 0.0;
+  dfdt[5] = 0.0;
+
   return GSL_SUCCESS;
   
 }
@@ -92,7 +125,9 @@ static int jacobian(double time, const double y[], double *dfdy, double dfdt[], 
  * the accelerator region of the fuze experiment.
  ******************************************************************************/
 
-int simulateParticleAccel(double V, double I) {
+int simulateParticleAccel(double V, double I, char *fileName) {
+
+  const int numPoints = 1000;
 
   double M = MP;
   double Q = QP;
@@ -103,24 +138,34 @@ int simulateParticleAccel(double V, double I) {
 
   gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&system, gsl_odeiv2_step_rk8pd,
 							    1E-6, 1E-6, 0.0);
-  int ii;
-  double t = 0.0, t1 = 100.0;
-  double y[2] = { 1.0, 0.0 };
+  int ii, jj;
+  double t = 0.0, deltaT = 1E-6;
+  double y[DIM_SYS] = { .1, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-  for (ii = 1; ii <= 100; ii++) {
+  gsl_matrix *data = gsl_matrix_alloc(numPoints, DIM_SYS+1);
+
+  for (ii = 0; ii < numPoints; ii++) {
     
-    double ti = ii * t1 / 100.0;
+    double ti = ii * deltaT;
     int status = gsl_odeiv2_driver_apply(driver, &t, ti, y);
 
     if (status != GSL_SUCCESS) {
       printf ("error, return value=%d\n", status);
       break;
     }
+    
+    gsl_matrix_set(data, ii, 0, ti);
+    for (jj = 0; jj < DIM_SYS; jj++) {
+      gsl_matrix_set(data, ii, jj+1, y[jj]);
+    }
 
-    printf ("%.5e %.5e %.5e\n", t, y[0], y[1]);
   }
 
+  saveMatrixData(data, fileName);
+
+  gsl_matrix_free(data);
   gsl_odeiv2_driver_free(driver);
+
   return 0;
 
 }

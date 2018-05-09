@@ -387,3 +387,43 @@ int plot2MatrixColDataFile (char *fileName1, int colNum1, char *fileName2, int c
   return 0;
 
 }
+
+/******************************************************************************
+ * Function: plotMatrixColVColDataFile
+ * Inputs: char *
+ * Returns: int
+ * Description: You pass this text file with columns and it will plot 1 of 
+ * the column. This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plotMatrixColVColDataFile (char *fileName, int colNumX, int colNumY, char *plotOptions) {
+
+  int status;
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf (stderr,
+	     "incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "%s\n", plotOptions);
+  
+  fprintf(gnuplot, "plot '%s' using %d:%d with points title '1'\n", fileName, colNumX, colNumY);
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  return 0;
+
+}
