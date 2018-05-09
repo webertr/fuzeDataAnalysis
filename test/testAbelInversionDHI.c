@@ -67,7 +67,7 @@ int testInvertImageDHI() {
     }
   }
 
-  param.deltaN = 0.01;
+  param.deltaN = 0.02;
   param.centroidNum = 10;
   param.offsetIter = 10;
 
