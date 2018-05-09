@@ -63,9 +63,11 @@ int simluateAccel() {
 
   char *fileName = "data/simul.txt";
 
-  simulateParticleAccel(0, 0.1, fileName);
+  simulateParticleAccel(5E3, 100E3, fileName);
   
-  plotMatrixColVColDataFile(fileName, 1, 2, "");
+  plotMatrixColVColDataFile(fileName, 4, 2, "set xlabel 'Z(m)'\nset ylabel 'r(m)'");
+  plotMatrixColVColDataFile(fileName, 1, 2, "set xlabel 't(sec)'\nset ylabel 'r(m)'");
+  plotMatrixColVColDataFile(fileName, 1, 4, "set xlabel 't(sec)'\nset ylabel 'z(m)'");
   
   return 0;
 

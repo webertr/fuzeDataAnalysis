@@ -31,6 +31,11 @@ static const double MU_0 = 1.257E-6;      // Permeability of free space in m kg 
  ******************************************************************************/
 
 static int equationSystem(double time, const double y[], double dydt[], void *params) {
+
+  /* Inside the inner electrode, stop simulation */
+  if (y[0] < A_R) {
+    return GSL_FAILURE;
+  }
   
   (void)(time); /* avoid unused parameter warning */
   double *paramCast = (double *)params;
@@ -43,8 +48,9 @@ static int equationSystem(double time, const double y[], double dydt[], void *pa
   double q = *paramCast;
 
   double Bt = MU_0*I/(2*PI*y[0]);
-  double Er = V0/log(B_R/A_R)/y[0];
-  
+
+  double Er = -V0/log(B_R/A_R)/y[0];
+
   dydt[0] = y[3];
   dydt[1] = y[4];
   dydt[2] = y[5];
@@ -78,7 +84,7 @@ static int jacobian(double time, const double y[], double *dfdy, double dfdt[], 
 
   double Bt = y[5]*MU_0*I/(2*PI*y[0]);
   double dBtdr = -MU_0*I/(2*PI*gsl_pow_2(y[0]));
-  double dErdr = -V0/log(B_R/A_R)/gsl_pow_2(y[0]); 
+  double dErdr = V0/log(B_R/A_R)/gsl_pow_2(y[0]); 
 
   gsl_matrix_view dfdy_mat = gsl_matrix_view_array (dfdy, DIM_SYS, DIM_SYS);
   gsl_matrix *jacobMat = &dfdy_mat.matrix; 
@@ -132,14 +138,14 @@ int simulateParticleAccel(double V, double I, char *fileName) {
   double M = MP;
   double Q = QP;
   
-  double param[4] = {I, V, M, Q};
+  double param[4] = {V, I, M, Q};
 
   gsl_odeiv2_system system = {equationSystem, jacobian, DIM_SYS, param};
 
   gsl_odeiv2_driver *driver = gsl_odeiv2_driver_alloc_y_new(&system, gsl_odeiv2_step_rk8pd,
 							    1E-6, 1E-6, 0.0);
   int ii, jj;
-  double t = 0.0, deltaT = 1E-6;
+  double t = 0.0, deltaT = 1E-9;
   double y[DIM_SYS] = { .1, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
   gsl_matrix *data = gsl_matrix_alloc(numPoints, DIM_SYS+1);
