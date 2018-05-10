@@ -25,10 +25,13 @@ int hologramAnalysis() {
   /* Obtained line integrated data and do an abel inversion */
   hologramMain(&param);
 
-  plot2MatrixColDataFile(param.fileRightInvert, 59, 
-			 param.fileLeftInvert, 59, "");
   plotImageDataFile(param.fileLineInt, "set size ratio -1");
-  plotImageDataFile(param.fileFullInvert, "set size ratio -1\nset cbrange [0:2E17]");
+  //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
+  //                                      set output 'data/temp.png'");
+  //plot2MatrixColDataFile(param.fileRightInvert, 59, 
+  //			 param.fileLeftInvert, 59, "");
+  //
+  //plotImageDataFile(param.fileFullInvert, "set size ratio -1\nset cbrange [0:2E17]");
   
   return 0;
 

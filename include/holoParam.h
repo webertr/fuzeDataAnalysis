@@ -38,7 +38,9 @@ struct holographyparameters {
   int saveHologram;             // 1 means to save the hologram before extracting twin image
   char fileHologram[100];       // The name of the file for the hologram data
   int invertImage;              // 1 means to perform an inversion
-  int saveLineIntPos;           // 1 means to save the line integrated data with position info
+  int saveLineInt;              // 1 means to save the line integrated data
+  int saveWrappedPhase;         // 1 means to save the file before it's unwrapped
+  char fileWrappedPhase[100];   // The name of the file to save the wrapped phase of the hologram
   char fileLineIntPos[100];     // The name of file for the line integrated data with positon info
   char fileLineInt[100];        // The name of the file for the line integrated data
   char fileLeftInvert[100];     // The name of the file for the left abel inverted data
@@ -86,7 +88,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .hyperbolicWin = 8,
   .sampleInterval = 10,
   .centroidNum = 10,
-  .offsetIter = 1,
+  .offsetIter = 10,
   .boxCarSmoothWidth = 10,
   .unwrapThresh = 1.0*M_PI,
   .signTwin = 1,
@@ -94,14 +96,16 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
-  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG",
-  .saveHologram = 0,
+  .fileRef = "/home/fuze/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG",
+  .saveHologram = 1,
   .fileHologram = "data/hologram.dat",
-  .saveLineIntPos = 1,
+  .saveWrappedPhase = 1,
+  .fileWrappedPhase = "data/wrappedPhase.dat",
+  .saveLineInt = 1,
   .fileLineIntPos = "data/lineIntegratedPosition.dat",
   .fileLineInt = "data/lineIntegrated.dat",
-  .invertImage = 1,
+  .invertImage = 0,
   .fileLeftInvert = "data/leftAbelInvert.txt",
   .fileRightInvert = "data/rightAbelInvert.txt",
   .fileFullInvert = "data/fullAbelInvert.dat",

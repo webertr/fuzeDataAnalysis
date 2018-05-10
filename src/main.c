@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /*
    * Plotting plasma parameters
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   /*
    * Simulating particle in acceleration region of marshall gun
    */
-  simluateAccel();
+  //simluateAccel();
 
   /* 
    * Plotting post shot data

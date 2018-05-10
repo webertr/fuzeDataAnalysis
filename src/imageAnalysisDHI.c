@@ -425,21 +425,49 @@ gsl_matrix *extractTwinImage (gsl_matrix *mInput, holographyParameters* param) {
 
 
 /******************************************************************************
- * Function: smoothUnwrapPhase
+ * Function: unwrapPhase
+ * Inputs: int
+ * Returns: gsl_matrix*, holographyParameters *
+ * Description: It looks for jumps greater then pi and adds or subtracts 
+ * 2 pi. It unwraps the columns, then the rows. It will subtracts an offset.
+ ******************************************************************************/
+
+int unwrapPhase (gsl_matrix *mInput, holographyParameters* param) {
+  
+  double mMax;
+
+  /* Unwrapping the columns */
+  unwrapCols(mInput, param);
+
+  /* Unwrapping the rows */
+  unwrapRows(mInput, param);
+
+  /* 
+   * Subtracting maximum value. No idea why. M. Ross does it
+   */
+  mMax = gsl_matrix_max(mInput);
+  gsl_matrix_add_constant(mInput, -mMax);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: smoothPhase
  * Inputs: gsl_matrix*
  * Returns: gsl_matrix*
  * Description: Pass it a matrix, and it will take the sin and cos, then do
- * then go back to the phase angle, then do an unwrapping
- * procedure where it looks for jumps greater then pi, and subtracts 2pi
+ * then go back to the phase angle
  ******************************************************************************/
 
-gsl_matrix *smoothUnwrapPhase (gsl_matrix *mInput, holographyParameters* param) {
+gsl_matrix *smoothPhase (gsl_matrix *mInput, holographyParameters* param) {
 			      
   int ii, jj,
     numRows = param->numRows,
     numCols = param->numCols;
 
-  double aTemp, mMax;
+  double aTemp;
   
   /* Using sine and cosine to maintain fringe jumps */
   gsl_matrix* mTempSin = gsl_matrix_alloc(numRows, numCols);
@@ -480,25 +508,12 @@ gsl_matrix *smoothUnwrapPhase (gsl_matrix *mInput, holographyParameters* param) 
     }
   }
 
-
-  /* Unwrapping the columns */
-  unwrapCols(mRet, param);
-
-  /* Unwrapping the rows */
-  unwrapRows(mRet, param);
-
-
   /* Freeing matrices no longer needed */
   gsl_matrix_free(mTempSin);
   gsl_matrix_free(mTempCos);
   gsl_matrix_free(mBoxSin);
   gsl_matrix_free(mBoxCos);
 
-  /* 
-   * Subtracting maximum value. No idea why. M. Ross does it
-   */
-  mMax = gsl_matrix_max(mRet);
-  gsl_matrix_add_constant(mRet, -mMax);
 
   return mRet;
 
@@ -1075,8 +1090,20 @@ int hologramMain(holographyParameters* param) {
   /* Taking every param->sampleInterval the element */
   gsl_matrix *twinImageReduce = matrixReduceElements(twinImage, param);
 
-  /* Taking sine/cos, smoothing, then unwrapping phase */
-  gsl_matrix* twinImageUnwrap = smoothUnwrapPhase(twinImageReduce, param);
+  /* Taking sine/cos, smoothing */
+  gsl_matrix* twinImageUnwrap = smoothPhase(twinImageReduce, param);
+
+  /*
+   * if specified, save the phase map before unwrapping
+   */
+  if (param->saveWrappedPhase == 1) {
+
+    saveImageData(twinImageUnwrap, param->fileWrappedPhase);
+    
+  }
+
+  /* Unwrapping the phase of the smoothed image and subtracting an offset */
+  unwrapPhase(twinImageUnwrap, param);
 
   /* Converting phase difference to electron density */
   convertPhaseDensity(twinImageUnwrap, param);
@@ -1088,7 +1115,7 @@ int hologramMain(holographyParameters* param) {
   /*
    * if specified, plotting the line integrated data with/without centroid or position information
    */
-  if (param->saveLineIntPos == 1) {
+  if (param->saveLineInt == 1) {
 
     saveImageDataWithPosition(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
     saveImageData(twinImageUnwrap, param->fileLineInt);

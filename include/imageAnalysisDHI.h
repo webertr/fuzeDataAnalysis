@@ -35,7 +35,8 @@ gsl_matrix *phaseDiffHolo (gsl_matrix_complex *mInput1,
 			   gsl_matrix_complex *mInput2);
 gsl_matrix *extractTwinImage (gsl_matrix *mInput, holographyParameters* param);
 gsl_matrix* boxCarSmooth (gsl_matrix *mInput, holographyParameters* param);
-gsl_matrix* smoothUnwrapPhase (gsl_matrix *mInput, holographyParameters* param);
+gsl_matrix* smoothPhase (gsl_matrix *mInput, holographyParameters* param);
+int unwrapPhase (gsl_matrix *mInput, holographyParameters* param);
 gsl_vector *getImageXVectorHol(holographyParameters* param);
 gsl_vector *getImageYVectorHol(holographyParameters* param);
 int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param);
