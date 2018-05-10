@@ -1,5 +1,5 @@
-#ifndef IMAGEANALYSISDHI_H
-#define IMAGEANALYSISDHI_H
+#ifndef READJPEG_H
+#define READJPEG_H
 
 #include <stdio.h>
 #include <gsl/gsl_math.h>
@@ -28,7 +28,6 @@
 #include "save.h"
 #include "readJPEG.h"
 
-
-int hologramMain(holographyParameters* param);
+gsl_matrix *readJPEGImage(char *fileName);
 
 #endif

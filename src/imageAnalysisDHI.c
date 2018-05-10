@@ -19,6 +19,22 @@
 static int quadSwapComplexImage(gsl_matrix_complex *mInput);
 static int hyperbolicWindow(gsl_matrix *mInput, int param);
 static int overlayCenterLine(gsl_matrix *mInput, char *fileCentroid);
+static gsl_matrix_complex *fresnel (gsl_matrix *mInput, holographyParameters* param);
+static gsl_matrix *phaseDiffHolo (gsl_matrix_complex *mInput1, gsl_matrix_complex *mInput2);
+static gsl_matrix* boxCarSmooth (gsl_matrix *mInput, holographyParameters* param);
+static gsl_matrix *extractTwinImage (gsl_matrix *mInput, holographyParameters* param);
+static int unwrapPhase (gsl_matrix *mInput, holographyParameters* param);
+static int unwrapCols(gsl_matrix *mInput, holographyParameters* param);
+static int unwrapRows(gsl_matrix *mInput, holographyParameters* param);
+static gsl_vector *getImageYVectorHol(holographyParameters* param);
+static gsl_vector *getImageXVectorHol(holographyParameters* param);
+static int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param);
+static gsl_matrix *smoothPhase (gsl_matrix *mInput, holographyParameters* param);
+static gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param);
+static gsl_matrix *flipImageCols(gsl_matrix *imagePlasma);
+static gsl_matrix *flipImageRows(gsl_matrix *imagePlasma);
+static gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma);
+
 
 /*
  * Declare constants and ZaP-HD plasma parameters:
@@ -42,7 +58,7 @@ static int overlayCenterLine(gsl_matrix *mInput, char *fileCentroid);
  * Description: Executes a fresnel transformation on the input image.
  ******************************************************************************/
 
-gsl_matrix_complex *fresnel (gsl_matrix *mInput, holographyParameters* param) {
+static gsl_matrix_complex *fresnel (gsl_matrix *mInput, holographyParameters* param) {
 
   /************* Reconstruction Parameters *******************************
  * res = (3.85e − 6); // [m] Pixel size of Nikon 3200D, 4.3e − 6 for Canon T2i
@@ -174,7 +190,7 @@ gsl_matrix_complex *fresnel (gsl_matrix *mInput, holographyParameters* param) {
  * Description: Calculates the phase diference between two complex matrices
  ******************************************************************************/
 
-gsl_matrix *phaseDiffHolo (gsl_matrix_complex *mInput1, gsl_matrix_complex *mInput2) {
+static gsl_matrix *phaseDiffHolo (gsl_matrix_complex *mInput1, gsl_matrix_complex *mInput2) {
 
   int ii, jj,
     numRows = mInput1->size1, // Number of Rows
@@ -341,7 +357,7 @@ static int hyperbolicWindow (gsl_matrix *mInput, int param) {
  * to be averaged.
  ******************************************************************************/
 
-gsl_matrix* boxCarSmooth (gsl_matrix *mInput, holographyParameters* param) {
+static gsl_matrix* boxCarSmooth (gsl_matrix *mInput, holographyParameters* param) {
 
   int ii, jj, kk, ll,
     width = param->boxCarSmoothWidth,    // Box car smoothing width
@@ -389,7 +405,7 @@ gsl_matrix* boxCarSmooth (gsl_matrix *mInput, holographyParameters* param) {
  * the upper right x and y indices, and this function will return the twin image.
  ******************************************************************************/
 
-gsl_matrix *extractTwinImage (gsl_matrix *mInput, holographyParameters* param) {
+static gsl_matrix *extractTwinImage (gsl_matrix *mInput, holographyParameters* param) {
   
   int ii, jj,
     xLL = param->xLL,
@@ -432,7 +448,7 @@ gsl_matrix *extractTwinImage (gsl_matrix *mInput, holographyParameters* param) {
  * 2 pi. It unwraps the columns, then the rows. It will subtracts an offset.
  ******************************************************************************/
 
-int unwrapPhase (gsl_matrix *mInput, holographyParameters* param) {
+static int unwrapPhase (gsl_matrix *mInput, holographyParameters* param) {
   
   double mMax;
 
@@ -461,7 +477,7 @@ int unwrapPhase (gsl_matrix *mInput, holographyParameters* param) {
  * then go back to the phase angle
  ******************************************************************************/
 
-gsl_matrix *smoothPhase (gsl_matrix *mInput, holographyParameters* param) {
+static gsl_matrix *smoothPhase (gsl_matrix *mInput, holographyParameters* param) {
 			      
   int ii, jj,
     numRows = param->numRows,
@@ -527,7 +543,7 @@ gsl_matrix *smoothPhase (gsl_matrix *mInput, holographyParameters* param) {
  * Description: Unwraps the rows of the passed phase matrix
  ******************************************************************************/
 
-int unwrapRows(gsl_matrix *mInput, holographyParameters* param) {
+static int unwrapRows(gsl_matrix *mInput, holographyParameters* param) {
 
   int ii, jj, kk,
     numRows = param->numRows,
@@ -580,7 +596,7 @@ int unwrapRows(gsl_matrix *mInput, holographyParameters* param) {
  * Description: Unwraps the rows of the passed phase matrix
  ******************************************************************************/
 
-int unwrapCols(gsl_matrix *mInput, holographyParameters* param) {
+static int unwrapCols(gsl_matrix *mInput, holographyParameters* param) {
 
   int ii, jj, kk,
     numRows = param->numRows,
@@ -632,7 +648,7 @@ int unwrapCols(gsl_matrix *mInput, holographyParameters* param) {
  * Description: Returns the y positions for the reconstructed holograph
  ******************************************************************************/
 
-gsl_vector *getImageYVectorHol(holographyParameters* param) {
+static gsl_vector *getImageYVectorHol(holographyParameters* param) {
 
   int ii,
     numRows = param->numRows;
@@ -667,7 +683,7 @@ gsl_vector *getImageYVectorHol(holographyParameters* param) {
  * Description: Returns the x positions for the reconstructed holograph
  ******************************************************************************/
 
-gsl_vector *getImageXVectorHol(holographyParameters* param) {
+static gsl_vector *getImageXVectorHol(holographyParameters* param) {
 
   int ii,
     numCols = param->numCols;
@@ -703,7 +719,7 @@ gsl_vector *getImageXVectorHol(holographyParameters* param) {
  * Description: Convert phase change to line integrated density
  ******************************************************************************/
 
-int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param) {
+static int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param) {
 
   /*
    * Unused
@@ -742,96 +758,13 @@ int convertPhaseDensity(gsl_matrix *mInput, holographyParameters* param) {
 
 
 /******************************************************************************
- * Function: binMatrix
- * Inputs: gsl_matrix*, int width
- * Returns: gsl_matrix*
- * Description: Bins the matrix over the width box. Good if width
- * is a divisor of the row and col lengths.
- ******************************************************************************/
-
-gsl_matrix* binMatrix (gsl_matrix *mInput, int width) {
-
-  int ii, jj, kk, ll,
-    numRows = mInput->size1,             // Number of Rows
-    numCols = mInput->size2,             // Number of Cols
-    sWidth = width*width,  // square of width
-    newNumRows = numRows/width,
-    newNumCols = numCols/width;
-  
-  double sum;
-
-  gsl_matrix* retMatrix = gsl_matrix_alloc(newNumRows,newNumCols);
-  
-  /* Go over each pixel and calculating the box car average */
-  for (ii = 0; ii < newNumRows; ii++) {
-    for (jj = 0; jj < newNumCols; jj++) {
-
-      sum = 0;
-      for (kk = 0; kk < width; kk++) {
-	for (ll = 0; ll < width; ll++) {
-	
-	  sum = sum + gsl_matrix_get(mInput,
-				     ii*width+kk,
-				     jj*width+ll);
-
-	}
-      }
-
-      gsl_matrix_set(retMatrix, ii, jj, sum/sWidth);
-
-    }
-  }
-
-  return retMatrix;
-
-}
-
-
-/******************************************************************************
- * Function: binVector
- * Inputs: gsl_vector*, int width
- * Returns: gsl_vector*
- * Description: Bins the vector over the width box. Good if width
- * is a divisor of the vector length.
- ******************************************************************************/
-
-gsl_vector* binVector (gsl_vector *vInput, int width) {
-
-  int ii, jj,
-    vecSize = vInput->size,             // Number of Rows
-    newVecSize = vecSize/width;
-  
-  double sum;
-
-  gsl_vector* retVector = gsl_vector_alloc(newVecSize);
-  
-  /* Go over each pixel and calculating the box car average */
-  for (ii = 0; ii < newVecSize; ii++) {
-
-    sum = 0;
-    for (jj = 0; jj < width; jj++) {
-      
-      sum = sum + gsl_vector_get(vInput, ii*width+jj);
-				 
-    }
-
-    gsl_vector_set(retVector, ii, sum/width);
-    
-  }
-
-  return retVector;
-
-}
-
-
-/******************************************************************************
  * Function: matrixReduceElements(gsl_matrix*, holographyParameters*)
  * Inputs: gsl_matrix*, holographyParameters*
  * Returns: gsl_matrix*
  * Description: This just reduces the matrix by taking every width element
  ******************************************************************************/
 
-gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param) {
+static gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param) {
 
   int ii, jj,
     iin = 0,
@@ -877,7 +810,7 @@ gsl_matrix *matrixReduceElements(gsl_matrix *mInput, holographyParameters* param
  * memory.
  ******************************************************************************/
 
-gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma) {
+static gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma) {
 
   int numRows = imagePlasma->size2,
     numCols = imagePlasma->size1;
@@ -909,7 +842,7 @@ gsl_matrix *rotateImage90CW(gsl_matrix *imagePlasma) {
  * 0 index becomes the end, and the last index becomes zero.
  ******************************************************************************/
 
-gsl_matrix *flipImageRows(gsl_matrix *imagePlasma) {
+static gsl_matrix *flipImageRows(gsl_matrix *imagePlasma) {
 
   int numRows = imagePlasma->size1,
     numCols = imagePlasma->size2;
@@ -941,7 +874,7 @@ gsl_matrix *flipImageRows(gsl_matrix *imagePlasma) {
  * 0 index becomes the end, and the last index becomes zero.
  ******************************************************************************/
 
-gsl_matrix *flipImageCols(gsl_matrix *imagePlasma) {
+static gsl_matrix *flipImageCols(gsl_matrix *imagePlasma) {
 
   int numRows = imagePlasma->size1,
     numCols = imagePlasma->size2;

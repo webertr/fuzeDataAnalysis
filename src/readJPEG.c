@@ -1,4 +1,4 @@
-#include "imageAnalysisDHI.h"
+#include "readJPEG.h"
 
 /*
  * Someone else wrote this for handling errors, I don't want it

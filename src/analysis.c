@@ -25,25 +25,9 @@ int hologramAnalysis() {
   /* Obtained line integrated data and do an abel inversion */
   //hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, "set size ratio -1");
+  plotImageDataFile(param.fileHologram, "set size ratio -1");
 
-  //plotImageDataFile(param.fileLineInt, "set size ratio -1");
-
-  plotImageDataFile(param.fileLineInt, "set size ratio -1\n\
-                                        set xrange [0:79]\n\
-                                        set yrange [0:138]\n\
-                                        set title 'Line Integrated, May 10 2018'\n\
-                                        set term png\n\
-                                        set output '/home/fuze/Downloads/May_10_2018_LineInt.png");
-
-  /* plotImageDataFile(param.fileHologram, "set size ratio -1\n\ */
-  /*                                        set xrange [0:4000]\n\ */
-  /*                                        set yrange [0:6000]\n\ */
-  /*                                        set xtics 1000\n\ */
-  /*                                        set ytics 1000\n\ */
-  /*                                        set title 'May 10th, 2018\n\ */
-  /*                                        set term png\n\ */
-  /*                                        set output '/home/fuze/Downloads/May_10_2018_Holo.png'"); */
+  plotImageDataFile(param.fileLineInt, "set size ratio -1");
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
   //                                      set output 'data/temp.png'");
