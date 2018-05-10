@@ -4,7 +4,6 @@
 #include "imageAnalysisDHI.h"
 #include "analysis.h"
 #include "holoParam.h"
-#include "testAbelInversionDHI.h"
 
 
 /******************************************************************************
@@ -19,7 +18,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing DHI abel inverison code 
    */
-  testInvertImageDHI();
+  testAbelInversionDHI();
   
   /*
    * Running the DHI analysis

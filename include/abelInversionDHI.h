@@ -25,23 +25,10 @@
 
 #include "holoParam.h"
 #include "save.h"
+#include "plot.h"
 
 
 gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
-int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			       gsl_vector* crossSection, int* centroidLocation,
-			       gsl_matrix* projectMatrix, int centroidIterations,
-			       int centroidIndexTest, int colNumber, holographyParameters* param);
-int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,
-			 int length, holographyParameters *param);
-int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-				int rightSize, double rightOffset);
-int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-			       int leftSize, double leftOffset);
-int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, gsl_matrix *rightDensityProfile,
-				gsl_matrix *imageM, gsl_vector *centroidLocation,
-				holographyParameters* param);
-gsl_matrix* getProjectMatrixDHI(int sizeM, double res);
-
+int testAbelInversionDHI();
 
 #endif

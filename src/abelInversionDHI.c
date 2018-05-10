@@ -1,5 +1,20 @@
 #include "abelInversionDHI.h"
 
+static int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
+				      gsl_vector* crossSection, int* centroidLocation,
+				      gsl_matrix* projectMatrix, int centroidIterations,
+				      int centroidIndexTest, int colNumber, 
+				      holographyParameters* param);
+static int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,
+				int length, holographyParameters *param);
+static int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, 
+				       gsl_vector* vOutput, int rightSize);
+static int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, 
+				      gsl_vector *vOutput, int leftSize);
+static gsl_matrix* getProjectMatrixDHI(int sizeM, double res);
+static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, 
+				       gsl_matrix *rightDensityProfile, gsl_matrix *imageM, 
+				       gsl_vector *centroidLocation, holographyParameters* param);
 
 /******************************************************************************
  * Function: invertImage
@@ -119,6 +134,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     
   }
 
+
   /*
    * This will go through and correct for any axial phase variations. It will basically, for
    * the longer of the left/right profiles, take edge value of the line integrated density,
@@ -126,9 +142,12 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
    * 2*(sqrt(R^2 - y^2), and add that to both the left and right radial density profiles.
    * I don't know if this is necessary.
    */
-  //axialVariationCorrectionDHI(leftDensityProfile, rightDensityProfile, imageM,
-  //			      centroidLocation, param);
+  if (param->axialCorrection == 1) {
 
+    axialVariationCorrectionDHI(leftDensityProfile, rightDensityProfile, imageM,
+				centroidLocation, param);
+
+  }
 
   /* 
    * Assemblying full density profile image 
@@ -184,10 +203,11 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
  * centroid_abs vector which represents the plasma center in each cross section
  ******************************************************************************/
 
-int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
-			       gsl_vector* crossSection, int* centroidLocation,
-			       gsl_matrix* projectMatrix, int centroidIterations,
-			       int centroidIndexTest, int colNumber, holographyParameters* param) {
+static int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
+				      gsl_vector* crossSection, int* centroidLocation,
+				      gsl_matrix* projectMatrix, int centroidIterations,
+				      int centroidIndexTest, int colNumber, 
+				      holographyParameters* param) {
 
   int ii,jj,
     numRows = crossSection->size,
@@ -199,12 +219,10 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
 
   gsl_vector *leftCrossSectionTemp = gsl_vector_alloc(leftCrossSection->size);
   gsl_vector *rightCrossSectionTemp = gsl_vector_alloc(rightCrossSection->size);
-  
-  gsl_vector_view leftView, rightView;
 
   double checkSum,
     minCheckSum = DBL_MAX,             // Minimum Check sum value. Set to max double
-    val1, leftOffset, rightOffset;
+    val1;
 
   /*
    * This for loop will go through and try a plasma center at a number of
@@ -215,22 +233,14 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
     leftSize = centroidIndexTest+1;
     rightSize = numRows-(centroidIndexTest+1);
 
-    /* Finding offset for each left and right inversion */
-    leftView = gsl_vector_subvector(crossSection, 0, leftSize);
-    rightView = gsl_vector_subvector(crossSection, leftSize, rightSize);
-    leftOffset = gsl_vector_min(&(leftView.vector));
-    rightOffset = gsl_vector_min(&(rightView.vector));
-
     /*
      * Solves the linear system of equations that is, a = M x b
      * where a is the line integrated density vector, and
      * b is the radial density profile, and M is the matrix 
      * that projects the radial density onto the line integrated density profile
      */
-    solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftCrossSectionTemp, leftSize,
-			       leftOffset);
-    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightCrossSectionTemp, rightSize,
-				rightOffset);
+    solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftCrossSectionTemp, leftSize);
+    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightCrossSectionTemp, rightSize);
 
     /* 
      * The shorter profile will have a large offset, and we want to vary the density
@@ -316,8 +326,8 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
  * defined by the L2 norm of the vector, which is the just the vector length.
  ******************************************************************************/
 
-int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,
-			 int length, holographyParameters *param) {
+static int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,
+				int length, holographyParameters *param) {
 
   double  offsetValue,          // The actual offset value
     val1,                       // Value to set the vector to
@@ -332,7 +342,7 @@ int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSe
   /*
    * Iterating through the different values for the density offset of the smaller profile
    */
-  for (ii = 0; ii < offsetIteration; ii++) {
+  for (ii = -offsetIteration + 1; ii < offsetIteration; ii++) {
 
     offsetValue = ii*offsetDelta;
     checkSum = 0;
@@ -388,8 +398,8 @@ int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSe
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vector* vOutput,
-				int rightSize, double rightOffset) {
+static int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, 
+				       gsl_vector* vOutput, int rightSize) {
 
   gsl_vector_view vInputView = gsl_vector_subvector(vInput, vInput->size-rightSize-1, rightSize);
 
@@ -399,7 +409,10 @@ int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vect
     projectLength = (&vInputView.vector)->size;
 
   double vec,
-    sum1;
+    sum1,
+    offset = gsl_vector_min(&vInputView.vector);
+
+  (void) offset;
 
   gsl_matrix_view rightProjectMatrix; // Sub-matrix view of right inversion matrix
 
@@ -439,12 +452,12 @@ int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vect
     for (jj = (numCols-1); jj > ii; --jj) {
       
       vec = vec + gsl_matrix_get(&rightProjectMatrix.matrix, ii, jj) *
-	(gsl_vector_get(&vInputView.vector, jj) - rightOffset);
+	gsl_vector_get(vOutput, jj);
 
     }
 
     /* Subtracting constant value */
-    sum1 = gsl_vector_get(&vInputView.vector, ii) - rightOffset - vec;
+    sum1 = gsl_vector_get(&vInputView.vector, ii) - offset - vec;
     sum1 = sum1 / gsl_matrix_get(&rightProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
@@ -472,8 +485,8 @@ int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vect
  * with the highest density at the end, while the "right" is the opposite.
  ******************************************************************************/
 
-int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vector *vOutput,
-			       int leftSize, double leftOffset) {
+static int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, 
+				      gsl_vector *vOutput, int leftSize) {
   
   gsl_vector_view vInputView = gsl_vector_subvector(vInput, 0, leftSize);
   
@@ -483,7 +496,10 @@ int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vecto
     projectLength = (&vInputView.vector)->size;
 
   double vec,
-    sum1;
+    sum1,
+    offset = gsl_vector_min(&vInputView.vector);    
+
+  (void) offset;
 
   gsl_matrix_view leftProjectMatrix; // Sub-matrix view of right inversion matrix
 
@@ -523,12 +539,12 @@ int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vecto
     for (jj = (numCols-1); jj > ii; --jj) {
       
       vec = vec + gsl_matrix_get(&leftProjectMatrix.matrix, ii, jj) *
-	(gsl_vector_get(&vInputView.vector, jj)-leftOffset);
+	gsl_vector_get(vOutput, jj);
 
     }
 
     /* Subtracting constant value */
-    sum1 = gsl_vector_get(&vInputView.vector, (numRows-1)-ii) - leftOffset - vec;
+    sum1 = gsl_vector_get(&vInputView.vector, (numRows-1)-ii) - offset - vec;
     sum1 = sum1 / gsl_matrix_get(&leftProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
@@ -555,7 +571,7 @@ int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vecto
  * is greater then the shell, it can't have any contribution.
  ******************************************************************************/
 
-gsl_matrix* getProjectMatrixDHI(int sizeM, double res) {
+static gsl_matrix* getProjectMatrixDHI(int sizeM, double res) {
 
   int ii, jj;
   double num;
@@ -614,9 +630,9 @@ gsl_matrix* getProjectMatrixDHI(int sizeM, double res) {
  * that to both the left and right radial density profiles.
  ******************************************************************************/
 
-int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, gsl_matrix *rightDensityProfile,
-				gsl_matrix *imageM, gsl_vector *centroidLocation,
-				holographyParameters* param) {
+static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, 
+				       gsl_matrix *rightDensityProfile, gsl_matrix *imageM, 
+				       gsl_vector *centroidLocation, holographyParameters* param) {
 
   int numRows = param->numRows, // Number of Rows, pixels along the y-direction
     numCols = param->numCols,   // Number of Cols, pixels along the x-direction 
@@ -696,3 +712,189 @@ int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, gsl_matrix *righ
   return 0;
 
 }
+
+
+/******************************************************************************
+ *
+ * TESTING SECTION
+ *
+ ******************************************************************************/
+
+
+static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput);
+static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid);
+static int testInvertImageDHI();
+
+int testAbelInversionDHI() {
+
+  testInvertImageDHI();
+
+  return 0;
+
+}
+  
+
+static int testInvertImageDHI() {
+  
+  int numRows = 100,
+    numCols = 100;
+
+  gsl_matrix *testData = gsl_matrix_alloc(numRows, numCols);
+
+  double val;
+
+  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
+  param.numRows = numRows;
+  param.numCols = numCols;
+  
+  /* Get the matrix that will project the radial profile to the line integrated density */
+  gsl_matrix *projectMatrix = getProjectMatrixDHI(param.numRows, param.deltaY);
+
+  gsl_matrix *radialProfile = gsl_matrix_alloc(numRows, numCols);
+
+  gsl_vector *radialProfileVec = gsl_vector_alloc(numCols);
+  
+  gsl_vector *testVec;
+  gsl_vector *xVec = gsl_vector_alloc(numCols);
+  
+  int ii, jj;
+  for (jj = 0; jj < numCols; jj++) {
+
+    gsl_vector_set(xVec, jj, (double) jj);
+    
+    for (ii = 0; ii < numRows; ii++) {
+
+      val = gsl_sf_exp(-gsl_pow_2(ii/20.0));
+
+      /*
+	if (ii < 20) {
+	val = 1.0;
+	} else {
+	val = 0.0;
+	}
+      */
+    
+      gsl_matrix_set(radialProfile, ii, jj, val);
+
+    }
+  }  
+  
+  saveMatrixData(radialProfile, "data/radialProfile.txt");
+
+  int center;
+  double offset;
+
+  for (jj = 0; jj < numCols; jj++) {
+
+    gsl_matrix_get_col(radialProfileVec, radialProfile, jj);
+    testVec = testMatrixMult(projectMatrix, radialProfileVec);
+    
+    center = (int) (50.0 + ((float) jj / numCols)*80 - 40);
+    offset = jj*0.5/numCols;
+    for (ii = 0; ii < numRows; ii++) {
+
+      gsl_matrix_set(testData, ii, jj, offset+gsl_vector_get(testVec, abs(center - ii)));
+      
+    }
+  }
+
+  param.deltaN = 0.02;
+  param.centroidNum = 10;
+  param.offsetIter = 10;
+
+  plotImageData(testData, "set title 'Forward Projected Data'\n");
+    
+  gsl_matrix *invertedImage = invertImageDHI(testData, &param);
+  overlayCenterLineTest(invertedImage, param.fileCentroid);
+  saveImageData(invertedImage, param.fileFullInvert);
+  
+  int colPlot = 85;
+  plot2MatrixColDataFile(param.fileLeftInvert, colPlot,
+			 "data/radialProfile.txt", colPlot, "");
+  plot2MatrixColDataFile(param.fileRightInvert, colPlot,
+			 "data/radialProfile.txt", colPlot, "");
+  
+  plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
+
+  return 0;
+
+}
+
+
+static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput) {
+
+  int numRows = mInput -> size1,
+    numCols = mInput -> size2;
+
+  gsl_vector *vecRet = gsl_vector_alloc(numRows);
+
+  double val;
+
+  int ii, jj;
+  for (jj = 0; jj < numCols; jj++) {
+
+    val = 0;
+    for (ii = 0; ii < numRows; ii++) {
+
+      val = val + gsl_vector_get(vInput, ii) * gsl_matrix_get(mInput, jj, ii);
+      
+    }
+
+    gsl_vector_set(vecRet, jj, val);
+
+  }
+		     
+  return vecRet;
+
+}
+
+/******************************************************************************
+ * Function: overlayCenterLineTest
+ * Inputs: gsl_matrix, char *
+ * Returns: int
+ * Description: Overlays a center line on the inverted data
+ ******************************************************************************/
+
+static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid) {
+
+  int ii, jj, center,
+    numRows = mInput->size1,
+    numCols = mInput->size2;
+
+  /* Temporary vector to read centroid coordinates */
+  gsl_vector* tempVector = gsl_vector_alloc(numRows);
+
+  double val;
+  
+  /* Reading in centroid coordinates */
+  FILE *fp;
+  fp = fopen(fileCentroid, "r");
+  char buffer[100];
+  ii = 0;
+  while (fscanf(fp, "%s", buffer) == 1) {
+    sscanf(buffer, "%lf", &val);
+    gsl_vector_set(tempVector, ii, val);
+    ii++;
+  }
+  fclose(fp);
+
+  /* Setting selected centroid values to 0 */
+  for (jj = 0; jj < numCols; jj++) {
+
+    center = (int) gsl_vector_get(tempVector, jj);
+    
+    for (ii = 0; ii < numRows; ii++) {
+      
+      if (ii == center) {
+	gsl_matrix_set(mInput, ii, jj, 0.0);
+      }
+
+    }
+  }
+
+  gsl_vector_free(tempVector);
+
+  return 0;
+  
+}
+

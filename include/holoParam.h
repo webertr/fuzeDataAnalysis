@@ -57,6 +57,7 @@ struct holographyparameters {
   double zPosition;             // The z position of the hologram at the center of the image
   char filePlasma[100];         // The name of the baseline image
   char fileRef[100];            // The name of the plasma image
+  int axialCorrection;          // If 1, will correct for axial phase variation of hologram
 };
 
 typedef struct holographyparameters holographyParameters;
@@ -96,6 +97,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .flipImageRows = 0,
   .flipImageCols = 0,
   .refSubtract = 1,
+  .axialCorrection = 0,
   .fileRef = "/home/fuze/DHI_Images/Calibration/May_10_2018/noFlame2.JPG",
   .filePlasma = "/home/fuze/DHI_Images/Calibration/May_10_2018/Flame2.JPG",
   .saveHologram = 1,

@@ -16,8 +16,8 @@
  *
  ******************************************************************************/
 
-static int quadSwapComplexImage (gsl_matrix_complex *mInput);
-static int hyperbolicWindow (gsl_matrix *mInput, int param);
+static int quadSwapComplexImage(gsl_matrix_complex *mInput);
+static int hyperbolicWindow(gsl_matrix *mInput, int param);
 static int overlayCenterLine(gsl_matrix *mInput, char *fileCentroid);
 
 /*

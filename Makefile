@@ -2,8 +2,7 @@ CC = gcc
 INCL = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS = -g -Wall
 LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
-HEADERS = include/holoParam.h \
-	include/imageAnalysisDHI.h
+HEADERS = include/holoParam.h
 
 SOURCE = src/magnetic.c \
 	src/main.c \
@@ -16,8 +15,7 @@ SOURCE = src/magnetic.c \
 	src/analysis.c \
 	src/save.c \
 	src/fit.c \
-	src/accelTrack.c \
-	test/testAbelInversionDHI.c
+	src/accelTrack.c
 
 PROD = run
 
