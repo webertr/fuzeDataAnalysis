@@ -47,6 +47,8 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     /* The cross section of the image */
     gsl_matrix_get_col(crossSection, imageM, jj);
 
+    /* Subtract the minimum value */
+    
     /* Getting index with maximum line-integrated density of cross section*/
     maxIndex = gsl_vector_max_index(crossSection);
 
@@ -198,9 +200,11 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
   gsl_vector *leftCrossSectionTemp = gsl_vector_alloc(leftCrossSection->size);
   gsl_vector *rightCrossSectionTemp = gsl_vector_alloc(rightCrossSection->size);
   
+  gsl_vector_view leftView, rightView;
+
   double checkSum,
     minCheckSum = DBL_MAX,             // Minimum Check sum value. Set to max double
-    val1;
+    val1, leftOffset, rightOffset;
 
   /*
    * This for loop will go through and try a plasma center at a number of
@@ -210,15 +214,23 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
 
     leftSize = centroidIndexTest+1;
     rightSize = numRows-(centroidIndexTest+1);
-    
+
+    /* Finding offset for each left and right inversion */
+    leftView = gsl_vector_subvector(crossSection, 0, leftSize);
+    rightView = gsl_vector_subvector(crossSection, leftSize, rightSize);
+    leftOffset = gsl_vector_min(&(leftView.vector));
+    rightOffset = gsl_vector_min(&(rightView.vector));
+
     /*
      * Solves the linear system of equations that is, a = M x b
      * where a is the line integrated density vector, and
      * b is the radial density profile, and M is the matrix 
      * that projects the radial density onto the line integrated density profile
      */
-    solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftCrossSectionTemp, leftSize);
-    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightCrossSectionTemp, rightSize);
+    solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftCrossSectionTemp, leftSize,
+			       leftOffset);
+    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightCrossSectionTemp, rightSize,
+				rightOffset);
 
     /* 
      * The shorter profile will have a large offset, and we want to vary the density
@@ -377,7 +389,7 @@ int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSe
  ******************************************************************************/
 
 int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vector* vOutput,
-				int rightSize) {
+				int rightSize, double rightOffset) {
 
   gsl_vector_view vInputView = gsl_vector_subvector(vInput, vInput->size-rightSize-1, rightSize);
 
@@ -427,12 +439,12 @@ int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vect
     for (jj = (numCols-1); jj > ii; --jj) {
       
       vec = vec + gsl_matrix_get(&rightProjectMatrix.matrix, ii, jj) *
-	gsl_vector_get(vOutput, jj);
+	(gsl_vector_get(&vInputView.vector, jj) - rightOffset);
 
     }
 
     /* Subtracting constant value */
-    sum1 = gsl_vector_get(&vInputView.vector, ii) - vec;
+    sum1 = gsl_vector_get(&vInputView.vector, ii) - rightOffset - vec;
     sum1 = sum1 / gsl_matrix_get(&rightProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);
@@ -461,7 +473,7 @@ int solveRightSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vect
  ******************************************************************************/
 
 int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vector *vOutput,
-			       int leftSize) {
+			       int leftSize, double leftOffset) {
   
   gsl_vector_view vInputView = gsl_vector_subvector(vInput, 0, leftSize);
   
@@ -511,12 +523,12 @@ int solveLeftSystemLinearEqDHI(gsl_matrix *mInput, gsl_vector *vInput, gsl_vecto
     for (jj = (numCols-1); jj > ii; --jj) {
       
       vec = vec + gsl_matrix_get(&leftProjectMatrix.matrix, ii, jj) *
-	gsl_vector_get(vOutput, jj);
+	(gsl_vector_get(&vInputView.vector, jj)-leftOffset);
 
     }
 
     /* Subtracting constant value */
-    sum1 = gsl_vector_get(&vInputView.vector, (numRows-1)-ii) - vec;
+    sum1 = gsl_vector_get(&vInputView.vector, (numRows-1)-ii) - leftOffset - vec;
     sum1 = sum1 / gsl_matrix_get(&leftProjectMatrix.matrix, ii, ii);
 
     gsl_vector_set(vOutput, ii, sum1);

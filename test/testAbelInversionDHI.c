@@ -52,6 +52,7 @@ int testInvertImageDHI() {
   saveMatrixData(radialProfile, "data/radialProfile.txt");
 
   int center;
+  double offset;
 
   for (jj = 0; jj < numCols; jj++) {
 
@@ -59,15 +60,15 @@ int testInvertImageDHI() {
     testVec = testMatrixMult(projectMatrix, radialProfileVec);
     
     center = (int) (50.0 + ((float) jj / numCols)*80 - 40);
-    
+    offset = jj*0.5/numCols;
     for (ii = 0; ii < numRows; ii++) {
 
-      gsl_matrix_set(testData, ii, jj, gsl_vector_get(testVec, abs(center - ii)));
+      gsl_matrix_set(testData, ii, jj, offset+gsl_vector_get(testVec, abs(center - ii)));
       
     }
   }
 
-  param.deltaN = 0.02;
+  param.deltaN = 0.00;
   param.centroidNum = 10;
   param.offsetIter = 10;
 
@@ -77,10 +78,11 @@ int testInvertImageDHI() {
   overlayCenterLineTest(invertedImage, param.fileCentroid);
   saveImageData(invertedImage, param.fileFullInvert);
   
-  plot2MatrixColDataFile(param.fileLeftInvert, 20,
-			 "data/radialProfile.txt", 20, "");
-  plot2MatrixColDataFile(param.fileRightInvert, 20,
-			 "data/radialProfile.txt", 20, "");
+  int colPlot = 50;
+  plot2MatrixColDataFile(param.fileLeftInvert, colPlot,
+			 "data/radialProfile.txt", colPlot, "");
+  plot2MatrixColDataFile(param.fileRightInvert, colPlot,
+			 "data/radialProfile.txt", colPlot, "");
   
   plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
 

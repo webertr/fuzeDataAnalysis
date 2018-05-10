@@ -35,9 +35,9 @@ int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCr
 int findDensityOffsetDHI(gsl_vector *largeCrossSection, gsl_vector *smallCrossSection,
 			 int length, holographyParameters *param);
 int solveRightSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-				int rightSize);
+				int rightSize, double rightOffset);
 int solveLeftSystemLinearEqDHI(gsl_matrix* mInput, gsl_vector* vInput, gsl_vector* vOutput,
-			       int leftSize);
+			       int leftSize, double leftOffset);
 int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, gsl_matrix *rightDensityProfile,
 				gsl_matrix *imageM, gsl_vector *centroidLocation,
 				holographyParameters* param);
