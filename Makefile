@@ -8,9 +8,9 @@ SOURCE = src/magnetic.c \
 	src/main.c \
 	src/getLFData.c \
 	src/plot.c \
-	src/abelInversionDHI.c \
-	src/imageAnalysisDHI.c \
-	src/readJPEG.c \
+	src/DHI/abelInversion.c \
+	src/DHI/imageAnalysis.c \
+	src/DHI/readJPEG.c \
 	src/plasmaParam.c \
 	src/analysis.c \
 	src/save.c \
