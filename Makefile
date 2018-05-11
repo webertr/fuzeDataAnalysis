@@ -26,4 +26,5 @@ run: $(SOURCE) $(HEADERS)
 	$(SOURCE) $(LIBRY) -o $(PROD)
 
 clean:
-	rm -f *~ *.o data/* $(PROD)
+	rm -f *~ *.o data/* $(PROD) ngspice/thyristorBank/*.txt \
+	ngspice/thyristorBank/a.out

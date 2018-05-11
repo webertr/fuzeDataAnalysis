@@ -1,0 +1,168 @@
+*
+* This circuit contains a capacitor and an inductor with
+* is designed to simulate the fuze circuit
+*
+
+* Global parameters for simulation
+*.param corn=2
+
+* Instance of capacitor and thyristor switch
+xthyBank1 1 0 r1p r1n id1 it1p it1n vthyBank 
+          +trigTime1a=10u trigTime1b=11u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank2 1 0 r2p r2n id2 it2p it2n vthyBank 
+          +trigTime1a=20u trigTime1b=21u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank3 1 0 r3p r3n id3 it3p it3n vthyBank 
+          +trigTime1a=30u trigTime1b=31u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank4 1 0 r4p r4n id4 it4p it4n vthyBank 
+          +trigTime1a=40u trigTime1b=41u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank5 1 0 r5p r5n id5 it5p it5n vthyBank 
+          +trigTime1a=50u trigTime1b=51u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank6 1 0 r6p r6n id6 it6p it6n vthyBank 
+          +trigTime1a=60u trigTime1b=61u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank7 1 0 r7p r7n id7 it7p it7n vthyBank 
+          +trigTime1a=70u trigTime1b=71u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank8 1 0 r8p r8n id8 it8p it8n vthyBank 
+          +trigTime1a=80u trigTime1b=81u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank9 1 0 r9p r9n id9 it9p it9n vthyBank 
+          +trigTime1a=90u trigTime1b=91u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank10 1 0 r10p r10n id10 it10p it10n vthyBank 
+          +trigTime1a=100u trigTime1b=101u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank11 1 0 r11p r11n id11 it11p it11n vthyBank 
+          +trigTime1a=110u trigTime1b=111u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Instance of capacitor and thyristor switch
+xthyBank12 1 0 r12p r12n id12 it12p it12n vthyBank 
+          +trigTime1a=120u trigTime1b=121u
+          +initialVoltage=5k
+	  +capValue=830u
+
+* Plasma impedance
+RP 1 2 7.5m
+LP 2 0 300n
+
+* Model of a capacitor and thyristor switch.
+.subckt vthyBank 14 10 1 2 33 11 12
+                 +trigTime1a=0.3 trigTime1b=0.31
+                 +initialVoltage=5k
+		 +capValue=840u
+
+* 10 = the ground
+C1 1 10 capValue ic=initialVoltage
+R41 1 2 1m
+L35 2 3 40n
+L3 3 4 200n
+R7 4 5 6m
+diode0 33 5 DCLAMP
+RS 33 10 1u
+C11 5 6 1u ic=initialVoltage
+R10 6 10 4
+switch1 5 8 99 10 switch1 off 
+diode6 8 9 DCLAMP
+L23 9 11 200n
+R11 11 12 3.33m
+L10 12 13 1.122u
+L47 13 14 300n
+
+* Thyristor switch model control voltage
+v1 99 10 DC PWL(0 0 trigTime1a 0 trigTime1b 1)
+* Models
+* Switch model
+* vt = on threshold, vh = hystersis, ron = on resistance
+* roff = off resistance
+.model switch1 sw vt=0.1 vh=0 ron=0.5m roff=1gig
+* Diode model
+* DC Parameters:
+* BV = Reverse breakdown voltage, IBV = Current at breakdown voltage
+* IK = Forward Knee Current, IKR = Reverse Knee Current
+* IS = Saturation Current (Scaled by "AREA" in instance declaration)
+* JSW = Side wall saturation, N = Emission Coefficient
+* RS = Ohmic resistance
+.model DCLAMP D rs=0.17m
+
+.ends
+
+* Model of the snubbers used on the thyristor bank
+.subckt vsnubber 1 3
+                 +resValue=2
+		 +capValue=2u
+		 +bypassResValue=3meg
+
+* Snubber resistance
+R1 1 2 resValue
+* Snubber capacitor
+C1 2 3 capValue
+* Bypass resistor
+R2 1 3 bypassResValue
+
+.ends
+
+
+* Starting control statements
+.control
+
+* Setting output file type
+set filetype=ascii
+* Specifying time domain to solve solution for and enabling I.C.'s
+*.tran tstep tstop <tstart <tmax>> <uic>
+* tstep = suggested step time, tstop = stop time
+* tstart = start time (defaults to 0)
+* tmax = maximum time step, uic = use initial conditions
+tran 5n 500u 0 50n uic
+* Plotting 
+*plot v(5)
+* Writting output file for I_P
+write ip.txt (v(1)-v(2))/7.5m/1000
+* Writting output file for I from C1
+write ic1.txt (v(r1p)-v(r1n))/1m/1000
+* Writting output file for I from Diode 1
+write id1.txt -v(id1)/1u/1000
+* Writting output file for I from thyristor 1
+write it1.txt (v(it1p)-v(it1n))/3.33m/1000
+
+* Ending control statement
+.endc
+
+* Ending circuit simulation
+.end
