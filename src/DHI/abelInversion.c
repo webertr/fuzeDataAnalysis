@@ -170,11 +170,27 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     }
   }
 
+  /* Adding in first row of postion information */
+  gsl_matrix *leftDensityProfileTemp = gsl_matrix_alloc(numRows, numCols+1);
+  gsl_matrix *rightDensityProfileTemp = gsl_matrix_alloc(numRows, numCols+1);
+  gsl_matrix_view matrixViewLeftTemp = gsl_matrix_submatrix(leftDensityProfileTemp, 
+							    0, 1, numRows, numCols);
+  gsl_matrix_view matrixViewRightTemp = gsl_matrix_submatrix(rightDensityProfileTemp, 
+							     0, 1, numRows, numCols);
+
+  gsl_matrix_memcpy(&matrixViewLeftTemp.matrix, leftDensityProfile);
+  gsl_matrix_memcpy(&matrixViewRightTemp.matrix, rightDensityProfile);
+
+  for (ii = 0; ii < numRows; ii++) {
+    gsl_matrix_set(leftDensityProfileTemp, ii, 0, ii*param->deltaY);
+    gsl_matrix_set(rightDensityProfileTemp, ii, 0, ii*param->deltaY);
+  }
+  
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
-  saveMatrixData(leftDensityProfile, param->fileLeftInvert);
-  saveMatrixData(rightDensityProfile, param->fileRightInvert);
+  saveMatrixData(leftDensityProfileTemp, param->fileLeftInvert);
+  saveMatrixData(rightDensityProfileTemp, param->fileRightInvert);
   saveVectorData(centroidLocation, param->fileCentroid);
 
   /* Deleting vectors and matrices */
@@ -184,6 +200,8 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_vector_free(rightCrossSection);
   gsl_matrix_free(leftDensityProfile);
   gsl_matrix_free(rightDensityProfile);
+  gsl_matrix_free(leftDensityProfileTemp);
+  gsl_matrix_free(rightDensityProfileTemp);
   gsl_matrix_free(projectMatrix);
 
   return fullDensityProfile;

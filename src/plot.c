@@ -328,7 +328,7 @@ int plotMatrixColDataFile (char *fileName, int colNum, char *plotOptions) {
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using 0:%d with points title '1'\n", fileName, colNum);
+  fprintf(gnuplot, "plot '%s' using 0:%d with points title '1'\n", fileName, colNum+1);
   
   fflush(gnuplot);
 
@@ -370,8 +370,8 @@ int plot2MatrixColDataFile (char *fileName1, int colNum1, char *fileName2, int c
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using 0:%d with points title '1',\\\n", fileName1, colNum1);
-  fprintf(gnuplot, "     '%s' using 0:%d with points title '2'\n", fileName2, colNum2);
+  fprintf(gnuplot, "plot '%s' using 0:%d with points title '1',\\\n", fileName1, colNum1+1);
+  fprintf(gnuplot, "     '%s' using 0:%d with points title '2'\n", fileName2, colNum2+1);
   
   fflush(gnuplot);
 
@@ -411,7 +411,7 @@ int plotMatrixColVColDataFile (char *fileName, int colNumX, int colNumY, char *p
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using %d:%d with points title '1'\n", fileName, colNumX, colNumY);
+  fprintf(gnuplot, "plot '%s' using %d:%d with points title '1'\n", fileName, colNumX+1, colNumY+1);
   
   fflush(gnuplot);
 

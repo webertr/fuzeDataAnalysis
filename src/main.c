@@ -18,12 +18,12 @@ int main(int argc, char *argv[]) {
   /*
    * Testing DHI abel inverison code 
    */
-  testAbelInversionDHI();
+  //testAbelInversionDHI();
   
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /*
    * Plotting plasma parameters
