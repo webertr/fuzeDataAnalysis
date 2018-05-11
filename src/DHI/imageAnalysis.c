@@ -1038,9 +1038,15 @@ int hologramMain(holographyParameters* param) {
   /* Unwrapping the phase of the smoothed image and subtracting an offset */
   unwrapPhase(twinImageUnwrap, param);
 
-  /* Converting phase difference to electron density */
-  convertPhaseDensity(twinImageUnwrap, param);
+  /*
+   * if specified, Converting phase difference to electron density
+   */
+  if (param->convertDensity == 1) {
 
+    convertPhaseDensity(twinImageUnwrap, param);
+    
+  }
+  
   /* Getting position vectors for line integrated image */
   gsl_vector *yPhase = getImageYVectorHol(param); 
   gsl_vector *xPhase = getImageXVectorHol(param); 

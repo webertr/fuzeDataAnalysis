@@ -23,13 +23,13 @@ int hologramAnalysis() {
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
   /* Obtained line integrated data and do an abel inversion */
-  //hologramMain(&param);
+  hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
 
-  //plotImageDataFile(param.fileLineInt, "set size ratio -1");
+  plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
-  plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
+  //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
   //                                      set output 'data/temp.png'");

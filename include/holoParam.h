@@ -58,6 +58,7 @@ struct holographyparameters {
   char filePlasma[100];         // The name of the baseline image
   char fileRef[100];            // The name of the plasma image
   int axialCorrection;          // If 1, will correct for axial phase variation of hologram
+  int convertDensity;           // If 1, this will convert from the phase to density
 };
 
 typedef struct holographyparameters holographyParameters;
@@ -98,6 +99,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .flipImageCols = 0,
   .refSubtract = 1,
   .axialCorrection = 0,
+  .convertDensity = 1,
   .fileRef = "/home/fuze/DHI_Images/180215/180215011.JPG",
   .filePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG",
   .saveHologram = 1,
@@ -107,7 +109,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .saveLineInt = 1,
   .fileLineIntPos = "data/lineIntegratedPosition.dat",
   .fileLineInt = "data/lineIntegrated.dat",
-  .invertImage = 1,
+  .invertImage = 0,
   .fileLeftInvert = "data/leftAbelInvert.txt",
   .fileRightInvert = "data/rightAbelInvert.txt",
   .fileFullInvert = "data/fullAbelInvert.dat",
