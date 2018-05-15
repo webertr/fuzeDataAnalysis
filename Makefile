@@ -38,3 +38,5 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 clean:
 	rm -rf *~ *.o data/* $(PROD) ngspice/thyristorBank/*.txt \
 	ngspice/thyristorBank/a.out obj
+
+.PHONY: clean all
