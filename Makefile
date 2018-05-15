@@ -1,6 +1,6 @@
 CC = gcc
 INCL = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
-FLAGS = -g -Wall
+FLAGS = -MP -MD -g -Wall
 LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
 HEADERS = include/holoParam.h
 
@@ -33,7 +33,7 @@ run: $(OBJECT) $(HEADERS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@$(MKDIR) -p $(@D)
-	$(CC) -c $(INCL) -o $@ $< 
+	$(CC) $(FLAGS) -c $(INCL) -o $@ $< 
 
 clean:
 	rm -rf *~ *.o data/* $(PROD) ngspice/thyristorBank/*.txt \
