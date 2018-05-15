@@ -4,7 +4,12 @@ FLAGS = -g -Wall
 LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
 HEADERS = include/holoParam.h
 
-SOURCE = src/magnetic.c \
+SRC_DIR = src
+OBJ_DIR = obj
+
+MKDIR = mkdir
+
+SOURCE := src/magnetic.c \
 	src/main.c \
 	src/getLFData.c \
 	src/plot.c \
@@ -17,14 +22,19 @@ SOURCE = src/magnetic.c \
 	src/fit.c \
 	src/accelTrack.c
 
+OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
 PROD = run
 
 all: $(PROD)
 
-run: $(SOURCE) $(HEADERS)
+run: $(OBJECT) $(HEADERS)
 	$(CC) $(FLAGS) $(INCL) \
-	$(SOURCE) $(LIBRY) -o $(PROD)
+	$(OBJECT) $(LIBRY) -o $(PROD)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+	@$(MKDIR) -p $(@D)
+	$(CC) -c $(INCL) -o $@ $< 
 
 clean:
-	rm -f *~ *.o data/* $(PROD) ngspice/thyristorBank/*.txt \
-	ngspice/thyristorBank/a.out
+	rm -rf *~ *.o data/* $(PROD) ngspice/thyristorBank/*.txt \
+	ngspice/thyristorBank/a.out obj
