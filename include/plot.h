@@ -18,5 +18,9 @@ int plotMatrixColDataFile (char *fileName, int colNum, char *plotOptions);
 int plot2MatrixColDataFile (char *fileName1, int colNum1, char *fileName2, int colNum2, 
 			    char *plotOptions);
 int plotMatrixColVColDataFile (char *fileName, int colNumX, int colNumY, char *plotOptions);
+int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In,
+		     gsl_vector *yVec3In, gsl_vector *yVec4In, gsl_vector *yVec5In,
+		     char *y1Label, char *y2Label, char *y3Label, char *y4Label,
+		     char *y5Label, char *plotOptions);
 
 #endif

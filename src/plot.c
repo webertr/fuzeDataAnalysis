@@ -102,7 +102,7 @@ int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn, char *plotOptions) {
 
 
 /******************************************************************************
- * Function: plotVectorData
+ * Function: plot2VectorData
  * Inputs: gsl_vector*
  * Returns: int
  * Description: This will use popen to fork a process, execute a shell command
@@ -163,6 +163,94 @@ int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
   
   fprintf(gnuplot, "plot 'data/temp.txt' using 1:2 title 'Vector 1',\
                     'data/temp.txt' using 1:3 title 'Vector 2'\n");
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plot5VectorData
+ * Inputs: gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*
+ * char *
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In,
+		     gsl_vector *yVec3In, gsl_vector *yVec4In, gsl_vector *yVec5In,
+		     char *y1Label, char *y2Label, char *y3Label, char *y4Label,
+		     char *y5Label, char *plotOptions) {
+
+  int ii, status;
+
+  char *tempFile = "data/temp.txt";
+
+
+  
+  /* Writing file to hold data */
+  
+  if (remove(tempFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(tempFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files!\n");
+    exit(1);
+
+  }
+
+  for (ii = 0; ii < xVecIn->size; ii++) {
+
+    fprintf(fp, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii),
+	    gsl_vector_get(yVec3In, ii), gsl_vector_get(yVec4In, ii), 
+	    gsl_vector_get(yVec5In, ii));
+
+  }
+
+  fclose(fp);
+
+
+
+
+
+
+  /* 
+   * Creating child process to then call "gnuplot" in shell, and then to pipe the standard output
+   * to it.
+   */
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "%s\n", plotOptions);
+  
+  fprintf(gnuplot, "plot 'data/temp.txt' using 1:2 title '%s',\\\n", y1Label);
+  fprintf(gnuplot, "     'data/temp.txt' using 1:3 title '%s',\\\n", y2Label);
+  fprintf(gnuplot, "     'data/temp.txt' using 1:4 title '%s',\\\n", y3Label);
+  fprintf(gnuplot, "     'data/temp.txt' using 1:5 title '%s',\\\n", y4Label);
+  fprintf(gnuplot, "     'data/temp.txt' using 1:6 title '%s'\n", y5Label);
+ 
   
   fflush(gnuplot);
 

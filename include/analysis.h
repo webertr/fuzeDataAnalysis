@@ -20,7 +20,7 @@
 #include "fit.h"
 #include "accelTrack.h"
 
-int plotPostShotData(int shotNumber);
+int plotPostShotData();
 int plotIPApril2018Talk(int shotNumber);
 int plotAccelApril2018Talk();
 int plotModeApril2018Talk();

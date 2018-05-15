@@ -6,7 +6,7 @@
  *
  ******************************************************************************/
 
-  
+
 /******************************************************************************
  * Function: hologramAnalysis
  * Inputs: 
@@ -90,21 +90,50 @@ int simluateAccel() {
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotData(int shotNumber) {
+int plotPostShotData() {
+
+  int shotNumber;
+  printf("\nEnter Pulse Number>");
+  scanf("%d", &shotNumber);
+
+  getchar();
 
   int sigSize = getSignalLengthMDSplus("\\b_n45_000_sm", shotNumber);
   
   gsl_vector *data1 = gsl_vector_alloc(sigSize),
     *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *data5 = gsl_vector_alloc(sigSize),
     *time = gsl_vector_alloc(sigSize);
 
-  initializeMagneticDataAndTime(shotNumber, "\\b_n95_000_sm", data1, time);
-  initializeMagneticData(shotNumber, "\\b_n10_000_sm", data2);
+  char *data1Node = "\\b_n45_000_sm",
+    *data1Name = "n45",
+    *data2Node = "\\b_n35_000_sm",
+    *data2Name = "n35",
+    *data3Node = "\\b_n25_000_sm",
+    *data3Name = "n25",
+    *data4Node = "\\b_n15_000_sm",
+    *data4Name = "n15",
+    *data5Node = "\\b_n05_000_sm",
+    *data5Name = "n05";
+    
 
-  plot2VectorData(time, data1, data2, "set xrange[0:50E-6]");
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
+  initializeMagneticData(shotNumber, data4Node, data4);
+  initializeMagneticData(shotNumber, data5Node, data5);
+
+  plot5VectorData(time, data1, data2, data3, data4, data5, 
+		  data1Name, data2Name, data3Name, data4Name, data5Name, 
+		  "set xrange[-10E-6:50E-6]\nset key left\n");
 
   gsl_vector_free(data1);
   gsl_vector_free(data2);
+  gsl_vector_free(data3);
+  gsl_vector_free(data4);
+  gsl_vector_free(data5);
   gsl_vector_free(time);
 
   return 0;
