@@ -23,8 +23,8 @@
 #include <gsl/gsl_sort.h>
 #include <gsl/gsl_wavelet.h>
 
-#include "holoParam.h"
-#include "abelInversionDHI.h"
+#include "DHI/holoParam.h"
+#include "DHI/abelInversion.h"
 #include "save.h"
 #include "readJPEG.h"
 

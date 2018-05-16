@@ -1,20 +1,4 @@
-#include "imageAnalysisDHI.h"
-
-/******************************************************************************
- * Example Usage:
- *
- * int test() {
- *
- * holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
- *
- * hologramMain(&param, "data/leftProfile.dat", "data/rightProfile.dat",
- *		"data/centroidLocation.dat");
- *
- * return 0;
- *
- *}
- *
- ******************************************************************************/
+#include "DHI/imageAnalysis.h"
 
 static int quadSwapComplexImage(gsl_matrix_complex *mInput);
 static int hyperbolicWindow(gsl_matrix *mInput, int param);

@@ -1,10 +1,4 @@
-#include "magnetic.h"
-#include "getLFData.h"
-#include "getSVFData.h"
-#include "imageAnalysisDHI.h"
-#include "analysis.h"
-#include "holoParam.h"
-
+#include "main.h"
 
 /******************************************************************************
  * Function: main

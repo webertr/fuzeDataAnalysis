@@ -27,7 +27,6 @@
 #include "save.h"
 #include "plot.h"
 
-
 gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
 int testAbelInversionDHI();
 

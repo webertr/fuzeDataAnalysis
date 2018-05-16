@@ -1,4 +1,4 @@
-#include "abelInversionDHI.h"
+#include "DHI/abelInversion.h"
 
 static int getRadialDensityProfileDHI(gsl_vector* leftCrossSection, gsl_vector* rightCrossSection, 
 				      gsl_vector* crossSection, int* centroidLocation,
@@ -761,9 +761,10 @@ static int testInvertImageDHI() {
 
   double val;
 
-  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
+  holographyParameters param;
   param.numRows = numRows;
   param.numCols = numCols;
+  param.deltaY = 0.000115;
   
   /* Get the matrix that will project the radial profile to the line integrated density */
   gsl_matrix *projectMatrix = getProjectMatrixDHI(param.numRows, param.deltaY);
