@@ -95,6 +95,9 @@ int plotPostShotModeData() {
     status,
     currShotNumber = getCurrentPulseNumber();
 
+  char *nodeName = "\\b_p25_000_sm",
+    *titleName = "set title 'Modes at z = 25 cm' font '0,14'\n";
+
   printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
 
@@ -108,9 +111,8 @@ int plotPostShotModeData() {
     *modeFile = "data/mode.txt";
 
   
-  
   /* Getting data */
-  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000_sm");
+  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, nodeName);
   getAzimuthalArrayModes(azimuthArray);
 
   
@@ -135,21 +137,23 @@ int plotPostShotModeData() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[0:40]\n");
+  fprintf(fp, "set xrange[20:60]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
   fprintf(fp, "set key right top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Normalized modes' font '0,14'\n");
+  fprintf(fp, "%s", titleName);
   fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set y2tics nomirror tc lt 2\n");
   fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line dt 2 lw 3 lc rgb 'red' \
+  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
 title 'm=1',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line dt 3 lw 3 lc rgb 'blue' \
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
 title 'm=2',\\\n", modeFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+title 'm=3',\\\n", modeFile);
   fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 lc rgb 'black' \
 title 'Pinch Current' axes x1y2\n", modeFile);
   fprintf(fp, "pause -1\n");

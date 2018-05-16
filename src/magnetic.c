@@ -348,20 +348,20 @@ int getSignalLengthMDSplus(const char *signal, int shotNumber) {
 
 gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName) {
   
-  int sigSize = getSignalLengthMDSplus("\\b_p15_000", shotNumber);
+  int sigSize = getSignalLengthMDSplus(nodeName, shotNumber);
   
   gsl_matrix *azimuthArray = gsl_matrix_alloc(sigSize, 9);
  
   /* Declaring variables */
   gsl_vector  *time = gsl_vector_alloc(sigSize),
-    *p15_000 = gsl_vector_alloc(sigSize),
-    *p15_045 = gsl_vector_alloc(sigSize),
-    *p15_090 = gsl_vector_alloc(sigSize),
-    *p15_135 = gsl_vector_alloc(sigSize),
-    *p15_180 = gsl_vector_alloc(sigSize),
-    *p15_225 = gsl_vector_alloc(sigSize),
-    *p15_270 = gsl_vector_alloc(sigSize),
-    *p15_315 = gsl_vector_alloc(sigSize);
+    *p_000 = gsl_vector_alloc(sigSize),
+    *p_045 = gsl_vector_alloc(sigSize),
+    *p_090 = gsl_vector_alloc(sigSize),
+    *p_135 = gsl_vector_alloc(sigSize),
+    *p_180 = gsl_vector_alloc(sigSize),
+    *p_225 = gsl_vector_alloc(sigSize),
+    *p_270 = gsl_vector_alloc(sigSize),
+    *p_315 = gsl_vector_alloc(sigSize);
 
   char *nodeName0 = nodeName,
     *nodeName45 = replaceWord(nodeName, "000", "045"),
@@ -373,37 +373,37 @@ gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName) {
     *nodeName315 = replaceWord(nodeName, "000", "315");
 
   /* Geting Data */
-  initializeMagneticDataAndTime(shotNumber, nodeName0, p15_000, time);
-  initializeMagneticData(shotNumber, nodeName45, p15_045);
-  initializeMagneticData(shotNumber, nodeName90, p15_090);
-  initializeMagneticData(shotNumber, nodeName135, p15_135);
-  initializeMagneticData(shotNumber, nodeName180, p15_180);
-  initializeMagneticData(shotNumber, nodeName225, p15_225);
-  initializeMagneticData(shotNumber, nodeName270, p15_270);
-  initializeMagneticData(shotNumber, nodeName315, p15_315);
+  initializeMagneticDataAndTime(shotNumber, nodeName0, p_000, time);
+  initializeMagneticData(shotNumber, nodeName45, p_045);
+  initializeMagneticData(shotNumber, nodeName90, p_090);
+  initializeMagneticData(shotNumber, nodeName135, p_135);
+  initializeMagneticData(shotNumber, nodeName180, p_180);
+  initializeMagneticData(shotNumber, nodeName225, p_225);
+  initializeMagneticData(shotNumber, nodeName270, p_270);
+  initializeMagneticData(shotNumber, nodeName315, p_315);
   
   gsl_matrix_set_col(azimuthArray, 0, time);
-  gsl_matrix_set_col(azimuthArray, 1, p15_000);
-  gsl_matrix_set_col(azimuthArray, 2, p15_045);
-  gsl_matrix_set_col(azimuthArray, 3, p15_090);
-  gsl_matrix_set_col(azimuthArray, 4, p15_135);
-  gsl_matrix_set_col(azimuthArray, 5, p15_180);
-  gsl_matrix_set_col(azimuthArray, 6, p15_225);
-  gsl_matrix_set_col(azimuthArray, 7, p15_270);
-  gsl_matrix_set_col(azimuthArray, 8, p15_315);
+  gsl_matrix_set_col(azimuthArray, 1, p_000);
+  gsl_matrix_set_col(azimuthArray, 2, p_045);
+  gsl_matrix_set_col(azimuthArray, 3, p_090);
+  gsl_matrix_set_col(azimuthArray, 4, p_135);
+  gsl_matrix_set_col(azimuthArray, 5, p_180);
+  gsl_matrix_set_col(azimuthArray, 6, p_225);
+  gsl_matrix_set_col(azimuthArray, 7, p_270);
+  gsl_matrix_set_col(azimuthArray, 8, p_315);
 
 
   
   /* Freeing data */
   gsl_vector_free(time);
-  gsl_vector_free(p15_000);
-  gsl_vector_free(p15_045);
-  gsl_vector_free(p15_090);
-  gsl_vector_free(p15_135);
-  gsl_vector_free(p15_180);
-  gsl_vector_free(p15_225);
-  gsl_vector_free(p15_270);
-  gsl_vector_free(p15_315);
+  gsl_vector_free(p_000);
+  gsl_vector_free(p_045);
+  gsl_vector_free(p_090);
+  gsl_vector_free(p_135);
+  gsl_vector_free(p_180);
+  gsl_vector_free(p_225);
+  gsl_vector_free(p_270);
+  gsl_vector_free(p_315);
 
   
   return azimuthArray;
