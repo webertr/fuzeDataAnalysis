@@ -30,6 +30,8 @@ int initializeMagneticData(int shotNumber, char *nodeName, gsl_vector *data);
 int getSignalLengthMDSplus(const char *signal, int shotNumber);
 gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName);
 int getAzimuthalArrayModes(gsl_matrix *mIn);
+int getCurrentPulseNumber();
+int plotPostShotModeData();
 
 
 #endif

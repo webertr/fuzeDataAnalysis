@@ -81,20 +81,141 @@ int simluateAccel() {
 
 }
 
+/******************************************************************************
+ * Function: plotPostShotModeData
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * magnetic mode data
+ ******************************************************************************/
+
+int plotPostShotModeData() {
+
+  int shotNumber,
+    status,
+    currShotNumber = getCurrentPulseNumber();
+
+  printf("\nEnter Pulse Number> ");
+  scanf("%d", &shotNumber);
+
+  if (shotNumber <= 0) {
+    shotNumber = currShotNumber+shotNumber;
+  }
+
+  getchar();
+
+  char *gnuPlotFile = "script/temp.sh",
+    *modeFile = "data/mode.txt";
+
+  
+  
+  /* Getting data */
+  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000_sm");
+  getAzimuthalArrayModes(azimuthArray);
+
+  
+
+  /* Saving data */
+  saveMatrixData(azimuthArray, modeFile);
+
+
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set xrange[0:40]\n");
+  fprintf(fp, "set yrange[0:1]\n");
+  fprintf(fp, "set y2range[0:]\n");
+  fprintf(fp, "set tics font 'Times Bold, 14'\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Normalized modes' font '0,14'\n");
+  fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "set y2tics nomirror tc lt 2\n");
+  fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line dt 2 lw 3 lc rgb 'red' \
+title 'm=1',\\\n", modeFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line dt 3 lw 3 lc rgb 'blue' \
+title 'm=2',\\\n", modeFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 lc rgb 'black' \
+title 'Pinch Current' axes x1y2\n", modeFile);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+
+  
+  /* Freeing vectors */
+  gsl_matrix_free(azimuthArray);
+  
+  return 0;
+
+}
+
 
 /******************************************************************************
- * Function: plotPostShotData
+ * Function: plotPostShotAccelData
  * Inputs: int
  * Returns: int
  * Description: Pass it a shot number, and it will plot data to view after
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotData() {
+int plotPostShotAccelData() {
 
-  int shotNumber;
-  printf("\nEnter Pulse Number>");
+  int shotNumber,
+    status,
+    currShotNumber = getCurrentPulseNumber();
+
+  char *gnuPlotFile = "script/temp.sh",
+    *accelFile = "data/accel.txt";
+
+  printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
+
+  if (shotNumber <= 0) {
+    shotNumber = currShotNumber+shotNumber;
+  }
 
   getchar();
 
@@ -117,7 +238,6 @@ int plotPostShotData() {
     *data4Name = "n15",
     *data5Node = "\\b_n05_000_sm",
     *data5Name = "n05";
-    
 
   initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
   initializeMagneticData(shotNumber, data2Node, data2);
@@ -125,9 +245,73 @@ int plotPostShotData() {
   initializeMagneticData(shotNumber, data4Node, data4);
   initializeMagneticData(shotNumber, data5Node, data5);
 
-  plot5VectorData(time, data1, data2, data3, data4, data5, 
-		  data1Name, data2Name, data3Name, data4Name, data5Name, 
-		  "set xrange[-10E-6:50E-6]\nset key left\n");
+
+  /* Saving data */
+  save6VectorData(time, data1, data2, data3, data4, data5, accelFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set xrange[0:30]\n");
+  fprintf(fp, "set key left top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", accelFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s',\\\n", accelFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", accelFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", accelFile, data4Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", accelFile, data5Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
 
   gsl_vector_free(data1);
   gsl_vector_free(data2);

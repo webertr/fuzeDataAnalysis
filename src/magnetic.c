@@ -463,3 +463,48 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
   return 0;
 
 }
+
+
+/******************************************************************************
+ * Function: getCurrentPulseNumber
+ * Inputs: const char *
+ * Returns: int
+ * Description: Returns the length of the specified signal if successful, -1
+******************************************************************************/
+
+int getCurrentPulseNumber() {
+
+  int connectionID;
+  int dtype_long = DTYPE_LONG;
+  char *buf = "current_shot('fuze')";
+  int shotNumber;
+  int null = 0;
+  int idesc = descr(&dtype_long, &shotNumber, &null);
+  int status;
+
+  /* Connecting to mdsplus database "fuze" */
+  connectionID = MdsConnect("10.10.10.240");
+
+  /* Checking to see if Connected */
+  if (connectionID == -1) {
+
+    fprintf(stderr, "Connection Failed\n");
+    return -1;
+
+  }
+
+
+  /* use MdsValue to get the signal length */
+  status = MdsValue(buf, &idesc, &null, 0);
+
+  if ( !( (status & 1) == 1 ) ) {
+
+    fprintf(stderr,"Unable to get pulse number.\n");
+    return -1;
+
+  }
+
+  /* return signal length */
+  return shotNumber;
+
+}

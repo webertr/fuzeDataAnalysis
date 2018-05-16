@@ -21,7 +21,7 @@
 #include "accelTrack.h"
 #include "DHI/holoParam.h"
 
-int plotPostShotData();
+int plotPostShotAccelData();
 int plotIPApril2018Talk(int shotNumber);
 int plotAccelApril2018Talk();
 int plotModeApril2018Talk();
