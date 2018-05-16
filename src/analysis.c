@@ -124,8 +124,7 @@ int plotPostShotModeData(int shotNumber) {
 
   int status;
 
-  char *nodeName = "\\b_p25_000_sm",
-    *titleName = "set title 'Modes at z = 25 cm' font '0,14'\n";
+  char *nodeName = "\\b_p25_000_sm";
 
   char *gnuPlotFile = "script/temp.sh",
     *modeFile = "data/mode.txt";
@@ -157,13 +156,13 @@ int plotPostShotModeData(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[20:60]\n");
+  fprintf(fp, "set xrange[20:100]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
   fprintf(fp, "set key right top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "%s", titleName);
+  fprintf(fp, "set title 'Normalized modes at z = 25 cm for %d' font '0,14'\n", shotNumber);
   fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set y2tics nomirror tc lt 2\n");
@@ -197,7 +196,9 @@ title 'Pinch Current' axes x1y2\n", modeFile);
   
   fflush(gnuplot);
 
+ 
   /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
   getchar();
 
   status = pclose(gnuplot);
@@ -278,7 +279,7 @@ int plotPostShotAccelData(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[0:30]\n");
+  fprintf(fp, "set xrange[0:50]\n");
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
   fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
@@ -316,6 +317,7 @@ title '%s'\n", accelFile, data5Name);
   fflush(gnuplot);
 
   /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
   getchar();
 
   status = pclose(gnuplot);
