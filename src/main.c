@@ -32,8 +32,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  //plotPostShotAccelData();
-  plotPostShotModeData();
+  plotPostAnalysis();
 
   /*
    * Plotting IP for talk

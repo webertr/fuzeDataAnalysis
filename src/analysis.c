@@ -25,9 +25,9 @@ int hologramAnalysis() {
   /* Obtained line integrated data and do an abel inversion */
   hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, "set size ratio -1");
+  plotImageDataFile(param.fileHologram, "set size ratio -1");
 
-  plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
+  //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
 
@@ -82,21 +82,17 @@ int simluateAccel() {
 }
 
 /******************************************************************************
- * Function: plotPostShotModeData
+ * Function: plotPostAnalysis
  * Inputs: int
  * Returns: int
- * Description: This will prompt the user for a pulse number, and output the
- * magnetic mode data
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
  ******************************************************************************/
 
-int plotPostShotModeData() {
+int plotPostAnalysis() {
 
   int shotNumber,
-    status,
     currShotNumber = getCurrentPulseNumber();
-
-  char *nodeName = "\\b_p25_000_sm",
-    *titleName = "set title 'Modes at z = 25 cm' font '0,14'\n";
 
   printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
@@ -106,6 +102,30 @@ int plotPostShotModeData() {
   }
 
   getchar();
+
+  plotPostShotModeData(shotNumber);
+
+  plotPostShotAccelData(shotNumber);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotModeData
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * magnetic mode data
+ ******************************************************************************/
+
+int plotPostShotModeData(int shotNumber) {
+
+  int status;
+
+  char *nodeName = "\\b_p25_000_sm",
+    *titleName = "set title 'Modes at z = 25 cm' font '0,14'\n";
 
   char *gnuPlotFile = "script/temp.sh",
     *modeFile = "data/mode.txt";
@@ -205,32 +225,7 @@ title 'Pinch Current' axes x1y2\n", modeFile);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotAccelData() {
-
-  int shotNumber,
-    status,
-    currShotNumber = getCurrentPulseNumber();
-
-  char *gnuPlotFile = "script/temp.sh",
-    *accelFile = "data/accel.txt";
-
-  printf("\nEnter Pulse Number> ");
-  scanf("%d", &shotNumber);
-
-  if (shotNumber <= 0) {
-    shotNumber = currShotNumber+shotNumber;
-  }
-
-  getchar();
-
-  int sigSize = getSignalLengthMDSplus("\\b_n45_000_sm", shotNumber);
-  
-  gsl_vector *data1 = gsl_vector_alloc(sigSize),
-    *data2 = gsl_vector_alloc(sigSize),
-    *data3 = gsl_vector_alloc(sigSize),
-    *data4 = gsl_vector_alloc(sigSize),
-    *data5 = gsl_vector_alloc(sigSize),
-    *time = gsl_vector_alloc(sigSize);
+int plotPostShotAccelData(int shotNumber) {
 
   char *data1Node = "\\b_n45_000_sm",
     *data1Name = "n45",
@@ -242,6 +237,20 @@ int plotPostShotAccelData() {
     *data4Name = "n15",
     *data5Node = "\\b_n05_000_sm",
     *data5Name = "n05";
+
+  int status;
+
+  char *gnuPlotFile = "script/temp.sh",
+    *accelFile = "data/accel.txt";
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *data5 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
 
   initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
   initializeMagneticData(shotNumber, data2Node, data2);

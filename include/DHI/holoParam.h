@@ -1,9 +1,6 @@
 #ifndef HOLOPARAM_H
 #define HOLOPARAM_H
 
-/* 1 is using meters, 100 if using CM */
-#define CM_ADJUST 100
-
 /* 
  * A structure to pass around the necessary parameters for hologram reconstruction and inversion
  */

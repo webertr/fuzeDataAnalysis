@@ -21,7 +21,7 @@
 #include "accelTrack.h"
 #include "DHI/holoParam.h"
 
-int plotPostShotAccelData();
+int plotPostShotAccelData(int shotNumber);
 int plotIPApril2018Talk(int shotNumber);
 int plotAccelApril2018Talk();
 int plotModeApril2018Talk();
@@ -32,12 +32,19 @@ int plotCIIILineApril2018Talk();
 int plotModeCompApril2018Talk();
 int plasmaParameters();
 int simluateAccel();
+int plotPostAnalysis();
+int plotPostShotModeData(int shotNumber);
+
 
 /*
  * This is the struct that will hold the default values,
  * static means it should only be visible to the source file
  * that includes it, so the compiler won't complain when linking, I think?
  */
+
+/* 1 is using meters, 100 if using CM */
+#define CM_ADJUST 100
+
 static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .res = 3.85E-6*CM_ADJUST, 
   .lambda = 532E-9*CM_ADJUST,
@@ -53,10 +60,6 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .me = 9.109E-31,
   .numRows = 4000,
   .numCols = 6016,
-  .xLL = 2775,
-  .yLL = 2433,
-  .xUR = 3853,
-  .yUR = 4923,
   .hyperbolicWin = 8,
   .sampleInterval = 10,
   .centroidNum = 10,
@@ -70,8 +73,14 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .refSubtract = 1,
   .axialCorrection = 0,
   .convertDensity = 1,
-  .fileRef = "/home/fuze/DHI_Images/180515/180515020_Baseline.JPG",
-  .filePlasma = "/home/fuze/DHI_Images/180515/180515020.JPG",
+  .fileRef = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0006.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0007.JPG",
+  //.fileRef = "/home/fuze/DHI_Images/180515/180515020_Baseline.JPG",
+  //.filePlasma = "/home/fuze/DHI_Images/180515/180515020.JPG",
+  .xLL = 2775,
+  .yLL = 2433,
+  .xUR = 3853,
+  .yUR = 4923,
   .saveHologram = 1,
   .fileHologram = "data/hologram.dat",
   .saveWrappedPhase = 1,

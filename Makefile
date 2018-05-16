@@ -2,7 +2,6 @@ CC = gcc
 INCL = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS = -g -Wall
 LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
-HEADERS = include/DHI/holoParam.h
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -28,7 +27,7 @@ PROD = run
 
 all: $(PROD)
 
-run: $(OBJECT) $(HEADERS)
+run: $(OBJECT)
 	$(CC) $(FLAGS) $(INCL) \
 	$(OBJECT) $(LIBRY) -o $(PROD)
 
