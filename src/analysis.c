@@ -25,9 +25,9 @@ int hologramAnalysis() {
   /* Obtained line integrated data and do an abel inversion */
   hologramMain(&param);
 
-  plotImageDataFile(param.fileHologram, "set size ratio -1");
+  //plotImageDataFile(param.fileHologram, "set size ratio -1");
 
-  //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
+  plotImageDataFile(param.fileLineIntPos, "set terminal png\nset size ratio -1\nset output '/home/fuze/Downloads/180516012.png'\nset title 'Pulse 180516012 at 3 kV, 30 {/Symbol m}s\nset xrange [13.97:15.02]\nset yrange [-0.9:0.9]\nset xlabel 'z (cm)'\nset ylabel 'b (cm)'\nset label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 rotate by 90 font 'Times Bold, 14'\n");
 
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
 
@@ -156,7 +156,10 @@ int plotPostShotModeData(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[20:100]\n");
+  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set output '/home/fuze/Downloads/180516014_Mode.png'\n");
+  //fprintf(fp, "set arrow from 46,0 to 46,1 nohead dt 4 lw 3 lc rgb 'orange'\n");
+  fprintf(fp, "set xrange[30:80]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
