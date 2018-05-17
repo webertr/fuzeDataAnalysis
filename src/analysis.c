@@ -124,7 +124,7 @@ int plotPostShotModeData(int shotNumber) {
 
   int status;
 
-  char *nodeName = "\\b_p25_000_sm";
+  char *nodeName = "\\b_p15_000_sm";
 
   char *gnuPlotFile = "script/temp.sh",
     *modeFile = "data/mode.txt";

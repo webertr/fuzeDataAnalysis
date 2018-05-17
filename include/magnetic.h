@@ -32,6 +32,7 @@ gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName);
 int getAzimuthalArrayModes(gsl_matrix *mIn);
 int getCurrentPulseNumber();
 int plotPostShotModeData();
+int testMagnetic();
 
 
 #endif

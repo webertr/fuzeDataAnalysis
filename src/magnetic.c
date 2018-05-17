@@ -508,3 +508,84 @@ int getCurrentPulseNumber() {
   return shotNumber;
 
 }
+
+
+
+/******************************************************************************
+ *
+ * TESTING SECTION
+ *
+ ******************************************************************************/
+
+static int testAziMode();
+
+int testMagnetic() {
+
+  testAziMode();
+
+  return 0;
+
+}
+
+/******************************************************************************
+ * Function: testAziMode
+ * Inputs: 
+ * Returns: int
+ * Description: Testing the azimuthal mode calculation
+******************************************************************************/
+
+static int testAziMode() {
+  
+  int ii, n = 8;
+  double data[n];
+  double val;
+
+  gsl_matrix *testData = gsl_matrix_alloc(1, n+1);
+
+  double m0 = 3.4,
+    ms1 = 1.4,
+    mc1 = 0.8,
+    ms2 = 0.65,
+    mc2 = 0.4,
+    ms3 = 1.8,
+    mc3 = 0.6,
+    m1 = sqrt(gsl_pow_2(ms1) + gsl_pow_2(mc1)),
+    m2 = sqrt(gsl_pow_2(ms2) + gsl_pow_2(mc2)),
+    m3 = sqrt(gsl_pow_2(ms3) + gsl_pow_2(mc3));
+  
+  for (ii = 0; ii < n; ii++) {
+
+    val = m0 +ms1*gsl_sf_sin(1*ii*2*M_PI/8)+ms2*gsl_sf_sin(2*ii*2*M_PI/8)\
+      +ms3*gsl_sf_sin(3*ii*2*M_PI/8)\
+      +mc1*gsl_sf_cos(1*ii*2*M_PI/8)+mc2*gsl_sf_cos(2*ii*2*M_PI/8)\
+      +mc3*gsl_sf_cos(3*ii*2*M_PI/8);
+    data[ii] = val;
+    gsl_matrix_set(testData, 0, ii+1, val);
+    //printf("Value for %d: %g\n", ii, val);
+
+  }
+    
+  getAzimuthalArrayModes(testData);
+
+  printf("m = 0: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 1), m0);
+  printf("m = 1: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 2), m1/m0);
+  printf("m = 2: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 3), m2/m0);
+  printf("m = 3: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 4), m3/m0);
+
+  gsl_fft_real_wavetable * real;
+  gsl_fft_real_workspace * work;
+
+  work = gsl_fft_real_workspace_alloc (n);
+  real = gsl_fft_real_wavetable_alloc (n);
+
+  gsl_fft_real_transform (data, 1, n, real, work);
+
+  for (ii = 0; ii < n; ii++) {
+    //printf("Data[%d]: %g\n", ii, data[ii]);
+  }
+
+  gsl_fft_real_workspace_free (work);
+  
+  return 0;
+
+}
