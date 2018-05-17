@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing real FFT
    */
-  //testAziMode();
+  //testMagnetic();
 
   /*
    * test mode data with mdsplus

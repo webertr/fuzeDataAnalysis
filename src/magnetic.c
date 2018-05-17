@@ -527,13 +527,6 @@ int testMagnetic() {
 
 }
 
-/******************************************************************************
- * Function: testAziMode
- * Inputs: 
- * Returns: int
- * Description: Testing the azimuthal mode calculation
-******************************************************************************/
-
 static int testAziMode() {
   
   int ii, n = 8;
@@ -561,10 +554,9 @@ static int testAziMode() {
       +mc3*gsl_sf_cos(3*ii*2*M_PI/8);
     data[ii] = val;
     gsl_matrix_set(testData, 0, ii+1, val);
-    //printf("Value for %d: %g\n", ii, val);
 
   }
-    
+
   getAzimuthalArrayModes(testData);
 
   printf("m = 0: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 1), m0);

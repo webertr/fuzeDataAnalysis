@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <gsl/gsl_fft_real.h>
+#include <gsl/gsl_sf_trig.h>
 
 #include "plot.h"
 
