@@ -28,9 +28,7 @@ int hologramAnalysis() {
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
-  /*
-  plotImageDataFile(param.fileLineIntPos, "set terminal png\nset size ratio -1\nset output '/home/webertr/Downloads/180517022.png'\nset title 'Pulse 180517022\nset xrange [13.47:14.52]\nset yrange [-0.9:0.9]\nset xlabel 'z (cm)'\nset ylabel 'b (cm)'\nset label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 rotate by 90 font 'Times Bold, 14'\n");
-  */
+  plotImageDataFile(param.fileLineIntPos, "set terminal png\nset size ratio -1\nset output '/home/webertr/Downloads/180517033.png'\nset title 'Pulse 180517033\nset xrange [13.47:14.52]\nset yrange [-0.9:0.9]\nset xlabel 'z (cm)'\nset ylabel 'b (cm)'\nset label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 rotate by 90 font 'Times Bold, 14'\n");
   
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
 
@@ -161,8 +159,8 @@ int plotPostShotModeData(int shotNumber) {
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set terminal png\n");
   fprintf(fp, "set output '/home/webertr/Downloads/%d_Mode.png'\n", shotNumber);
-  fprintf(fp, "set arrow from 49,0 to 49,1 nohead dt 4 lw 3 lc rgb 'orange'\n");
-  fprintf(fp, "set label 'DHI trigger time' at 48,0.5 rotate by 90 font 'Times Bold, 12'\n");
+  fprintf(fp, "set arrow from 44,0 to 44,1 nohead dt 4 lw 3 lc rgb 'orange'\n");
+  fprintf(fp, "set label 'DHI trigger time' at 43,0.5 rotate by 90 font 'Times Bold, 12'\n");
   fprintf(fp, "set xrange[35:80]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
