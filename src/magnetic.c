@@ -479,7 +479,6 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
  ******************************************************************************/
 
 gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn) {
-
   int ii,
     numRows = mIn->size1,
     numCols = mIn->size2;
@@ -511,8 +510,8 @@ gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn) {
     data = &(mIn->data[ii*numCols+1]);
     m0 = data[0]/8.0;
     m1 = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))*2/8.0;
-    dr = m0/m1*RW*0.5;
-    angle = atan(-data[2]/data[1]);
+    dr = m1/m0*RW*0.5;
+    angle = atan(-data[2]/data[1])+0.3927;
     xValue =dr*cos(angle);
     yValue =dr*sin(angle);
     gsl_matrix_set(mRet, ii, 0, gsl_matrix_get(mIn, ii, 0));

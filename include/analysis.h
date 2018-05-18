@@ -34,6 +34,7 @@ int plasmaParameters();
 int simluateAccel();
 int plotPostAnalysis();
 int plotPostShotModeData(int shotNumber);
+int plotOffAxisDisplacement(int shotNumber);
 
 
 /*

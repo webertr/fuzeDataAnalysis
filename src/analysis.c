@@ -104,8 +104,8 @@ int plotPostAnalysis() {
 
   getchar();
 
-  plotPostShotModeData(shotNumber);
-
+  plotOffAxisDisplacement(shotNumber);
+  //plotPostShotModeData(shotNumber);
   //plotPostShotAccelData(shotNumber);
 
   return 0;
@@ -1097,5 +1097,111 @@ title 'm=1 mds'\n", mdsFile);
   
   return 0;
 
+
+}
+
+
+/******************************************************************************
+ * Function: plotOffAxisDisplacement
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * magnetic mode data
+ ******************************************************************************/
+
+int plotOffAxisDisplacement(int shotNumber) {
+
+  int status;
+
+  char *nodeName = "\\b_p15_000_sm";
+
+  char *gnuPlotFile = "script/temp.sh",
+    *modeFile = "data/mode.txt";
+
+  double dhiTime = getDHITime(shotNumber);
+
+  /* Getting data */
+  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, nodeName);
+  gsl_matrix *disp = getOffAxisDisplacement(azimuthArray);
+
+  
+
+  /* Saving data */
+  saveMatrixData(disp, modeFile);
+
+
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set output '/home/fuze/Downloads/%d_Mode.png'\n", shotNumber);
+  fprintf(fp, "set arrow from %g,graph 0 to %g,graph 1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
+	  dhiTime*1E6, dhiTime*1E6);
+  fprintf(fp, "set label ' DHI trigger time' at %g,graph 0.95 font 'Times Bold, 12'\n", 
+	  dhiTime*1E6);
+  fprintf(fp, "set xrange[%d:%d]\n", (int) (dhiTime*1E6-5), (int) (dhiTime*1E6+5));
+  fprintf(fp, "set tics font 'Times Bold, 14'\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Displacement at z = 15 cm for %d ({/Symbol D}r=m1/m0*R_{W}/2)' \
+font '0,14'\n", shotNumber);
+  fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Displacement (cm)' font 'Times Bold,18' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'red' \
+title 'x',\\\n", modeFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'blue' \
+title 'y'\n", modeFile);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+
+  
+  /* Freeing vectors */
+  gsl_matrix_free(azimuthArray);
+  
+  return 0;
 
 }

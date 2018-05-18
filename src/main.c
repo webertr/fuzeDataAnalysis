@@ -10,15 +10,20 @@
 int main(int argc, char *argv[]) {
 
   /*
-   * Testing DHI abel inverison code 
-   */
-  //testAbelInversionDHI();
-  
-  /*
    * Running the DHI analysis
    */
   //hologramAnalysis();
 
+  /* 
+   * Plotting post shot data
+   */
+  plotPostAnalysis();
+
+  /*
+   * Testing DHI abel inverison code 
+   */
+  //testAbelInversionDHI();
+  
   /*
    * Plotting plasma parameters
    */
@@ -28,11 +33,6 @@ int main(int argc, char *argv[]) {
    * Simulating particle in acceleration region of marshall gun
    */
   //simluateAccel();
-
-  /* 
-   * Plotting post shot data
-   */
-  //plotPostAnalysis();
 
   /*
    * Plotting IP for talk
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing real FFT
    */
-  testMagnetic();
+  //testMagnetic();
 
   /*
    * test mode data with mdsplus
