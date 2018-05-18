@@ -16,6 +16,7 @@
  * gsl_vector_free(time);
  ******************************************************************************/
 
+#define RW 10.084
 
 /******************************************************************************
  * Function: status_ok
@@ -466,6 +467,70 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
 
 
 /******************************************************************************
+ * Function: getOffAxisDisplacement
+ * Inputs: gsl_matrix *
+ * Returns: gsl_matrix *
+ * Description: Receives a matrix that has 9 columns, the first being the time
+ * value, and the next 8 being the 8 different azimuthal magnetic probe data.
+ * This is similiar to getAzimuthalArrayModes, but it will return the y
+ * position of the current centroid. The return value will be a 3 column
+ * matrix. The first column being the time value, the next being the x value
+ * and the 3rd being the x value. m1/m0 = 2 * dr / r
+ ******************************************************************************/
+
+gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn) {
+
+  int ii,
+    numRows = mIn->size1,
+    numCols = mIn->size2;
+
+  double *data,
+    m0,
+    m1,
+    angle,
+    dr,
+    xValue,
+    yValue;
+  
+  gsl_matrix *mRet = gsl_matrix_alloc(numRows, 3);
+
+  gsl_fft_real_wavetable * wavetableCols;
+  gsl_fft_real_workspace * workspaceCols;
+
+  wavetableCols = gsl_fft_real_wavetable_alloc(numCols - 1);
+  workspaceCols = gsl_fft_real_workspace_alloc(numCols - 1);
+
+  /* 
+   * 1D FFT of each row, stride = 1 
+   * Dividide by n and multiply by two to get the amplitude
+   */
+  for (ii = 0; ii < numRows; ii++) {
+
+    data = &(mIn->data[ii*numCols+1]);
+    gsl_fft_real_transform(data, 1, (size_t) numCols - 1, wavetableCols, workspaceCols);
+    data = &(mIn->data[ii*numCols+1]);
+    m0 = data[0]/8.0;
+    m1 = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))*2/8.0;
+    dr = m0/m1*RW*0.5;
+    angle = atan(-data[2]/data[1]);
+    xValue =dr*cos(angle);
+    yValue =dr*sin(angle);
+    gsl_matrix_set(mRet, ii, 0, gsl_matrix_get(mIn, ii, 0));
+    gsl_matrix_set(mRet, ii, 1, xValue);
+    gsl_matrix_set(mRet, ii, 2, yValue);
+    
+  }
+
+
+  gsl_fft_real_wavetable_free(wavetableCols);
+  gsl_fft_real_workspace_free(workspaceCols);
+
+  return mRet;
+
+}
+
+
+/******************************************************************************
  * Function: getCurrentPulseNumber
  * Inputs: const char *
  * Returns: int
@@ -510,6 +575,75 @@ int getCurrentPulseNumber() {
 }
 
 
+/******************************************************************************
+ * Function: getDHITime
+ * Inputs: int
+ * Returns: double
+ * Description: Returns the dhi timing for the shot number passed
+******************************************************************************/
+
+double getDHITime(int shotNumber) {
+
+  double dhiTime = -1;
+
+  char *dhiTimeExp = "\\T_DHI_GATE",
+    *treeName = "fuze";
+
+  int connectionID,
+    dtype_dbl = DTYPE_DOUBLE,
+    null = 0,
+    status,
+    len,
+    size, 
+    sigdescDbl;
+
+  /* Connecting to mdsplus database "fuze" */
+  connectionID = MdsConnect("10.10.10.240");
+
+  /* Checking to see if Connected */
+  if (connectionID == -1) {
+
+    MdsDisconnect();
+    fprintf(stderr, "MDSplus connection Failed\n");
+    return dhiTime;
+
+  }
+
+  /* Opening tree */
+  status = MdsOpen(treeName, &shotNumber);
+
+  if ( !status_ok(status) ) {
+
+    MdsClose(treeName, &shotNumber);
+    fprintf(stderr,"\nError opening tree in getDHITime\n");
+    fprintf(stderr,"\nError message: %s.\n", MdsGetMsg(status));
+    return dhiTime;
+
+  }
+
+
+  size = get_signal_length(dhiTimeExp);
+  sigdescDbl = descr(&dtype_dbl, &dhiTime, &size, &null);
+
+
+  /* use MdsValue to get DHI Time */
+  status = MdsValue(dhiTimeExp, &sigdescDbl, &null, &len);
+
+  /* Checking status from the read */
+  if ( !( (status & 1) == 1 ) ) {
+
+    MdsClose(treeName, &shotNumber);
+    fprintf(stderr,"\nMDSplus double read failed\n");
+    fprintf(stderr,"\nError message: %s.\n", MdsGetMsg(status));
+    return dhiTime;
+
+  }
+
+  return dhiTime;
+
+}
+
+
 
 /******************************************************************************
  *
@@ -518,10 +652,68 @@ int getCurrentPulseNumber() {
  ******************************************************************************/
 
 static int testAziMode();
+static int testDHIRead();
+static int testOffAxis();
 
 int testMagnetic() {
 
-  testAziMode();
+  if (0) {
+    testAziMode();
+    testDHIRead();
+  }
+
+  testOffAxis();
+
+  return 0;
+
+}
+
+static int testDHIRead() {
+
+  printf("DHI Time (should be 59E-5): %g\n", getDHITime(180517018));
+
+  return 0;
+
+}
+
+static int testOffAxis() {
+
+  int ii, n = 8;
+  double data[n];
+  double val;
+
+  gsl_matrix *testData = gsl_matrix_alloc(1, n+1);
+
+  double m0 = 3.4,
+    ms1 = 1.4,
+    mc1 = 0.8,
+    ms2 = 0.65,
+    mc2 = 0.4,
+    ms3 = 1.8,
+    mc3 = 0.6,
+    m1 = sqrt(gsl_pow_2(ms1) + gsl_pow_2(mc1));
+  
+  for (ii = 0; ii < n; ii++) {
+
+    val = m0 +ms1*gsl_sf_sin(1*ii*2*M_PI/8)+ms2*gsl_sf_sin(2*ii*2*M_PI/8)\
+      +ms3*gsl_sf_sin(3*ii*2*M_PI/8)\
+      +mc1*gsl_sf_cos(1*ii*2*M_PI/8)+mc2*gsl_sf_cos(2*ii*2*M_PI/8)\
+      +mc3*gsl_sf_cos(3*ii*2*M_PI/8);
+    data[ii] = val;
+    gsl_matrix_set(testData, 0, ii+1, val);
+
+  }
+
+  gsl_matrix *result = getOffAxisDisplacement(testData);
+
+  printf("Y/X Value: %g (Should be %g)\n", 
+	 gsl_matrix_get(result, 0, 2)/gsl_matrix_get(result, 0, 1), ms1/mc1);
+
+  (void) data[0];
+  (void) m1;
+
+  gsl_matrix_free(testData);
+  gsl_matrix_free(result);
 
   return 0;
 
@@ -564,19 +756,9 @@ static int testAziMode() {
   printf("m = 2: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 3), m2/m0);
   printf("m = 3: %g (Should be %g)\n", gsl_matrix_get(testData, 0, 4), m3/m0);
 
-  gsl_fft_real_wavetable * real;
-  gsl_fft_real_workspace * work;
+  (void) data[0];
 
-  work = gsl_fft_real_workspace_alloc (n);
-  real = gsl_fft_real_wavetable_alloc (n);
-
-  gsl_fft_real_transform (data, 1, n, real, work);
-
-  for (ii = 0; ii < n; ii++) {
-    //printf("Data[%d]: %g\n", ii, data[ii]);
-  }
-
-  gsl_fft_real_workspace_free (work);
+  gsl_matrix_free(testData);
   
   return 0;
 

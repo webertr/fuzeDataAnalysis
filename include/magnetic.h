@@ -16,6 +16,7 @@
 #include <gsl/gsl_linalg.h>
 #include <gsl/gsl_blas.h>
 #include <mdslib.h>
+#include <mdsshr.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -33,6 +34,7 @@ gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName);
 int getAzimuthalArrayModes(gsl_matrix *mIn);
 int getCurrentPulseNumber();
 int plotPostShotModeData();
+double getDHITime(int shotNumber);
 int testMagnetic();
 
 

@@ -1,7 +1,7 @@
 CC = gcc
 INCL = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS = -g -Wall
-LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -ljpeg
+LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -lMdsShr -ljpeg
 
 SRC_DIR = src
 OBJ_DIR = obj

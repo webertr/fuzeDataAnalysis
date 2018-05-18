@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
 
   /*
    * Plotting IP for talk
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing real FFT
    */
-  //testMagnetic();
+  testMagnetic();
 
   /*
    * test mode data with mdsplus
