@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
 
   /*
    * Testing DHI abel inverison code 
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing real FFT
    */
-  //testMagnetic();
+  testMagnetic();
 
   /*
    * test mode data with mdsplus

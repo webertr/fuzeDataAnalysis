@@ -1146,8 +1146,8 @@ int plotOffAxisDisplacement(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output '/home/fuze/Downloads/%d_Mode.png'\n", shotNumber);
+  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set output '/home/fuze/Downloads/%d_Mode.png'\n", shotNumber);
   fprintf(fp, "set arrow from %g,graph 0 to %g,graph 1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
 	  dhiTime*1E6, dhiTime*1E6);
   fprintf(fp, "set label ' DHI trigger time' at %g,graph 0.95 font 'Times Bold, 12'\n", 

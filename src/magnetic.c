@@ -511,7 +511,7 @@ gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn) {
     m0 = data[0]/8.0;
     m1 = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))*2/8.0;
     dr = m1/m0*RW*0.5;
-    angle = atan(-data[2]/data[1])+0.3927;
+    angle = atan2(-data[2], data[1])+0.3927;
     xValue =dr*cos(angle);
     yValue =dr*sin(angle);
     gsl_matrix_set(mRet, ii, 0, gsl_matrix_get(mIn, ii, 0));
@@ -692,12 +692,14 @@ static int testOffAxis() {
     mc3 = 0.6,
     m1 = sqrt(gsl_pow_2(ms1) + gsl_pow_2(mc1));
   
+  double angleOffset = 0.3927;
+
   for (ii = 0; ii < n; ii++) {
 
-    val = m0 +ms1*gsl_sf_sin(1*ii*2*M_PI/8)+ms2*gsl_sf_sin(2*ii*2*M_PI/8)\
-      +ms3*gsl_sf_sin(3*ii*2*M_PI/8)\
-      +mc1*gsl_sf_cos(1*ii*2*M_PI/8)+mc2*gsl_sf_cos(2*ii*2*M_PI/8)\
-      +mc3*gsl_sf_cos(3*ii*2*M_PI/8);
+    val = m0 +ms1*gsl_sf_sin(1*ii*2*M_PI/8+angleOffset)+ms2*gsl_sf_sin(2*ii*2*M_PI/8+angleOffset)\
+      +ms3*gsl_sf_sin(3*ii*2*M_PI/8+angleOffset)\
+      +mc1*gsl_sf_cos(1*ii*2*M_PI/8+angleOffset)+mc2*gsl_sf_cos(2*ii*2*M_PI/8+angleOffset)\
+      +mc3*gsl_sf_cos(3*ii*2*M_PI/8+angleOffset);
     data[ii] = val;
     gsl_matrix_set(testData, 0, ii+1, val);
 
@@ -713,6 +715,36 @@ static int testOffAxis() {
 
   gsl_matrix_free(testData);
   gsl_matrix_free(result);
+
+
+  /* Pulling data from tree for 180517006 */
+
+  int shotNumber = 180517006;
+  char *dataNodeX = "\\X_P15";
+  char *dataNodeY = "\\Y_P15";
+  int sizeVec = getSignalLengthMDSplus(dataNodeX, shotNumber);
+  gsl_vector *xDataVec1 = gsl_vector_alloc(sizeVec),
+    *xDataVec2 = gsl_vector_alloc(sizeVec),
+    *yDataVec1 = gsl_vector_alloc(sizeVec),
+    *yDataVec2 = gsl_vector_alloc(sizeVec),
+    *dataVec = gsl_vector_alloc(sizeVec);
+  initializeMagneticData(shotNumber, dataNodeX, xDataVec1);
+  initializeMagneticData(shotNumber, dataNodeY, yDataVec1);
+
+  /* Getting data */
+  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000");
+  gsl_matrix *disp = getOffAxisDisplacement(azimuthArray);
+
+  for (ii = 0; ii < sizeVec; ii++) {
+    gsl_vector_set(dataVec, ii, gsl_matrix_get(disp, ii, 0));
+    gsl_vector_set(xDataVec2, ii, 
+		   gsl_matrix_get(disp, ii, 1)*1E-2);
+    gsl_vector_set(yDataVec2, ii, 
+		   gsl_matrix_get(disp, ii, 2)*1E-2);
+  }
+
+  plot2VectorData(dataVec, xDataVec1, xDataVec2, "set xrange [50E-6:60E-6]\n");
+  plot2VectorData(dataVec, yDataVec1, yDataVec2, "set xrange [50E-6:60E-6]\n");
 
   return 0;
 

@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_sf_trig.h>
+#include <sys/stat.h>
 
 #include "plot.h"
 
