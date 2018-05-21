@@ -6,7 +6,6 @@
  *
  ******************************************************************************/
 
-
 /******************************************************************************
  * Function: hologramAnalysis
  * Inputs: 
@@ -28,9 +27,12 @@ int hologramAnalysis() {
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
+  /*
   plotImageDataFile(param.fileLineIntPos, "set terminal png\nset size ratio -1\nset output '/home/webertr/Downloads/180517033.png'\nset title 'Pulse 180517033\nset xrange [13.47:14.52]\nset yrange [-0.9:0.9]\nset xlabel 'z (cm)'\nset ylabel 'b (cm)'\nset label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 rotate by 90 font 'Times Bold, 14'\n");
-  
+  */
+
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
+  //plotMatrixColDataFile(param.fileLineIntText, 10, "");
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
   //                                      set output 'data/temp.png'");
@@ -1203,5 +1205,72 @@ title 'y'\n", modeFile);
   gsl_matrix_free(azimuthArray);
   
   return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: invertFlatTopProfile
+ * Inputs: int
+ * Returns: int
+ * Description: This will create a synthetic flat top profile, and invert it.
+ ******************************************************************************/
+
+int invertFlatTopProfile() {
+
+
+  // Diameter = 1.65 cm
+  // Line integrated density = 2.2E17 cmE-2
+
+
+  int numRows = 300,
+    numCols = 300;
+
+  double val;
+
+  holographyParameters param;
+  param.numRows = numRows;
+  param.numCols = numCols;
+  param.deltaY = 0.000115;
+  
+  gsl_matrix *densityProfile = gsl_matrix_alloc(numRows, numCols);
+  
+  int ii, jj;
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      
+      if ( (ii < 5) || (ii > 294)) {
+	val = 0.0;
+      } else {
+	val = 2.2E17;
+      }
+    
+      gsl_matrix_set(densityProfile, ii, jj, val);
+
+    }
+  }  
+  
+  saveMatrixData(densityProfile, "data/densityProfile.txt");
+  saveImageData(densityProfile, "data/densityProfile.dat");
+
+  param.deltaN = 0.02;
+  param.centroidNum = 10;
+  param.offsetIter = 10;
+
+  plotImageData(densityProfile, "set title 'Line integrated data'\n");
+    
+  gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
+  saveImageData(invertedImage, param.fileFullInvert);
+  
+  /* int colPlot = 85; */
+  /* plot2MatrixColDataFile(param.fileLeftInvert, colPlot, */
+  /* 			 "data/radialProfile.txt", colPlot, ""); */
+  /* plot2MatrixColDataFile(param.fileRightInvert, colPlot, */
+  /* 			 "data/radialProfile.txt", colPlot, ""); */
+  
+  plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
+
+  return 0;
+
 
 }

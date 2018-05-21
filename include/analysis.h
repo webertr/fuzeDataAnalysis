@@ -35,6 +35,7 @@ int simluateAccel();
 int plotPostAnalysis();
 int plotPostShotModeData(int shotNumber);
 int plotOffAxisDisplacement(int shotNumber);
+int invertFlatTopProfile();
 
 
 /*
@@ -77,8 +78,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .convertDensity = 1,
   //.fileRef = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0006.JPG",
   //.filePlasma = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0007.JPG",
-  .fileRef = "/home/webertr/DHI_Images/180517/180517033_Baseline.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180517/180517033.JPG",
+  .fileRef = "/home/fuze/DHI_Images/180516/180516014_Baseline.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180516/180516014.JPG",
   .xLL = 2764,
   .yLL = 2452,
   .xUR = 3845,
@@ -90,6 +91,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .saveLineInt = 1,
   .fileLineIntPos = "data/lineIntegratedPosition.dat",
   .fileLineInt = "data/lineIntegrated.dat",
+  .fileLineIntText = "data/lineIntegrated.txt",
   .invertImage = 0,
   .fileLeftInvert = "data/leftAbelInvert.txt",
   .fileRightInvert = "data/rightAbelInvert.txt",

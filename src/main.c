@@ -64,13 +64,18 @@ int main(int argc, char *argv[]) {
   /*
    * Testing real FFT
    */
-  testMagnetic();
+  //testMagnetic();
 
   /*
    * test mode data with mdsplus
    */
   //plotModeCompApril2018Talk();
-  
+
+  /* 
+   * Inverting test flat top data
+   */
+  invertFlatTopProfile();
+
   return 0;
 
 }

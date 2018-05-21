@@ -1042,6 +1042,7 @@ int hologramMain(holographyParameters* param) {
 
     saveImageDataWithPosition(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
     saveImageData(twinImageUnwrap, param->fileLineInt);
+    saveMatrixData(twinImageUnwrap, param->fileLineIntText);
     
   }
 

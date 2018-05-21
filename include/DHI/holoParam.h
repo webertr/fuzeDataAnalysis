@@ -40,6 +40,7 @@ struct holographyparameters {
   char fileWrappedPhase[100];   // The name of the file to save the wrapped phase of the hologram
   char fileLineIntPos[100];     // The name of file for the line integrated data with positon info
   char fileLineInt[100];        // The name of the file for the line integrated data
+  char fileLineIntText[100];    // The name of the file for the line integrated data in Ascii form
   char fileLeftInvert[100];     // The name of the file for the left abel inverted data
   char fileRightInvert[100];    // The name of the file for the right abel inverted data
   char fileFullInvert[100];     // The name of the file for the full abel inverted data
