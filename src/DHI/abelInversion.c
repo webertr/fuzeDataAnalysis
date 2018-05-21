@@ -170,6 +170,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     }
   }
 
+  
   /* Adding in first row of postion information */
   gsl_matrix *leftDensityProfileTemp = gsl_matrix_alloc(numRows, numCols+1);
   gsl_matrix *rightDensityProfileTemp = gsl_matrix_alloc(numRows, numCols+1);
@@ -185,6 +186,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     gsl_matrix_set(leftDensityProfileTemp, ii, 0, ii*param->deltaY);
     gsl_matrix_set(rightDensityProfileTemp, ii, 0, ii*param->deltaY);
   }
+
   
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
@@ -203,7 +205,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_free(leftDensityProfileTemp);
   gsl_matrix_free(rightDensityProfileTemp);
   gsl_matrix_free(projectMatrix);
-
+  
   return fullDensityProfile;
 
 }
@@ -743,6 +745,63 @@ static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput);
 static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid);
 static int testInvertImageDHI();
 
+/* 1 is using meters, 100 if using CM */
+#define CM_ADJUST 100
+
+static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
+  .res = 3.85E-6*CM_ADJUST, 
+  .lambda = 532E-9*CM_ADJUST,
+  .d = 0.35*CM_ADJUST,
+  .deltaX = 0.000115*CM_ADJUST,
+  .deltaY = 0.000115*CM_ADJUST,
+  .zPosition = 0.140*CM_ADJUST,
+  .R_electrode = 0.100838*CM_ADJUST,
+  .deltaN = 1E21/(CM_ADJUST*CM_ADJUST*CM_ADJUST),
+  .c = 2.998E8*CM_ADJUST,
+  .e0 = 8.854e-12/(CM_ADJUST*CM_ADJUST*CM_ADJUST),
+  .q = 1.602e-19,
+  .me = 9.109E-31,
+  .Z = 2,
+  .numRows = 4000,
+  .numCols = 6016,
+  .hyperbolicWin = 8,
+  .sampleInterval = 10,
+  .centroidNum = 10,
+  .offsetIter = 10,
+  .boxCarSmoothWidth = 10,
+  .unwrapThresh = 1.0*M_PI,
+  .signTwin = 1,
+  .rotateImage = 1,
+  .flipImageRows = 0,
+  .flipImageCols = 0,
+  .refSubtract = 1,
+  .axialCorrection = 0,
+  .convertDensity = 1,
+  //.fileRef = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0006.JPG",
+  //.filePlasma = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0007.JPG",
+  .fileRef = "/home/fuze/DHI_Images/180516/180516014_Baseline.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180516/180516014.JPG",
+  .xLL = 2764,
+  .yLL = 2452,
+  .xUR = 3845,
+  .yUR = 4911,
+  .saveHologram = 1,
+  .fileHologram = "data/hologram.dat",
+  .saveWrappedPhase = 1,
+  .fileWrappedPhase = "data/wrappedPhase.dat",
+  .saveLineInt = 1,
+  .fileLineIntPos = "data/lineIntegratedPosition.dat",
+  .fileLineInt = "data/lineIntegrated.dat",
+  .fileLineIntText = "data/lineIntegrated.txt",
+  .invertImage = 0,
+  .fileLeftInvert = "data/leftAbelInvert.txt",
+  .fileRightInvert = "data/rightAbelInvert.txt",
+  .fileFullInvert = "data/fullAbelInvert.dat",
+  .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
+  .fileFullInvertText = "data/fullAbelInvert.txt",
+  .fileCentroid = "data/centroid.txt"
+};
+
 int testAbelInversionDHI() {
 
   testInvertImageDHI();
@@ -761,11 +820,11 @@ static int testInvertImageDHI() {
 
   double val;
 
-  holographyParameters param;
+  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
   param.numRows = numRows;
   param.numCols = numCols;
   param.deltaY = 0.000115;
-  
+
   /* Get the matrix that will project the radial profile to the line integrated density */
   gsl_matrix *projectMatrix = getProjectMatrixDHI(param.numRows, param.deltaY);
 
@@ -809,7 +868,7 @@ static int testInvertImageDHI() {
     testVec = testMatrixMult(projectMatrix, radialProfileVec);
     
     center = (int) (50.0 + ((float) jj / numCols)*80 - 40);
-    offset = jj*0.5/numCols;
+    offset = jj*0.005/numCols;
     for (ii = 0; ii < numRows; ii++) {
 
       gsl_matrix_set(testData, ii, jj, offset+gsl_vector_get(testVec, abs(center - ii)));

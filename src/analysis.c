@@ -1228,7 +1228,7 @@ int invertFlatTopProfile() {
 
   double val;
 
-  holographyParameters param;
+  holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
   param.numRows = numRows;
   param.numCols = numCols;
   param.deltaY = 0.000115;
@@ -1241,6 +1241,12 @@ int invertFlatTopProfile() {
       
       if ( (ii < 5) || (ii > 294)) {
 	val = 0.0;
+      } else if ( (ii < 50) ) {
+	val = 2.2E17*(1-gsl_pow_2((ii-50)/45.0));
+      } else if ( (ii > 250) ) {
+	val = 2.2E17*(1-gsl_pow_2((ii-250)/45.0));
+      } else if ( ii == 150) {
+	val = 2.2E17*1.01;
       } else {
 	val = 2.2E17;
       }
@@ -1258,15 +1264,13 @@ int invertFlatTopProfile() {
   param.offsetIter = 10;
 
   plotImageData(densityProfile, "set title 'Line integrated data'\n");
-    
+
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
   
-  /* int colPlot = 85; */
-  /* plot2MatrixColDataFile(param.fileLeftInvert, colPlot, */
-  /* 			 "data/radialProfile.txt", colPlot, ""); */
-  /* plot2MatrixColDataFile(param.fileRightInvert, colPlot, */
-  /* 			 "data/radialProfile.txt", colPlot, ""); */
+  int colPlot = 150;
+  plotMatrixColDataFile(param.fileLeftInvert, colPlot,"");
+  plotMatrixColDataFile(param.fileRightInvert, colPlot, "");
   
   plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
 
