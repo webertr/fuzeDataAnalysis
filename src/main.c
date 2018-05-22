@@ -74,7 +74,8 @@ int main(int argc, char *argv[]) {
   /* 
    * Inverting test flat top data
    */
-  invertFlatTopProfile();
+  //invertFlatTopProfile();
+  flatTopRadialForceBalance();
 
   return 0;
 

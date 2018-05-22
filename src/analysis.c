@@ -22,9 +22,11 @@ int hologramAnalysis() {
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
   /* Obtained line integrated data and do an abel inversion */
-  //hologramMain(&param);
+  hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, "set size ratio -1");
+  printf("Delta y: %g\n", param.deltaY);
+
+  plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineInt, "set size ratio -1");
 
   /*
@@ -32,7 +34,7 @@ int hologramAnalysis() {
   */
 
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
-  plotMatrixColDataFile(param.fileLineIntText, 10, "");
+  //plotMatrixColDataFile(param.fileLineIntText, 10, "");
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
   //                                      set output 'data/temp.png'");
@@ -1230,7 +1232,7 @@ int invertFlatTopProfile() {
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
   param.numRows = numRows;
   param.numCols = numCols;
-  param.deltaY = 0.000115;
+  param.deltaY = 0.00803917;
   
   gsl_matrix *densityProfile = gsl_matrix_alloc(numRows, numCols);
   
@@ -1267,6 +1269,20 @@ int invertFlatTopProfile() {
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
 
+  gsl_matrix *mSave = gsl_matrix_alloc(numRows, numCols);
+  readMatrixText(mSave, param.fileLeftInvert);
+
+  gsl_vector* xSave = gsl_vector_alloc(numRows);
+  gsl_vector* ySave = gsl_vector_alloc(numRows);
+
+  for (ii = 0; ii < numRows; ii++) {
+    gsl_vector_set(xSave, ii, ii*param.deltaY);
+    gsl_vector_set(ySave, ii, gsl_matrix_get(mSave, ii, 145));
+  }
+
+  save2VectorData(xSave, ySave, "data/fitRadialProfile180516014.txt");
+
+
   //int colPlot = 150;
   //plotMatrixColDataFile(param.fileLeftInvert, colPlot,"set title 'Left Inverted'\n");
   //plotMatrixColDataFile(param.fileRightInvert, colPlot, "set title 'Right Inverted'\n");
@@ -1294,14 +1310,16 @@ int invertFlatTopProfile() {
   fprintf(fp, "set terminal pngcairo\n");
   fprintf(fp, "set output 'data/fitvsData.png'\n");
   //fprintf(fp, "set xrange[0:15]\n");
-  fprintf(fp, "set yrange[0:1E19]\n");
+  fprintf(fp, "set yrange[0:1.4E17]\n");
   fprintf(fp, "set key right top\n");
   fprintf(fp, "set grid\n");
   fprintf(fp, "set title 'Inverted fit data from pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
   fprintf(fp, "set ylabel 'n_{e} (cm^{-3})' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($0*%g):($%d) with points ls 2 \
-title 'inverted data'\n", param.fileLeftInvert, param.deltaY, 45);
+  fprintf(fp, "plot '%s' using ($1):($2) with points ls 2 title 'inverted data'\n", 
+	  "data/fitRadialProfile180516014.txt");
+  //fprintf(fp, "plot '%s' using ($0*%g):($%d) with points ls 2 title 'inverted data'\n", 
+  //	  param.fileLeftInvert, param.deltaY, 145);
   fprintf(fp, "pause -1\n");
 
 /*   fprintf(fp, "#!/usr/bin/env gnuplot\n"); */
@@ -1353,5 +1371,47 @@ title 'inverted data'\n", param.fileLeftInvert, param.deltaY, 45);
 
   return 0;
 
+
+}
+
+
+/******************************************************************************
+ * Function: flatTopRadialForceBalance
+ * Inputs: 
+ * Returns: int
+ * Description: This will calculate the radial force balance for a flat top
+ ******************************************************************************/
+
+int flatTopRadialForceBalance() {
+
+  // shotNumber = 180516014
+  // DHI pulse is at 46 useconds
+  // m = 0 at p15 = 0.14 Tesla = 70 kA
+  // So there is 70 kA of pinch current here
+  // This was 5 kV, btw
+
+  int numRows = 300,
+    ii;
+
+  gsl_matrix *radialProfile = gsl_matrix_alloc(numRows, 2);
+
+  readMatrixText(radialProfile, "data/fitRadialProfile180516014.txt");
+
+  gsl_vector *xVec = gsl_vector_alloc(numRows),
+    *yVec = gsl_vector_alloc(numRows);
+
+  for (ii = 0; ii < numRows; ii++) {
+    gsl_vector_set(xVec, ii, gsl_matrix_get(radialProfile, ii, 0));
+    gsl_vector_set(yVec, ii, gsl_matrix_get(radialProfile, ii, 1));
+  }
+
+  // Removing bad data point
+  gsl_vector_set(yVec, 0, gsl_vector_get(yVec, 1));
+
+
+  plotVectorData(xVec, yVec, "");
+
+
+  return 0;
 
 }

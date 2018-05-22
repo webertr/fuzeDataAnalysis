@@ -36,7 +36,7 @@ int plotPostAnalysis();
 int plotPostShotModeData(int shotNumber);
 int plotOffAxisDisplacement(int shotNumber);
 int invertFlatTopProfile();
-
+int flatTopRadialForceBalance();
 
 /*
  * This is the struct that will hold the default values,
@@ -76,8 +76,6 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .refSubtract = 1,
   .axialCorrection = 0,
   .convertDensity = 1,
-  //.fileRef = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0006.JPG",
-  //.filePlasma = "/home/fuze/DHI_Images/Calibration/May_16_2018/DSC_0007.JPG",
   .fileRef = "/home/fuze/DHI_Images/180516/180516014_Baseline.JPG",
   .filePlasma = "/home/fuze/DHI_Images/180516/180516014.JPG",
   .xLL = 2764,

@@ -19,5 +19,6 @@ int saveVectorBinary(gsl_vector *vecIn, char *fileName);
 int save6VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
 		    gsl_vector *vec4In, gsl_vector *vec5In, gsl_vector *vec6In, 
 		    char *fileName);
+int readMatrixText(gsl_matrix *mInput, char *fileName);
 
 #endif

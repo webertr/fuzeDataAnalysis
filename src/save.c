@@ -268,6 +268,45 @@ int saveVectorData(gsl_vector *vecIn, char *fileName) {
 
 
 /******************************************************************************
+ * Function: readMatrixText
+ * Inputs: gsl_matrix *, char *
+ * Returns: int
+ * Description: Reads a matrix saved as a text file
+ ******************************************************************************/
+
+int readMatrixText(gsl_matrix *mInput, char *fileName) {
+
+  int numRows = mInput->size1,
+    numCols = mInput->size2,
+    ii, jj;
+
+  FILE *fp;
+  fp = fopen(fileName, "r");
+
+  double val;
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+
+      if (!fscanf(fp, "%lf", &val))
+	break;
+
+      gsl_matrix_set(mInput, ii, jj, val);
+
+    }
+    fscanf(fp, "\n");
+  }
+
+
+  fclose(fp);
+  
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: readImageData
  * Inputs: gsl_matrix *, char *
  * Returns: int
