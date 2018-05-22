@@ -1391,7 +1391,8 @@ int flatTopRadialForceBalance() {
   // This was 5 kV, btw
 
   int numRows = 300,
-    ii;
+    ii,
+    shotNumber = 180516014;
 
   gsl_matrix *radialProfile = gsl_matrix_alloc(numRows, 2);
 
@@ -1409,7 +1410,132 @@ int flatTopRadialForceBalance() {
   gsl_vector_set(yVec, 0, gsl_vector_get(yVec, 1));
 
 
-  plotVectorData(xVec, yVec, "");
+
+  // Calculate the drift velocity
+  double vd,
+    Ip = 70E3,
+    QE = 1.60218E-19,
+    PI = 3.1416,
+    denInt = 0,
+    dr = gsl_vector_get(xVec,1) - gsl_vector_get(xVec,0);
+
+  for (ii = 0; ii < numRows; ii++) {
+    denInt = denInt + dr*gsl_vector_get(yVec, ii)*gsl_vector_get(xVec, ii)*1E2;
+  }
+
+  vd = Ip / (2*PI*QE*denInt);
+
+
+  // Calculate the theta component of the magnetic field
+  // 70 kA, should produce a peak field at 1.1 cm of 1.36 Tesla
+  double MU_0 = 1.2566E-6,
+    thetaInt;
+
+  gsl_vector *Btheta = gsl_vector_alloc(numRows);
+
+  denInt = 0;
+  for (ii = 0; ii < numRows; ii++) {
+    denInt = denInt + dr*gsl_vector_get(yVec, ii)*gsl_vector_get(xVec, ii)*1E2;
+    thetaInt = 2*PI*QE*vd*denInt; // Total current in amperian loop
+    thetaInt = MU_0*thetaInt/(2*PI*gsl_vector_get(xVec, ii)*1E-2);  
+    gsl_vector_set(Btheta, ii, thetaInt);
+
+  }
+
+  save2VectorData(xVec, Btheta, "data/fitBTheta180516014.txt");
+
+
+
+
+  // Calculating the temperature
+  double KB = 1.38065E-23,
+    tempValue = 0,
+    tempInt = 0;
+  int edge = 146;
+  
+  gsl_vector *tempProfile = gsl_vector_alloc(numRows);
+
+  for (ii = edge; ii >= 0; ii--) {
+    tempInt = tempInt + 
+      dr*gsl_vector_get(yVec, ii)*gsl_vector_get(Btheta, ii)*1E2*1E2;
+    tempValue = tempInt * QE * vd/(2*gsl_vector_get(yVec, ii)*KB);
+    gsl_vector_set(tempProfile, ii, tempValue);
+
+  }
+
+  gsl_vector_scale(tempProfile, 1/11604.0*1E-3);
+
+  save2VectorData(xVec, tempProfile, "data/fitTemp180516014.txt");
+
+
+
+  char *gnuPlotFile = "data/gnuplot.sh";
+  int status;
+
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal pngcairo\n");
+  fprintf(fp, "set output 'data/bTheta.png'\n");
+  //fprintf(fp, "set xrange[0:15]\n");
+  //fprintf(fp, "set yrange[0:1.4E17]\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set grid\n");
+  //fprintf(fp, "set title 'T (keV) from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'T (keV)' font ',16' offset 0,0\n");
+  fprintf(fp, "set label 'V_{D} {/Symbol \273} %.3g km/sec' at graph .5,.2 font 'Times Bold,20' \n",vd*1E-3);
+  //fprintf(fp, "plot '%s' using ($1):($2) with points ls 2 title 'T'\n", 
+  //	  "data/fitTemp180516014.txt");
+  fprintf(fp, "set title 'B_{/Symbol q} from fit data for #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1):($2) with points ls 2 title 'B_{/Symbol q}'\n", 
+  	  "data/fitBTheta180516014.txt");
+  fprintf(fp, "pause -1\n");
+
+
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  //plotVectorData(xVec, Btheta, "");
+
 
 
   return 0;
