@@ -1410,6 +1410,9 @@ int flatTopRadialForceBalance() {
   gsl_vector_set(yVec, 0, gsl_vector_get(yVec, 1));
 
 
+  //Converting to meters
+  gsl_vector_scale(xVec, 1E-2);
+  gsl_vector_scale(yVec, 1E2*1E2*1E2);
 
   // Calculate the drift velocity
   double vd,
@@ -1420,7 +1423,7 @@ int flatTopRadialForceBalance() {
     dr = gsl_vector_get(xVec,1) - gsl_vector_get(xVec,0);
 
   for (ii = 0; ii < numRows; ii++) {
-    denInt = denInt + dr*gsl_vector_get(yVec, ii)*gsl_vector_get(xVec, ii)*1E2;
+    denInt = denInt + dr*gsl_vector_get(yVec, ii)*gsl_vector_get(xVec, ii);
   }
 
   vd = Ip / (2*PI*QE*denInt);
@@ -1435,9 +1438,9 @@ int flatTopRadialForceBalance() {
 
   denInt = 0;
   for (ii = 0; ii < numRows; ii++) {
-    denInt = denInt + dr*gsl_vector_get(yVec, ii)*gsl_vector_get(xVec, ii)*1E2;
+    denInt = denInt + dr*gsl_vector_get(yVec, ii)*gsl_vector_get(xVec, ii);
     thetaInt = 2*PI*QE*vd*denInt; // Total current in amperian loop
-    thetaInt = MU_0*thetaInt/(2*PI*gsl_vector_get(xVec, ii)*1E-2);  
+    thetaInt = MU_0*thetaInt/(2*PI*gsl_vector_get(xVec, ii));  
     gsl_vector_set(Btheta, ii, thetaInt);
 
   }
@@ -1457,13 +1460,13 @@ int flatTopRadialForceBalance() {
 
   for (ii = edge; ii >= 0; ii--) {
     tempInt = tempInt + 
-      dr*gsl_vector_get(yVec, ii)*gsl_vector_get(Btheta, ii)*1E2*1E2;
+      dr*gsl_vector_get(yVec, ii)*gsl_vector_get(Btheta, ii);
     tempValue = tempInt * QE * vd/(2*gsl_vector_get(yVec, ii)*KB);
     gsl_vector_set(tempProfile, ii, tempValue);
 
   }
 
-  gsl_vector_scale(tempProfile, 1/11604.0*1E-3);
+  gsl_vector_scale(tempProfile, 1/11604.0);
 
   save2VectorData(xVec, tempProfile, "data/fitTemp180516014.txt");
 
@@ -1492,16 +1495,16 @@ int flatTopRadialForceBalance() {
   //fprintf(fp, "set yrange[0:1.4E17]\n");
   fprintf(fp, "set key right top\n");
   fprintf(fp, "set grid\n");
-  //fprintf(fp, "set title 'T (keV) from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set title 'T (eV) from fit data for #%d' font '0,18'\n", shotNumber);
   //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
-  //fprintf(fp, "set ylabel 'T (keV)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'T (eV)' font ',16' offset 0,0\n");
   fprintf(fp, "set label 'V_{D} {/Symbol \273} %.3g km/sec' at graph .5,.2 font 'Times Bold,20' \n",vd*1E-3);
-  //fprintf(fp, "plot '%s' using ($1):($2) with points ls 2 title 'T'\n", 
+  //fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'T'\n", 
   //	  "data/fitTemp180516014.txt");
-  fprintf(fp, "set title 'B_{/Symbol q} from fit data for #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set title 'B_{/Symbol q} (Tesla) from fit data for #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
   fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1):($2) with points ls 2 title 'B_{/Symbol q}'\n", 
+  fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'B_{/Symbol q}'\n", 
   	  "data/fitBTheta180516014.txt");
   fprintf(fp, "pause -1\n");
 
