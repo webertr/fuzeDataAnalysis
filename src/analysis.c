@@ -1218,13 +1218,12 @@ title 'y'\n", modeFile);
 
 int invertFlatTopProfile() {
 
-
   // Diameter = 1.65 cm
   // Line integrated density = 2.2E17 cmE-2
 
-
   int numRows = 300,
-    numCols = 300;
+    numCols = 300,
+    shotNumber = 180516014;
 
   double val;
 
@@ -1263,19 +1262,94 @@ int invertFlatTopProfile() {
   param.centroidNum = 10;
   param.offsetIter = 10;
 
-  plotImageData(densityProfile, "set title 'Line integrated data'\n");
+  //plotImageData(densityProfile, "set title 'Line integrated data'\n");
 
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
 
-  int colPlot = 150;
-  plotMatrixColDataFile(param.fileLeftInvert, colPlot,"set title 'Left Inverted'\n");
-  plotMatrixColDataFile(param.fileRightInvert, colPlot, "set title 'Right Inverted'\n");
-  plot2MatrixColDataFile(param.fileLineIntText, colPlot, 
-			 "data/lineIntegrated180516014.txt", 50, 
-			 "set title 'Line Integrated Slice Data vs. Synthetic'");
+  //int colPlot = 150;
+  //plotMatrixColDataFile(param.fileLeftInvert, colPlot,"set title 'Left Inverted'\n");
+  //plotMatrixColDataFile(param.fileRightInvert, colPlot, "set title 'Right Inverted'\n");
 
-  plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
+
+  /* Creating gnuplot file */
+
+  char *gnuPlotFile = "data/gnuplot.sh";
+  int status;
+
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal pngcairo\n");
+  fprintf(fp, "set output 'data/fitvsData.png'\n");
+  //fprintf(fp, "set xrange[0:15]\n");
+  fprintf(fp, "set yrange[0:1E19]\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Inverted fit data from pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'n_{e} (cm^{-3})' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($0*%g):($%d) with points ls 2 \
+title 'inverted data'\n", param.fileLeftInvert, param.deltaY, 45);
+  fprintf(fp, "pause -1\n");
+
+/*   fprintf(fp, "#!/usr/bin/env gnuplot\n"); */
+/*   fprintf(fp, "set terminal pngcairo\n"); */
+/*   fprintf(fp, "set output 'data/fitvsData.png'\n"); */
+/*   //fprintf(fp, "set xrange[0:15]\n"); */
+/*   fprintf(fp, "set key right top\n"); */
+/*   fprintf(fp, "set grid\n"); */
+/*   fprintf(fp, "set title 'Data vs. fit data for Pulse #%d' font '0,18'\n", shotNumber); */
+/*   fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n"); */
+/*   fprintf(fp, "set ylabel 'Line integrated n_{e} (cm^{-2})' font ',16' offset 0,0\n"); */
+/*   fprintf(fp, "plot '%s' using ($0*%g):($%d) with line lw 3 lc rgb 'black' \ */
+/* title 'fit data',\\\n", param.fileLineIntText, param.deltaY, colPlot); */
+/*   fprintf(fp, "     '%s' using ($0*%g):($%d) with points ls 1 \ */
+/* title 'data'\n", "data/lineIntegrated180516014.txt", param.deltaY, 45); */
+/*   fprintf(fp, "pause -1\n"); */
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+
+  //plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
 
   return 0;
 
