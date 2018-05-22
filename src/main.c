@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /* 
    * Plotting post shot data
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
    * Inverting test flat top data
    */
   //invertFlatTopProfile();
-  flatTopRadialForceBalance();
+  //flatTopRadialForceBalance();
 
   return 0;
 

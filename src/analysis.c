@@ -36,10 +36,10 @@ int hologramAnalysis() {
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
   //                                      set output 'data/temp.png'");
-  //plot2MatrixColDataFile(param.fileRightInvert, 60, 
-  // 			 param.fileLeftInvert, 60, "");
-  //
-  //plotImageDataFile(param.fileFullInvert, "set size ratio -1\nset cbrange [0:2E17]");
+  plot2MatrixColDataFile(param.fileRightInvert, 60, 
+   			 param.fileLeftInvert, 60, "");
+
+  plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
   
   return 0;
 
