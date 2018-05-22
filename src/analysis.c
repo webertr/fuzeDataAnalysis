@@ -24,10 +24,8 @@ int hologramAnalysis() {
   /* Obtained line integrated data and do an abel inversion */
   hologramMain(&param);
 
-  printf("Delta y: %g\n", param.deltaY);
-
-  plotImageDataFile(param.fileHologram, "set size ratio -1");
-  //plotImageDataFile(param.fileLineInt, "set size ratio -1");
+  //plotImageDataFile(param.fileHologram, "set size ratio -1");
+  plotImageDataFile(param.fileLineInt, "set size ratio -1");
 
   /*
   plotImageDataFile(param.fileLineIntPos, "set terminal png\nset size ratio -1\nset output '/home/webertr/Downloads/180517033.png'\nset title 'Pulse 180517033\nset xrange [13.47:14.52]\nset yrange [-0.9:0.9]\nset xlabel 'z (cm)'\nset ylabel 'b (cm)'\nset label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 rotate by 90 font 'Times Bold, 14'\n");
@@ -1472,6 +1470,64 @@ int flatTopRadialForceBalance() {
 
 
 
+
+  // Calculating pressure
+  double MP = 1.673E-27,
+    press = 0;
+
+  (void) MP;
+
+  gsl_vector *pressure = gsl_vector_alloc(numRows);
+
+  for (ii = 0; ii < numRows; ii++) {
+    press = gsl_vector_get(yVec, ii)*KB*gsl_vector_get(tempProfile, ii)*11604.0*1E-3;
+    gsl_vector_set(pressure, ii, press);
+  }				
+
+  save2VectorData(xVec, pressure, "data/fitPressure180516014.txt");
+
+
+
+  // Calculating the force term from the magnetic field
+
+  gsl_vector *bPressureForce = gsl_vector_alloc(numRows);
+
+  for (ii = 0; ii < (numRows-1); ii++) {
+    press = gsl_vector_get(Btheta, ii)/(MU_0*gsl_vector_get(xVec, ii));
+    press = press * (gsl_vector_get(Btheta,ii+1)*gsl_vector_get(xVec, ii+1) 
+		     - gsl_vector_get(Btheta,ii)*gsl_vector_get(xVec, ii))/dr;
+    gsl_vector_set(bPressureForce, ii, press);
+  }				
+
+  save2VectorData(xVec, bPressureForce, "data/fitBPressureForce180516014.txt");
+
+
+
+  // Calculating the pressure force term from the pressure
+
+  gsl_vector *pressureForce = gsl_vector_alloc(numRows);
+
+  for (ii = 0; ii < (numRows-1); ii++) {
+    press = (gsl_vector_get(pressure,ii+1) - gsl_vector_get(pressure,ii))/dr;
+    gsl_vector_set(pressureForce, ii, press);
+  }				
+
+  save2VectorData(xVec, pressureForce, "data/fitPressureForce180516014.txt");
+
+
+
+  // Summing the two force terms
+
+  gsl_vector *totalForce = gsl_vector_alloc(numRows);
+
+  gsl_vector_add(totalForce, pressureForce);
+  gsl_vector_scale(totalForce, 2100);
+  gsl_vector_add(totalForce, bPressureForce);
+
+  save2VectorData(xVec, totalForce, "data/fitTotalForce180516014.txt");
+
+
+
   char *gnuPlotFile = "data/gnuplot.sh";
   int status;
 
@@ -1489,23 +1545,45 @@ int flatTopRadialForceBalance() {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal pngcairo\n");
-  fprintf(fp, "set output 'data/bTheta.png'\n");
+  //fprintf(fp, "set terminal pngcairo\n");
+  //fprintf(fp, "set output 'data/bTheta.png'\n");
   //fprintf(fp, "set xrange[0:15]\n");
-  //fprintf(fp, "set yrange[0:1.4E17]\n");
+  //fprintf(fp, "set yrange[0:]\n");
   fprintf(fp, "set key right top\n");
   fprintf(fp, "set grid\n");
   //fprintf(fp, "set title 'T (eV) from fit data for #%d' font '0,18'\n", shotNumber);
   //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
   //fprintf(fp, "set ylabel 'T (eV)' font ',16' offset 0,0\n");
-  fprintf(fp, "set label 'V_{D} {/Symbol \273} %.3g km/sec' at graph .5,.2 font 'Times Bold,20' \n",vd*1E-3);
+  //fprintf(fp, "set label 'V_{D} {/Symbol \273} %.3g km/sec' at graph .5,.2 font 'Times Bold,20' \n",vd*1E-3);
   //fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'T'\n", 
   //	  "data/fitTemp180516014.txt");
-  fprintf(fp, "set title 'B_{/Symbol q} (Tesla) from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set title 'B_{/Symbol q} (Tesla) from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  //fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'B_{/Symbol q}'\n", 
+  //	  "data/fitBTheta180516014.txt");
+  //fprintf(fp, "set title 'Pressure (kPa) from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'Pressure (kPa)' font ',16' offset 0,0\n");
+  //fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'Pressure'\n", 
+  // 	  "data/fitPressure180516014.txt");
+  // fprintf(fp, "set title 'B_{/Symbol q} pressure force from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'Force (Newtons?)' font ',16' offset 0,0\n");
+  //fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'Force'\n", 
+  //	  "data/fitBPressureForce180516014.txt");
+  fprintf(fp, "set title 'Radial force balance from fit data for #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'B_{/Symbol q}'\n", 
-  	  "data/fitBTheta180516014.txt");
+  fprintf(fp, "set ylabel 'Force (Newtons?)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E2):($2*-2000) with points ls 2 title 'Pressure force x -2000',\\\n", 
+   	  "data/fitPressureForce180516014.txt");
+  fprintf(fp, "     '%s' using ($1*1E2):($2) with points ls 1 title 'B_{/Symbol q} force'\n", 
+   	  "data/fitBPressureForce180516014.txt");
+  //fprintf(fp, "set title 'Radial force balance from fit data for #%d' font '0,18'\n", shotNumber);
+  //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'Force (Newtons?)' font ',16' offset 0,0\n");
+  //fprintf(fp, "plot '%s' using ($1*1E2):($2) with points ls 2 title 'Force'\n", 
+  // 	  "data/fitTotalForce180516014.txt");
   fprintf(fp, "pause -1\n");
 
 
