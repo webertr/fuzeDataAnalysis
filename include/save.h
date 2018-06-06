@@ -2,6 +2,7 @@
 #define SAVE_H
 
 #include <stdio.h>
+#include <string.h>
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 
@@ -19,6 +20,6 @@ int saveVectorBinary(gsl_vector *vecIn, char *fileName);
 int save6VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
 		    gsl_vector *vec4In, gsl_vector *vec5In, gsl_vector *vec6In, 
 		    char *fileName);
-int readMatrixText(gsl_matrix *mInput, char *fileName);
+gsl_matrix *readMatrixTextFile(char *fileName);
 
 #endif

@@ -179,8 +179,7 @@ int testForceBalance() {
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
 
-  gsl_matrix *mSave = gsl_matrix_alloc(numRows, numCols);
-  readMatrixText(mSave, param.fileLeftInvert);
+  gsl_matrix *mSave = readMatrixTextFile(param.fileLeftInvert);
 
   gsl_vector* xSave = gsl_vector_alloc(numRows);
   gsl_vector* ySave = gsl_vector_alloc(numRows);
@@ -193,9 +192,7 @@ int testForceBalance() {
   save2VectorData(xSave, ySave, "data/fitRadialProfile180516014.txt");
 
 
-  gsl_matrix *radialProfile = gsl_matrix_alloc(numRows, 2);
-
-  readMatrixText(radialProfile, "data/fitRadialProfile180516014.txt");
+  gsl_matrix *radialProfile = readMatrixTextFile("data/fitRadialProfile180516014.txt");
 
   gsl_vector *xVec = gsl_vector_alloc(numRows),
     *yVec = gsl_vector_alloc(numRows);

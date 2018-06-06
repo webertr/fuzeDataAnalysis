@@ -22,7 +22,7 @@ int hologramAnalysis() {
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
   /* Obtained line integrated data and do an abel inversion */
-  hologramMain(&param);
+ hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   plotImageDataFile(param.fileLineInt, "set size ratio -1");
@@ -36,10 +36,10 @@ int hologramAnalysis() {
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
   //                                      set output 'data/temp.png'");
-  plot2MatrixColDataFile(param.fileRightInvert, 60, 
-   			 param.fileLeftInvert, 60, "");
+  //plot2MatrixColDataFile(param.fileRightInvert, 60, 
+  //			 param.fileLeftInvert, 60, "");
 
-  plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
+  //plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
   
   return 0;
 
@@ -1267,8 +1267,7 @@ int invertFlatTopProfile() {
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
 
-  gsl_matrix *mSave = gsl_matrix_alloc(numRows, numCols);
-  readMatrixText(mSave, param.fileLeftInvert);
+  gsl_matrix *mSave = readMatrixTextFile(param.fileLeftInvert);
 
   gsl_vector* xSave = gsl_vector_alloc(numRows);
   gsl_vector* ySave = gsl_vector_alloc(numRows);

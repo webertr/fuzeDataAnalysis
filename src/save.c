@@ -214,9 +214,10 @@ int saveMatrixData(gsl_matrix *mIn, char *fileName) {
 
   for (ii = 0; ii < mIn->size1; ii++) {
 
-    for (jj = 0; jj < mIn->size2; jj++) {
+    fprintf(fp, "%g", gsl_matrix_get(mIn, ii, 0));
+    for (jj = 1; jj < mIn->size2; jj++) {
 
-      fprintf(fp, "%g\t", gsl_matrix_get(mIn, ii, jj));
+      fprintf(fp, "\t%g", gsl_matrix_get(mIn, ii, jj));
 
     }
     fprintf(fp, "\n");
@@ -268,22 +269,53 @@ int saveVectorData(gsl_vector *vecIn, char *fileName) {
 
 
 /******************************************************************************
- * Function: readMatrixText
- * Inputs: gsl_matrix *, char *
- * Returns: int
- * Description: Reads a matrix saved as a text file
+ * Function: readMatrixTextFile
+ * Inputs: char *
+ * Returns: gsl_matrix *
+ * Description: Reads a matrix saved as a text file and returns it as a
+ * gsl matrix
  ******************************************************************************/
 
-int readMatrixText(gsl_matrix *mInput, char *fileName) {
+gsl_matrix *readMatrixTextFile(char *fileName) {
 
-  int numRows = mInput->size1,
-    numCols = mInput->size2,
+  int numRows,
+    numCols,
     ii, jj;
+  const int bufMax = 10000;
 
   FILE *fp;
   fp = fopen(fileName, "r");
 
+  if (fp == NULL) {
+    printf("Error\n");
+  }
   double val;
+
+  char *result = NULL;
+  char row[bufMax];
+  int rowCount = 0,
+    colCount = 0;
+
+  fgets(row, bufMax, fp);
+  
+  result = strtok(row, "\t");
+  while( result != NULL ) {
+    colCount++;
+    result = strtok(NULL, "\t");
+  }
+
+  
+  while( !feof(fp) ) {
+    rowCount++;
+    fgets(row, bufMax, fp);
+  }
+  
+  numRows = rowCount;
+  numCols = colCount;
+
+  rewind(fp);
+
+  gsl_matrix *mInput = gsl_matrix_alloc(numRows,numCols);
 
   for (ii = 0; ii < numRows; ii++) {
     for (jj = 0; jj < numCols; jj++) {
@@ -301,7 +333,7 @@ int readMatrixText(gsl_matrix *mInput, char *fileName) {
   fclose(fp);
   
 
-  return 0;
+  return mInput;
 
 }
 
