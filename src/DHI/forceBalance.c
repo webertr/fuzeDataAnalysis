@@ -77,7 +77,7 @@ int temperatureForceBalance(gsl_vector *position, gsl_vector *densityProfile,
 				
   int ii,
     numRows = densityProfile->size,
-    edge = 146;
+    edge = numRows - 1;
 
   double vd,
     QE = 1.60218E-19,
