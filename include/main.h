@@ -12,6 +12,7 @@
 #include "getSVFData.h"
 #include "DHI/imageAnalysis.h"
 #include "DHI/holoParam.h"
+#include "DHI/forceBalance.h"
 #include "analysis.h"
 
 #endif

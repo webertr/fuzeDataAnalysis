@@ -16,6 +16,7 @@ SOURCE := src/magnetic.c \
 	src/DHI/abelInversion.c \
 	src/DHI/imageAnalysis.c \
 	src/DHI/readJPEG.c \
+	src/DHI/forceBalance.c \
 	src/plasmaParam.c \
 	src/analysis.c \
 	src/save.c \
