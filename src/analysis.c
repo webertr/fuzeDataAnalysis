@@ -244,7 +244,7 @@ title 'Pinch Current' axes x1y2\n", modeFile);
 
 int plotPostShotAccelData(int shotNumber) {
 
-  char *data1Node = "\\b_n45_000_sm",
+  char *data1Node = "\\b_n45_180_sm",
     *data1Name = "n45",
     *data2Node = "\\b_n35_000_sm",
     *data2Name = "n35",
