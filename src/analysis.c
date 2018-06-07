@@ -16,31 +16,38 @@
 
 int hologramAnalysis() {
 
-  /* 
-   * struct containing all the holography parameters.
-   */
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  /* Obtained line integrated data and do an abel inversion */
- hologramMain(&param);
+  //hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
-  plotImageDataFile(param.fileLineInt, "set size ratio -1");
-
-  /*
-  plotImageDataFile(param.fileLineIntPos, "set terminal png\nset size ratio -1\nset output '/home/webertr/Downloads/180517033.png'\nset title 'Pulse 180517033\nset xrange [13.47:14.52]\nset yrange [-0.9:0.9]\nset xlabel 'z (cm)'\nset ylabel 'b (cm)'\nset label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 rotate by 90 font 'Times Bold, 14'\n");
-  */
+  //plotImageDataFile(param.fileLineInt, "set size ratio -1");
 
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
   //plotMatrixColDataFile(param.fileLineIntText, 10, "");
 
-  //plotImageDataFile(param.fileHologram, "set size ratio -1\nset term png\n
-  //                                      set output 'data/temp.png'");
-  //plot2MatrixColDataFile(param.fileRightInvert, 60, 
-  //			 param.fileLeftInvert, 60, "");
+  //plotImageDataFile(param.fileHologram, 
+  //	    "set size ratio -1\nset term png\nset output 'data/temp.png'");
+  plot2MatrixColDataFile(param.fileRightInvert, 60, 
+  			 param.fileLeftInvert, 60, "");
 
-  //plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
-  
+  plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
+
+  if (0) {
+
+    char *keywords = "set terminal png\nset size ratio -1\n"
+      "set output '/home/webertr/Downloads/180517033.png'\n"
+      "set title 'Pulse 180517033\n"
+      "set xrange [13.47:14.52]\n"
+      "set yrange [-0.9:0.9]\n"
+      "set xlabel 'z (cm)'\n"
+      "set ylabel 'b (cm)'\n"
+      "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
+      "rotate by 90 font 'Times Bold, 14'\n";
+    plotImageDataFile(param.fileLineIntPos, keywords);
+
+  }
+
   return 0;
 
 }

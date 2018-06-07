@@ -15,6 +15,9 @@ static gsl_matrix* getProjectMatrixDHI(int sizeM, double res);
 static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, 
 				       gsl_matrix *rightDensityProfile, gsl_matrix *imageM, 
 				       gsl_vector *centroidLocation, holographyParameters* param);
+static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
+				   gsl_matrix *rightProfile, gsl_matrix *image);
+
 
 /******************************************************************************
  * Function: invertImage
@@ -187,12 +190,22 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     gsl_matrix_set(rightDensityProfileTemp, ii, 0, ii*param->deltaY);
   }
 
-  
+
+  /* 
+   * Calculating the error bars by forward projecting the average of the left and right
+   * profiles, and then finding the difference between that forward projected image
+   * and the passed image. Then, abel inverting that difference
+   */
+  gsl_matrix *errorBars = getErrorBarsDHI(projectMatrix, leftDensityProfile, rightDensityProfile,
+					  imageM);  
+
+
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
   saveMatrixData(leftDensityProfileTemp, param->fileLeftInvert);
   saveMatrixData(rightDensityProfileTemp, param->fileRightInvert);
+  saveMatrixData(errorBars, param->fileError);
   saveVectorData(centroidLocation, param->fileCentroid);
 
   /* Deleting vectors and matrices */
@@ -205,6 +218,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_free(leftDensityProfileTemp);
   gsl_matrix_free(rightDensityProfileTemp);
   gsl_matrix_free(projectMatrix);
+  gsl_matrix_free(errorBars);
   
   return fullDensityProfile;
 
@@ -732,6 +746,55 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
   return 0;
 
 }
+
+
+/******************************************************************************
+ * Function: getErrorBarsDHI
+ * Inputs: gsl_matrix*, gsl_matrix*, gsl_matrix*, gsl_matrix *
+ * Returns: gsl_matrix *
+ * Description: This function will forward project an average of the left and
+ * right density profile, then take the difference between that projection
+ * and the original image. Then, it will abel invert that difference.
+ ******************************************************************************/
+
+static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
+				   gsl_matrix *rightProfile, gsl_matrix *image) {
+
+  int numRows = image->size1,
+    numCols = image->size2,
+    ii, jj;
+
+  double avg;
+
+  gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols);
+
+  gsl_matrix *average = gsl_matrix_alloc(numRows, numCols);
+
+
+  /* Calculating the average of the left and right profile */
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      avg = 0.5*(gsl_matrix_get(leftProfile, ii, jj) + gsl_matrix_get(rightProfile, ii, jj));
+      gsl_matrix_set(average, ii, jj, avg);
+    }
+  }
+
+  
+  /* Forward projecting the average */
+  
+
+
+  /* Setting the return value */
+  gsl_matrix_memcpy(mRet, average);
+
+
+  gsl_matrix_free(average);
+
+  return mRet;
+  
+
+}
+
 
 
 /******************************************************************************

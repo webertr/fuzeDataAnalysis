@@ -76,8 +76,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .refSubtract = 1,
   .axialCorrection = 0,
   .convertDensity = 1,
-  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG",
+  .fileRef = "/home/fuze/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG",
   .xLL = 2531,
   .yLL = 2437,
   .xUR = 3356,
@@ -96,7 +96,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .fileFullInvert = "data/fullAbelInvert.dat",
   .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
   .fileFullInvertText = "data/fullAbelInvert.txt",
-  .fileCentroid = "data/centroid.txt"
+  .fileCentroid = "data/centroid.txt",
+  .fileError = "data/error.txt"
 };
 
 #endif

@@ -58,6 +58,7 @@ struct holographyparameters {
   int axialCorrection;          // If 1, will correct for axial phase variation of hologram
   int convertDensity;           // If 1, this will convert from the phase to density
   int Z;                        // Atomic number of main ion population (1 = H, 2 = He)
+  char fileError[100];         // The name of the error bar file
 };
 
 typedef struct holographyparameters holographyParameters;
