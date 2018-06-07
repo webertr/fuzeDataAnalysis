@@ -113,9 +113,9 @@ int plotPostAnalysis() {
 
   getchar();
 
-  plotOffAxisDisplacement(shotNumber);
-  //plotPostShotModeData(shotNumber);
-  //plotPostShotAccelData(shotNumber);
+  //plotOffAxisDisplacement(shotNumber);
+  plotPostShotModeData(shotNumber);
+  plotPostShotAccelData(shotNumber);
 
   return 0;
 
@@ -143,7 +143,7 @@ int plotPostShotModeData(int shotNumber) {
   /* Getting data */
   gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, nodeName);
   getAzimuthalArrayModes(azimuthArray);
-
+  double dhiTime = getDHITime(shotNumber);
   
 
   /* Saving data */
@@ -166,11 +166,13 @@ int plotPostShotModeData(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output '/home/webertr/Downloads/%d_Mode.png'\n", shotNumber);
-  fprintf(fp, "set arrow from 44,0 to 44,1 nohead dt 4 lw 3 lc rgb 'orange'\n");
-  fprintf(fp, "set label 'DHI trigger time' at 43,0.5 rotate by 90 font 'Times Bold, 12'\n");
-  fprintf(fp, "set xrange[35:80]\n");
+  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set output '/home/webertr/Downloads/%d_Mode.png'\n", shotNumber);
+  fprintf(fp, "set arrow from %g,0 to %g,1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
+	  dhiTime*1E6, dhiTime*1E6);
+  fprintf(fp, "set label 'DHI trigger time' at %g,0.5 rotate by 90 font 'Times Bold, 12'\n", 
+	  dhiTime*1E6+1.0);
+  fprintf(fp, "set xrange[25:55]\n");
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
