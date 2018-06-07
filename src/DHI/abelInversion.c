@@ -17,6 +17,7 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
 				       gsl_vector *centroidLocation, holographyParameters* param);
 static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
 				   gsl_matrix *rightProfile, gsl_matrix *image);
+static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput);
 
 
 /******************************************************************************
@@ -767,8 +768,11 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
   double avg;
 
   gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols);
+  gsl_matrix *mDiff = gsl_matrix_alloc(numRows, numCols);
 
   gsl_matrix *average = gsl_matrix_alloc(numRows, numCols);
+  gsl_vector *profileVec = gsl_vector_alloc(numRows);
+  gsl_vector *projectVec = gsl_vector_alloc(numRows);
 
 
   /* Calculating the average of the left and right profile */
@@ -780,8 +784,19 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
   }
 
   
-  /* Forward projecting the average */
-  
+  /* Forward projecting the average and taking the difference with the original image */
+  for (jj = 0; jj < numCols; jj++) {
+
+    gsl_matrix_get_col(profileVec, average, jj);
+    projectVec = matrixMultDHI(projectMatrix, profileVec);
+
+    for (ii = 0; ii < numRows; ii++) {
+      gsl_matrix_set(mDiff, ii, jj, 
+		     gsl_vector_get(projectVec, ii)-gsl_matrix_get(image, ii, jj));
+    }
+
+  }
+
 
 
   /* Setting the return value */
@@ -789,9 +804,48 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
 
 
   gsl_matrix_free(average);
+  gsl_matrix_free(mDiff);
+  gsl_vector_free(profileVec);
+  gsl_vector_free(projectVec);
 
   return mRet;
   
+
+}
+
+
+/******************************************************************************
+ * Function: matrixMultDHI
+ * Inputs: gsl_matrix*, gsl_vector *
+ * Returns: gsl_vector*
+ * Description: This function will do a matrix multiplication of the vector
+ * by the matrix
+ ******************************************************************************/
+
+static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput) {
+
+  int numRows = mInput -> size1,
+    numCols = mInput -> size2;
+
+  gsl_vector *vecRet = gsl_vector_alloc(numRows);
+
+  double val;
+
+  int ii, jj;
+  for (jj = 0; jj < numCols; jj++) {
+
+    val = 0;
+    for (ii = 0; ii < numRows; ii++) {
+
+      val = val + gsl_vector_get(vInput, ii) * gsl_matrix_get(mInput, jj, ii);
+      
+    }
+
+    gsl_vector_set(vecRet, jj, val);
+
+  }
+		     
+  return vecRet;
 
 }
 
@@ -804,7 +858,7 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
  ******************************************************************************/
 
 
-static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput);
+static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput);
 static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid);
 static int testInvertImageDHI();
 
@@ -928,7 +982,7 @@ static int testInvertImageDHI() {
   for (jj = 0; jj < numCols; jj++) {
 
     gsl_matrix_get_col(radialProfileVec, radialProfile, jj);
-    testVec = testMatrixMult(projectMatrix, radialProfileVec);
+    testVec = matrixMultDHI(projectMatrix, radialProfileVec);
     
     center = (int) (50.0 + ((float) jj / numCols)*80 - 40);
     offset = jj*0.005/numCols;
@@ -961,33 +1015,6 @@ static int testInvertImageDHI() {
 
 }
 
-
-static gsl_vector *testMatrixMult(gsl_matrix *mInput, gsl_vector *vInput) {
-
-  int numRows = mInput -> size1,
-    numCols = mInput -> size2;
-
-  gsl_vector *vecRet = gsl_vector_alloc(numRows);
-
-  double val;
-
-  int ii, jj;
-  for (jj = 0; jj < numCols; jj++) {
-
-    val = 0;
-    for (ii = 0; ii < numRows; ii++) {
-
-      val = val + gsl_vector_get(vInput, ii) * gsl_matrix_get(mInput, jj, ii);
-      
-    }
-
-    gsl_vector_set(vecRet, jj, val);
-
-  }
-		     
-  return vecRet;
-
-}
 
 /******************************************************************************
  * Function: overlayCenterLineTest
