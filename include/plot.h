@@ -22,5 +22,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
 		     gsl_vector *yVec3In, gsl_vector *yVec4In, gsl_vector *yVec5In,
 		     char *y1Label, char *y2Label, char *y3Label, char *y4Label,
 		     char *y5Label, char *plotOptions);
+int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY, 
+				    int colNumError, char *plotOptions);
 
 #endif

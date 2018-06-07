@@ -16,7 +16,8 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
 				       gsl_matrix *rightDensityProfile, gsl_matrix *imageM, 
 				       gsl_vector *centroidLocation, holographyParameters* param);
 static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
-				   gsl_matrix *rightProfile, gsl_matrix *image);
+				   gsl_matrix *rightProfile, gsl_vector *centroid,
+				   gsl_matrix *image, holographyParameters* param);
 static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput);
 
 
@@ -198,7 +199,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
    * and the passed image. Then, abel inverting that difference
    */
   gsl_matrix *errorBars = getErrorBarsDHI(projectMatrix, leftDensityProfile, rightDensityProfile,
-					  imageM);  
+					  centroidLocation, imageM, param);  
 
 
   /*
@@ -759,20 +760,26 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
  ******************************************************************************/
 
 static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
-				   gsl_matrix *rightProfile, gsl_matrix *image) {
+				   gsl_matrix *rightProfile, gsl_vector *centroid,
+				   gsl_matrix *image, holographyParameters* param) {
 
   int numRows = image->size1,
     numCols = image->size2,
-    ii, jj;
+    ii, jj,
+    center;
 
   double avg;
 
-  gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols);
+  gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols*2+1);
+  gsl_matrix *mError = gsl_matrix_alloc(numRows, numCols);
   gsl_matrix *mDiff = gsl_matrix_alloc(numRows, numCols);
 
   gsl_matrix *average = gsl_matrix_alloc(numRows, numCols);
   gsl_vector *profileVec = gsl_vector_alloc(numRows);
   gsl_vector *projectVec = gsl_vector_alloc(numRows);
+  gsl_vector *crossSection = gsl_vector_alloc(numRows);
+  gsl_vector *leftError = gsl_vector_alloc(numRows);
+  gsl_vector *rightError = gsl_vector_alloc(numRows);
 
 
   /* Calculating the average of the left and right profile */
@@ -789,27 +796,51 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
 
     gsl_matrix_get_col(profileVec, average, jj);
     projectVec = matrixMultDHI(projectMatrix, profileVec);
+    center = gsl_vector_get(centroid, jj);
 
-    for (ii = 0; ii < numRows; ii++) {
+    for (ii = 0; ii < center; ii++) {
       gsl_matrix_set(mDiff, ii, jj, 
-		     gsl_vector_get(projectVec, ii)-gsl_matrix_get(image, ii, jj));
+		     gsl_vector_get(projectVec, (center-1)-ii) -gsl_matrix_get(image, ii, jj));
+    }
+
+    for (ii = center; ii < numRows; ii++) {
+      gsl_matrix_set(mDiff, ii, jj, 
+		     gsl_vector_get(projectVec, ii-center)-gsl_matrix_get(image, ii, jj));
+    }
+
+    gsl_matrix_get_col(crossSection, mDiff, jj);
+
+    solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftError, center+1);
+    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightError, numRows-(center-1));    
+
+    for (ii = 0; ii < center; ii++) {
+      gsl_matrix_set(mError, ii, jj, fabs(gsl_vector_get(leftError, (center-1)-ii)));
+    }
+
+    for (ii = center; ii < numRows; ii++) {
+      gsl_matrix_set(mError, ii, jj, fabs(gsl_vector_get(rightError, ii-center)));
     }
 
   }
 
+  for (ii = 0; ii < numRows; ii++) {
+    gsl_matrix_set(mRet, ii, 0, ii*param->deltaY);
+  }
 
-
-  /* Setting the return value */
-  gsl_matrix_memcpy(mRet, average);
-
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      gsl_matrix_set(mRet, ii, jj*2+1, gsl_matrix_get(average, ii, jj));
+      gsl_matrix_set(mRet, ii, (jj+1)*2, gsl_matrix_get(mError, ii, jj));
+    }
+  }
 
   gsl_matrix_free(average);
   gsl_matrix_free(mDiff);
+  gsl_matrix_free(mError);
   gsl_vector_free(profileVec);
   gsl_vector_free(projectVec);
 
   return mRet;
-  
 
 }
 
