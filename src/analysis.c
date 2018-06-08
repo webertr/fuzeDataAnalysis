@@ -18,12 +18,12 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
-  //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
+  plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
-  plotMatrixColVColErrorDataFile(param.fileError, 0, 1+60*2, 1+60*2+1, "");
+  //plotMatrixColVColErrorDataFile(param.fileError, 0, 1+60*2, 1+60*2+1, "");
 
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
   //plotMatrixColDataFile(param.fileLineIntText, 10, "");
