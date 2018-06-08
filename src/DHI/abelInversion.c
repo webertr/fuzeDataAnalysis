@@ -1014,7 +1014,8 @@ static int testInvertImageDHI() {
     testVec = matrixMultDHI(projectMatrix, radialProfileVec);
     
     center = (int) (50.0 + ((float) jj / numCols)*80 - 40);
-    offset = jj*0.005/numCols;
+    //offset = jj*0.005/numCols;
+    offset = 0;
     for (ii = 0; ii < numRows; ii++) {
 
       gsl_matrix_set(testData, ii, jj, offset+gsl_vector_get(testVec, abs(center - ii)));
@@ -1033,25 +1034,51 @@ static int testInvertImageDHI() {
   saveImageData(invertedImage, param.fileFullInvert);
 
   gsl_vector *centroid = readVectorTextFile(param.fileCentroid);
+  gsl_matrix *leftProfile = readMatrixTextFile(param.fileLeftInvert);
+  gsl_matrix *rightProfile = readMatrixTextFile(param.fileRightInvert);
+  gsl_matrix *average = gsl_matrix_alloc(numRows, numCols);
+  double avg;
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 1; jj < numCols; jj++) {
+      avg = 0.5*(gsl_matrix_get(leftProfile, ii, jj) + gsl_matrix_get(rightProfile, ii, jj));
+      gsl_matrix_set(average, ii, jj-1, avg);
+    }
+  }
 
   /* Forward project inversion */
   for (jj = 0; jj < numCols; jj++) {
 
     center = gsl_vector_get(centroid, jj);
-    gsl_matrix_get_col(radialProfileVec, invertedImage, jj);
-    for (ii = (center+1); ii < numRows; ii++) {
-      gsl_vector_set(radialProfileVec, ii, 0);
-    }
+    gsl_matrix_get_col(radialProfileVec, average, jj);
     testVec = matrixMultDHI(projectMatrix, radialProfileVec);
 
-    for (ii = 0; ii < numRows; ii++) {
+    for (ii = 0; ii < center; ii++) {
+      gsl_matrix_set(forwardProjectResult, ii, jj, 
+		     gsl_vector_get(testVec, (center-1)-ii));
+    }
 
-      gsl_matrix_set(forwardProjectResult, ii, jj, gsl_vector_get(testVec, ii));
-      
+    for (ii = center; ii < numRows; ii++) {
+      gsl_matrix_set(forwardProjectResult, ii, jj, 
+		     gsl_vector_get(testVec, ii-center));
     }
   }
 
   plotImageData(forwardProjectResult, "set title 'Forward Projected Results'\n");
+
+  gsl_matrix *diffResults = gsl_matrix_alloc(numRows, numCols);
+  double diffRes;
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      diffRes = gsl_matrix_get(testData, ii, jj) - gsl_matrix_get(forwardProjectResult, ii, jj);
+
+      gsl_matrix_set(diffResults, ii, jj, diffRes);
+
+    }
+  }
+
+  plotImageData(diffResults, "set title 'Forward Projected Diff'\n");
 
   int colPlot = 85;
   plot2MatrixColDataFile(param.fileLeftInvert, colPlot,
