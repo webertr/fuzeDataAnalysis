@@ -174,7 +174,6 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 		     gsl_vector_get(rightCrossSection, ii-centroid));
     }
   }
-
   
   /* Adding in first row of postion information */
   gsl_matrix *leftDensityProfileTemp = gsl_matrix_alloc(numRows, numCols+1);
@@ -192,15 +191,13 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     gsl_matrix_set(rightDensityProfileTemp, ii, 0, ii*param->deltaY);
   }
 
-
   /* 
    * Calculating the error bars by forward projecting the average of the left and right
    * profiles, and then finding the difference between that forward projected image
    * and the passed image. Then, abel inverting that difference
    */
   gsl_matrix *errorBars = getErrorBarsDHI(projectMatrix, leftDensityProfile, rightDensityProfile,
-					  centroidLocation, imageM, param);  
-
+  					  centroidLocation, imageM, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
@@ -781,7 +778,6 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
   gsl_vector *leftError = gsl_vector_alloc(numRows);
   gsl_vector *rightError = gsl_vector_alloc(numRows);
 
-
   /* Calculating the average of the left and right profile */
   for (ii = 0; ii < numRows; ii++) {
     for (jj = 0; jj < numCols; jj++) {
@@ -811,7 +807,7 @@ static gsl_matrix *getErrorBarsDHI(gsl_matrix *projectMatrix, gsl_matrix *leftPr
     gsl_matrix_get_col(crossSection, mDiff, jj);
 
     solveLeftSystemLinearEqDHI(projectMatrix, crossSection, leftError, center+1);
-    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightError, numRows-(center-1));    
+    solveRightSystemLinearEqDHI(projectMatrix, crossSection, rightError, numRows-(center+1));    
 
     for (ii = 0; ii < center; ii++) {
       gsl_matrix_set(mError, ii, jj, fabs(gsl_vector_get(leftError, (center-1)-ii)));
@@ -947,7 +943,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .fileFullInvert = "data/fullAbelInvert.dat",
   .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
   .fileFullInvertText = "data/fullAbelInvert.txt",
-  .fileCentroid = "data/centroid.txt"
+  .fileCentroid = "data/centroid.txt",
+  .fileError = "data/error.txt"
 };
 
 int testAbelInversionDHI() {
@@ -965,6 +962,7 @@ static int testInvertImageDHI() {
     numCols = 100;
 
   gsl_matrix *testData = gsl_matrix_alloc(numRows, numCols);
+  gsl_matrix *forwardProjectResult = gsl_matrix_alloc(numRows, numCols);
 
   double val;
 
@@ -1033,12 +1031,35 @@ static int testInvertImageDHI() {
   gsl_matrix *invertedImage = invertImageDHI(testData, &param);
   overlayCenterLineTest(invertedImage, param.fileCentroid);
   saveImageData(invertedImage, param.fileFullInvert);
-  
+
+  gsl_vector *centroid = readVectorTextFile(param.fileCentroid);
+
+  /* Forward project inversion */
+  for (jj = 0; jj < numCols; jj++) {
+
+    center = gsl_vector_get(centroid, jj);
+    gsl_matrix_get_col(radialProfileVec, invertedImage, jj);
+    for (ii = (center+1); ii < numRows; ii++) {
+      gsl_vector_set(radialProfileVec, ii, 0);
+    }
+    testVec = matrixMultDHI(projectMatrix, radialProfileVec);
+
+    for (ii = 0; ii < numRows; ii++) {
+
+      gsl_matrix_set(forwardProjectResult, ii, jj, gsl_vector_get(testVec, ii));
+      
+    }
+  }
+
+  plotImageData(forwardProjectResult, "set title 'Forward Projected Results'\n");
+
   int colPlot = 85;
   plot2MatrixColDataFile(param.fileLeftInvert, colPlot,
 			 "data/radialProfile.txt", colPlot, "");
   plot2MatrixColDataFile(param.fileRightInvert, colPlot,
 			 "data/radialProfile.txt", colPlot, "");
+
+  plotMatrixColVColErrorDataFile(param.fileError, 0, 1+colPlot*2, 1+colPlot*2+1, "");
   
   plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\n");
 

@@ -339,6 +339,60 @@ gsl_matrix *readMatrixTextFile(char *fileName) {
 
 
 /******************************************************************************
+ * Function: readVectorTextFile
+ * Inputs: char *
+ * Returns: gsl_vector *
+ * Description: Reads a vector saved as a text file and returns it as a
+ * gsl vector
+ ******************************************************************************/
+
+gsl_vector *readVectorTextFile(char *fileName) {
+
+  int numRows,
+    ii;
+
+  const int bufMax = 10000;
+
+  FILE *fp;
+  fp = fopen(fileName, "r");
+
+  if (fp == NULL) {
+    printf("Error\n");
+  }
+
+  double val;
+
+  char row[bufMax];
+  int rowCount = 0;
+  
+  while( !feof(fp) ) {
+    rowCount++;
+    fgets(row, bufMax, fp);
+  }
+  
+  numRows = rowCount;
+
+  rewind(fp);
+
+  gsl_vector *vRet = gsl_vector_alloc(numRows);
+
+  for (ii = 0; ii < numRows; ii++) {
+
+    if (!fscanf(fp, "%lf\n", &val))
+      break;
+
+    gsl_vector_set(vRet, ii, val);
+
+  }
+
+  fclose(fp);
+  
+  return vRet;
+
+}
+
+
+/******************************************************************************
  * Function: readImageData
  * Inputs: gsl_matrix *, char *
  * Returns: int
