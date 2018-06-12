@@ -17,12 +17,12 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  //plotPostAnalysis();
+  plotPostAnalysis();
 
   /*
    * Testing DHI abel inverison code 
    */
-  testAbelInversionDHI();
+  //testAbelInversionDHI();
   
   /*
    * Plotting plasma parameters

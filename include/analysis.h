@@ -21,7 +21,7 @@
 #include "accelTrack.h"
 #include "DHI/holoParam.h"
 
-int plotPostShotAccelData(int shotNumber);
+int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 int plotIPApril2018Talk(int shotNumber);
 int plotAccelApril2018Talk();
 int plotModeApril2018Talk();
@@ -33,7 +33,7 @@ int plotModeCompApril2018Talk();
 int plasmaParameters();
 int simluateAccel();
 int plotPostAnalysis();
-int plotPostShotModeData(int shotNumber);
+int plotPostShotModeData(int shotNumber, int tmin, int tmax);
 int plotOffAxisDisplacement(int shotNumber);
 int invertFlatTopProfile();
 int flatTopRadialForceBalance();

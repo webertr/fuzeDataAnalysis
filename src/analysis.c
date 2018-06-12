@@ -115,9 +115,17 @@ int plotPostAnalysis() {
 
   getchar();
 
+  int pid = fork();
+
+  if (pid == 0) {
+    plotPostShotModeData(shotNumber, 30, 75);
+  }
+  else {
+    plotPostShotAccelData(shotNumber, 0, 75);
+    exit(0);
+  }
   //plotOffAxisDisplacement(shotNumber);
-  plotPostShotModeData(shotNumber);
-  plotPostShotAccelData(shotNumber);
+  
 
   return 0;
 
@@ -132,7 +140,7 @@ int plotPostAnalysis() {
  * magnetic mode data
  ******************************************************************************/
 
-int plotPostShotModeData(int shotNumber) {
+int plotPostShotModeData(int shotNumber, int tmin, int tmax) {
 
   int status;
 
@@ -174,7 +182,7 @@ int plotPostShotModeData(int shotNumber) {
 	  dhiTime*1E6, dhiTime*1E6);
   fprintf(fp, "set label 'DHI trigger time' at %g,0.5 rotate by 90 font 'Times Bold, 12'\n", 
 	  dhiTime*1E6+1.0);
-  fprintf(fp, "set xrange[25:55]\n");
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
   fprintf(fp, "set yrange[0:1]\n");
   fprintf(fp, "set y2range[0:]\n");
   fprintf(fp, "set tics font 'Times Bold, 14'\n");
@@ -244,7 +252,7 @@ title 'Pinch Current' axes x1y2\n", modeFile);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotAccelData(int shotNumber) {
+int plotPostShotAccelData(int shotNumber, int tmin, int tmax) {
 
   char *data1Node = "\\b_n45_180_sm",
     *data1Name = "n45",
@@ -297,7 +305,7 @@ int plotPostShotAccelData(int shotNumber) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[0:70]\n");
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
   fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
