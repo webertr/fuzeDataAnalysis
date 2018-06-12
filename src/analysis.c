@@ -317,7 +317,7 @@ title '%s',\\\n", accelFile, data1Name);
 title '%s',\\\n", accelFile, data2Name);
   fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
 title '%s',\\\n", accelFile, data3Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'blue' \
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
 title '%s',\\\n", accelFile, data4Name);
   fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
 title '%s'\n", accelFile, data5Name);
