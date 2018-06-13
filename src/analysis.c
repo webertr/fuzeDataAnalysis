@@ -123,7 +123,7 @@ int plotPostAnalysis() {
   else {
     //plotPostShotAccelData(shotNumber, 0, 75);
     plotPostShotSymmetryCheck(shotNumber, 0, 75);
-    plotPostShotNeutronData(shotNumber, 0, 75);
+    //plotPostShotNeutronData(shotNumber, 0, 75);
     exit(0);
   }
   //plotOffAxisDisplacement(shotNumber);
@@ -430,7 +430,7 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
   fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set title 'Neutron Diagnostics for Pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
   fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
   fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
@@ -498,16 +498,18 @@ title '%s'\n", accelFile, data5Name);
 
 int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
 
-  char *data1Node = "\\neutron_1",
-    *data1Name = "ND #1",
-    *data2Node = "\\neutron_2",
-    *data2Name = "ND #2",
-    *data3Node = "\\neutron_5",
-    *data3Name = "ND #5",
-    *data4Node = "\\neutron_6",
-    *data4Name = "ND #6",
-    *data5Node = "\\neutron_7",
-    *data5Name = "ND #7";
+  char *data1Node = "\\b_n40_180_sm",
+    *data1Name = "N40-180",
+    *data2Node = "\\b_n40_000_sm",
+    *data2Name = "N40-0",
+    *data3Node = "\\b_n30_180_sm",
+    *data3Name = "N30-180",
+    *data4Node = "\\b_n30_000_sm",
+    *data4Name = "N30-0",
+    *data5Node = "\\b_n20_180_sm",
+    *data5Name = "N20-180",
+    *data6Node = "\\b_n20_000_sm",
+    *data6Name = "N20-0";
 
   int status;
 
@@ -521,6 +523,7 @@ int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
     *data3 = gsl_vector_alloc(sigSize),
     *data4 = gsl_vector_alloc(sigSize),
     *data5 = gsl_vector_alloc(sigSize),
+    *data6 = gsl_vector_alloc(sigSize),
     *time = gsl_vector_alloc(sigSize);
 
   initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
@@ -528,10 +531,11 @@ int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
   initializeMagneticData(shotNumber, data3Node, data3);
   initializeMagneticData(shotNumber, data4Node, data4);
   initializeMagneticData(shotNumber, data5Node, data5);
+  initializeMagneticData(shotNumber, data6Node, data6);
 
 
   /* Saving data */
-  save6VectorData(time, data1, data2, data3, data4, data5, accelFile);
+  save7VectorData(time, data1, data2, data3, data4, data5, data6, accelFile);
 
 
   /* Creating gnuplot file */
@@ -552,7 +556,7 @@ int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
   fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
   fprintf(fp, "set key left top\n");
   fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set title 'Axial Symmetry Check for Pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
   fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
   fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
@@ -563,8 +567,10 @@ title '%s',\\\n", accelFile, data2Name);
 title '%s',\\\n", accelFile, data3Name);
   fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
 title '%s',\\\n", accelFile, data4Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
-title '%s'\n", accelFile, data5Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'purple' \
+title '%s',\\\n", accelFile, data5Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", accelFile, data6Name);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);
