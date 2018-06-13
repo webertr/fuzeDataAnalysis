@@ -115,17 +115,25 @@ int plotPostAnalysis() {
 
   getchar();
 
-  int pid = fork();
+  int pid1 = fork();
+  int pid2 = fork();
 
-  if (pid == 0) {
+  if ( (pid1 == 0) && (pid2==0) ) {
     plotPostShotModeData(shotNumber, 30, 75, "\\b_p15_000_sm");
   }
-  else {
-    //plotPostShotAccelData(shotNumber, 0, 75);
-    plotPostShotSymmetryCheck(shotNumber, 0, 75);
-    //plotPostShotNeutronData(shotNumber, 0, 75);
+  else if ( (pid1 == 0) && (pid2>0) ) {
+    plotPostShotNeutronData(shotNumber, 30, 75);
     exit(0);
   }
+  else if ( (pid1 > 0) && (pid2==0) ) {
+    plotPostShotSymmetryCheck(shotNumber, 0, 75);
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2>0) ) {
+    plotPostShotAccelData(shotNumber, 0, 75);
+    exit(0);
+  }
+
   //plotOffAxisDisplacement(shotNumber);
   
 
@@ -221,7 +229,6 @@ title 'Pinch Current' axes x1y2\n", modeFile);
   }
   
   fflush(gnuplot);
-
  
   /* Pausing so user can look at plot */
   printf("\nPress any key, then ENTER to continue> \n");
@@ -234,8 +241,8 @@ title 'Pinch Current' axes x1y2\n", modeFile);
   }
 
   
+  remove(gnuPlotFile);
 
-  
   /* Freeing vectors */
   gsl_matrix_free(azimuthArray);
   
@@ -267,7 +274,7 @@ int plotPostShotAccelData(int shotNumber, int tmin, int tmax) {
 
   int status;
 
-  char *gnuPlotFile = "script/temp.sh",
+  char *gnuPlotFile = "script/tempAccel.sh",
     *accelFile = "data/accel.txt";
 
   int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
@@ -353,6 +360,7 @@ title '%s'\n", accelFile, data5Name);
   }
 
 
+  remove(gnuPlotFile);
 
   gsl_vector_free(data1);
   gsl_vector_free(data2);
@@ -389,8 +397,8 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
 
   int status;
 
-  char *gnuPlotFile = "script/temp.sh",
-    *accelFile = "data/accel.txt";
+  char *gnuPlotFile = "script/tempNeutron.sh",
+    *accelFile = "data/neutron.txt";
 
   int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
   
@@ -475,7 +483,7 @@ title '%s'\n", accelFile, data5Name);
   }
 
 
-
+  remove(gnuPlotFile);
   gsl_vector_free(data1);
   gsl_vector_free(data2);
   gsl_vector_free(data3);
@@ -513,8 +521,8 @@ int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
 
   int status;
 
-  char *gnuPlotFile = "script/temp.sh",
-    *accelFile = "data/accel.txt";
+  char *gnuPlotFile = "script/tempSym.sh",
+    *accelFile = "data/sym.txt";
 
   int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
   
@@ -602,8 +610,7 @@ title '%s'\n", accelFile, data6Name);
     printf("Error reported bp close");
   }
 
-
-
+  remove(gnuPlotFile);
   gsl_vector_free(data1);
   gsl_vector_free(data2);
   gsl_vector_free(data3);
