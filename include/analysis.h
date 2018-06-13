@@ -33,10 +33,12 @@ int plotModeCompApril2018Talk();
 int plasmaParameters();
 int simluateAccel();
 int plotPostAnalysis();
-int plotPostShotModeData(int shotNumber, int tmin, int tmax);
+int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName);
 int plotOffAxisDisplacement(int shotNumber);
 int invertFlatTopProfile();
 int flatTopRadialForceBalance();
+int plotPostShotNeutronData(int shotNumber, int tmin, int tmax);
+int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 
 /*
  * This is the struct that will hold the default values,
