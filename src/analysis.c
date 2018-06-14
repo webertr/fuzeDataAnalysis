@@ -569,15 +569,15 @@ int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
   fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
   fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
 title '%s',\\\n", accelFile, data1Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 dt 2 lc rgb 'black' \
 title '%s',\\\n", accelFile, data2Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'red' \
 title '%s',\\\n", accelFile, data3Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 dt 2 lc rgb 'red' \
 title '%s',\\\n", accelFile, data4Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'purple' \
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'blue' \
 title '%s',\\\n", accelFile, data5Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 lc rgb 'yellow' \
+  fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 dt 2 lc rgb 'blue' \
 title '%s'\n", accelFile, data6Name);
   fprintf(fp, "pause -1\n");
   
