@@ -115,29 +115,42 @@ int plotPostAnalysis() {
 
   getchar();
 
-  //plotPostShotIV(shotNumber, -100, 800);
-  //plotPostShotGVCurrent(shotNumber, -800, 0);
   //plotOffAxisDisplacement(shotNumber);
 
   int pid1 = fork();
   int pid2 = fork();
+  int pid3 = fork();
 
-  if ( (pid1 == 0) && (pid2==0) ) {
+  if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
     plotPostShotModeData(shotNumber, 30, 75, "\\b_p15_000_sm");
   }
-  else if ( (pid1 == 0) && (pid2>0) ) {
+  else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
     plotPostShotNeutronData(shotNumber, 30, 75);
     exit(0);
   }
-  else if ( (pid1 > 0) && (pid2==0) ) {
+  else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
     plotPostShotSymmetryCheck(shotNumber, 0, 75);
     exit(0);
   }
-  else if ( (pid1 > 0) && (pid2>0) ) {
+  else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
     plotPostShotAccelData(shotNumber, 0, 75);
     exit(0);
   }
-  
+  else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotPostShotIV(shotNumber, -100, 800);
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
+    plotPostShotGVCurrent(shotNumber, -800, 0);
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
+    exit(0);
+  }
+
 
   return 0;
 
@@ -157,18 +170,27 @@ int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName) {
   int status;
 
   char *gnuPlotFile = "script/temp.sh",
-    *modeFile = "data/mode.txt";
+    *ipFile = "data/ipMode.txt",
+    *modeFile = "data/mode.txt",
+    *ipNode = "\\i_p";
 
   
   /* Getting data */
   gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, nodeName);
   getAzimuthalArrayModes(azimuthArray);
   double dhiTime = getDHITime(shotNumber);
+
+  int sigSize = getSignalLengthMDSplus(ipNode, shotNumber);
   
+  gsl_vector *ip = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, ipNode, ip, time);
+
 
   /* Saving data */
   saveMatrixData(azimuthArray, modeFile);
-
+  save2VectorData(time, ip, ipFile);
 
   
   /* Creating gnuplot file */
@@ -203,13 +225,15 @@ int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName) {
   fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set y2tics nomirror tc lt 2\n");
   fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'blue' \
 title 'm=1',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'green' \
 title 'm=2',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'yellow' \
 title 'm=3',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 lc rgb 'black' \
+  fprintf(fp, "     '%s' using ($1*1E6):($2*1E-3) with line lw 3 dt 2 lc rgb 'black' \
+title 'I_{P}' axes x1y2,\\\n", ipFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 dt 2 lc rgb 'red' \
 title 'Pinch Current' axes x1y2\n", modeFile);
   fprintf(fp, "pause -1\n");
   
@@ -649,7 +673,7 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
-  fprintf(fp, "set key left top\n");
+  fprintf(fp, "set key left bottom\n");
   fprintf(fp, "set grid\n");
   fprintf(fp, "set title 'Neutron Diagnostics for Pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
@@ -1073,7 +1097,6 @@ int plotModeApril2018Talk() {
 
   /* Saving data */
   saveMatrixData(azimuthArray, modeFile);
-
 
   
   /* Creating gnuplot file */
