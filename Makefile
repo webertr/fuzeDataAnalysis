@@ -38,6 +38,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INCL_DIR)/%.h
 
 clean:
 	rm -rf *~ *.o data/* $(PROD) ngspice/thyristorBank/*.txt \
-	ngspice/thyristorBank/a.out obj
+	ngspice/thyristorBank/a.out obj script/temp*
 
 .PHONY: clean all

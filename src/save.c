@@ -171,7 +171,7 @@ int save4VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
   for (ii = 0; ii < vec1In->size; ii++) {
 
     fprintf(fp, "%g\t%g\t%g\t%g\n", gsl_vector_get(vec1In, ii), gsl_vector_get(vec2In, ii),
-	    gsl_vector_get(vec3In, ii));
+	    gsl_vector_get(vec3In, ii), gsl_vector_get(vec4In, ii));
 
   }
 
