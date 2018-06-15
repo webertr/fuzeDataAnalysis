@@ -39,6 +39,8 @@ int invertFlatTopProfile();
 int flatTopRadialForceBalance();
 int plotPostShotNeutronData(int shotNumber, int tmin, int tmax);
 int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
+int plotPostShotIV(int shotNumber, int tmin, int tmax);
+int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
 /*
  * This is the struct that will hold the default values,

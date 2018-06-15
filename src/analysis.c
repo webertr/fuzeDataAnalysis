@@ -115,6 +115,10 @@ int plotPostAnalysis() {
 
   getchar();
 
+  plotPostShotIV(shotNumber, -100, 800);
+  //plotPostShotGVCurrent(shotNumber, -800, 0);
+  //plotOffAxisDisplacement(shotNumber);
+
   int pid1 = fork();
   int pid2 = fork();
 
@@ -133,8 +137,6 @@ int plotPostAnalysis() {
     plotPostShotAccelData(shotNumber, 0, 75);
     exit(0);
   }
-
-  //plotOffAxisDisplacement(shotNumber);
   
 
   return 0;
@@ -246,6 +248,217 @@ title 'Pinch Current' axes x1y2\n", modeFile);
   /* Freeing vectors */
   gsl_matrix_free(azimuthArray);
   
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotIV
+ * Inputs: int, int, int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * total plasma current and voltage across the hot and cold plate
+ ******************************************************************************/
+
+int plotPostShotIV(int shotNumber, int tmin, int tmax) {
+
+  char *data1Node = "\\v_gap",
+    *data1Name = "V_{GAP}",
+    *data2Node = "\\i_p",
+    *data2Name = "I_{P}";
+
+  int status;
+
+  char *gnuPlotFile = "script/tempIV.sh",
+    *ivFile = "data/iv.txt";
+
+  
+  /* Getting data */
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  
+
+  /* Saving data */
+  save3VectorData(time, data1, data2, ivFile);
+
+
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'I_{P} and V_{GAP} for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'I_{P} (kA)' font ',16' offset 0,0\n");
+  fprintf(fp, "set y2label 'V_{GAP} (kV)' font 'Times Bold,16' offset 0,0\n");
+  fprintf(fp, "set y2tics nomirror tc lt 2\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2*1E-3) with line lw 3 lc rgb 'red' \
+title '%s' axes x1y2,\\\n", ivFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3*1E-3) with line lw 3 lc rgb 'black' \
+title '%s'\n", ivFile, data2Name);
+
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+  remove(gnuPlotFile);
+
+  /* Freeing vectors */
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(time);
+
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotGVCurrent
+ * Inputs: int
+ * Returns: int
+ * Description: Pass it a shot number, and it will plot data to view after
+ * each pulse.
+ ******************************************************************************/
+
+int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
+
+  char *data1Node = "\\i_gv_2_valve",
+    *data1Name = "I GV2",
+    *data2Node = "\\i_gv_2_dummy_load",
+    *data2Name = "GV2 Dummy Load";
+
+  int status;
+
+  char *gnuPlotFile = "script/tempGVCurrent.sh",
+    *gvFile = "data/gvCurrent.txt";
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+
+
+  /* Saving data */
+  save3VectorData(time, data1, data2, gvFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set key left top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Gas Valve Current for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'I (Amps)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", gvFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s'\n", gvFile, data2Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+  remove(gnuPlotFile);
+
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(time);
+
   return 0;
 
 }
