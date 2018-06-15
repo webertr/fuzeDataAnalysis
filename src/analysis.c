@@ -115,7 +115,7 @@ int plotPostAnalysis() {
 
   getchar();
 
-  plotPostShotIV(shotNumber, -100, 800);
+  //plotPostShotIV(shotNumber, -100, 800);
   //plotPostShotGVCurrent(shotNumber, -800, 0);
   //plotOffAxisDisplacement(shotNumber);
 
