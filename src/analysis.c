@@ -21,7 +21,7 @@ int hologramAnalysis() {
   hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
-  plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
+  //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
   //plotMatrixColVColErrorDataFile(param.fileError, 0, 1+60*2, 1+60*2+1, "");
 
@@ -38,10 +38,10 @@ int hologramAnalysis() {
   if (0) {
 
     char *keywords = "set terminal png\nset size ratio -1\n"
-      "set output '/home/webertr/Downloads/180517033.png'\n"
-      "set title 'Pulse 180517033\n"
-      "set xrange [13.47:14.52]\n"
-      "set yrange [-0.9:0.9]\n"
+      "set output '/home/fuze/Downloads/180619004.png'\n"
+      "set title 'Pulse 180619004\n"
+      "set xrange [13.49:14.50]\n"
+      "set yrange [-0.90:0.90]\n"
       "set xlabel 'z (cm)'\n"
       "set ylabel 'b (cm)'\n"
       "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
@@ -125,7 +125,7 @@ int plotPostAnalysis() {
     plotPostShotModeData(shotNumber, 30, 75, "\\b_p15_000_sm");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, 30, 75);
+    //plotPostShotNeutronData(shotNumber, 30, 75);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -208,8 +208,8 @@ int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  //fprintf(fp, "set terminal png\n");
-  //fprintf(fp, "set output '/home/webertr/Downloads/%d_Mode.png'\n", shotNumber);
+  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set output '/home/fuze/Downloads/%d_Mode.png'\n", shotNumber);
   fprintf(fp, "set arrow from %g,0 to %g,1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
 	  dhiTime*1E6, dhiTime*1E6);
   fprintf(fp, "set label 'DHI trigger time' at %g,0.5 rotate by 90 font 'Times Bold, 12'\n", 
