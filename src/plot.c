@@ -543,7 +543,7 @@ int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY,
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using %d:%d:%d with yerrorbars title '1'\n", 
+  fprintf(gnuplot, "plot '%s' using %d:%d:%d pt 7 with yerrorbars title ''\n", 
 	  fileName, colNumX+1, colNumY+1, colNumError+1);
   
   fflush(gnuplot);

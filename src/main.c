@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
    * Plotting post shot data
    */
   //plotPostAnalysis();
-  //plotPostShotModeData(180619012, 35, 60, "\\b_p15_000_sm");
+  //plotPostShotModeData(180215012, 0, 50, "\\b_p15_000_sm");
 
   /*
    * Testing DHI abel inverison code 
