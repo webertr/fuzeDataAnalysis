@@ -35,6 +35,10 @@ int hologramAnalysis() {
 
   //plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
 
+  
+  /*
+   * Calculating the temperature of the profile
+   */
   param.numRows = 172;
   param.numCols = 64;
   calculateTempAndBTheta(&param, 100E3, 60);
@@ -75,11 +79,6 @@ int hologramAnalysis() {
     
   }
 
-  
-  /*
-   * Calculating the temperature of the profile
-   */
-  
 
   /*
    * Plotting the temperature and magnetic field
