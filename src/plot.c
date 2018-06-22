@@ -499,7 +499,7 @@ int plotMatrixColVColDataFile (char *fileName, int colNumX, int colNumY, char *p
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using %d:%d with points title '1'\n", 
+  fprintf(gnuplot, "plot '%s' using %d:%d with points pt 7 title ''\n", 
 	  fileName, colNumX+1, colNumY+1);
   
   fflush(gnuplot);

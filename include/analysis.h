@@ -43,6 +43,7 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax);
 int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 int plotPostShotIV(int shotNumber, int tmin, int tmax);
 int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
+int calculateTempAndBTheta(holographyParameters *param, double pinchCurrent, int plotColNum);
 
 /*
  * This is the struct that will hold the default values,
@@ -82,8 +83,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .refSubtract = 1,
   .axialCorrection = 0,
   .convertDensity = 1,
-  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
-  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG",
+  .fileRef = "/home/fuze/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG",
   .xLL = 2531,
   .yLL = 2437,
   .xUR = 3356,

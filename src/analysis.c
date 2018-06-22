@@ -18,7 +18,7 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
@@ -34,6 +34,10 @@ int hologramAnalysis() {
   //			 param.fileLeftInvert, 60, "");
 
   //plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
+
+  param.numRows = 172;
+  param.numCols = 64;
+  calculateTempAndBTheta(&param, 100E3, 60);
 
   /* 
    * Fancy plot of the hologram
@@ -56,10 +60,10 @@ int hologramAnalysis() {
   /*
    * Fancy plot for the abel inversion with error bars 
    */
-  if (1) {
+  if (0) {
 
     char *errorKeywords = "set terminal png\nset size ratio 1\n"
-      "set output '/home/webertr/Downloads/180215012Invert.png'\n"
+      "set output '/home/fuze/Downloads/180215012Invert.png'\n"
       "set title 'Radial density profile for Pulse 180215012' font 'Times Bold, 14'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -75,62 +79,15 @@ int hologramAnalysis() {
   /*
    * Calculating the temperature of the profile
    */
-  if (0) {
-
-    param.numRows = 172;
-    param.numCols = 64;
-    double pinchCurrent = 100E3;
-    
-    gsl_matrix *leftRadialProfile = readMatrixTextFile(param.fileLeftInvert);
-    gsl_matrix *rightRadialProfile = readMatrixTextFile(param.fileRightInvert);
-    gsl_vector *tempProfile = gsl_vector_alloc(param.numRows);
-    gsl_vector *bTheta = gsl_vector_alloc(param.numRows);
-    gsl_vector *rVec = gsl_vector_alloc(param.numRows),
-      *densityProfile = gsl_vector_alloc(param.numRows);
-    
-    int ii;
-    int plotColNum = 60;
-    double radDen;
-    for (ii = 0; ii < param.numRows; ii++) {
-      radDen = (gsl_matrix_get(leftRadialProfile, ii, plotColNum) +
-		gsl_matrix_get(rightRadialProfile, ii, plotColNum))/2;
-      gsl_vector_set(rVec, ii, gsl_matrix_get(leftRadialProfile, ii, 0)*1E-2);
-      gsl_vector_set(densityProfile, ii, radDen*1E2*1E2*1E2);
-    }
-
-    azimuthBFieldForceBalance(rVec, densityProfile, bTheta, pinchCurrent);
-    temperatureForceBalance(rVec, densityProfile, bTheta, tempProfile, pinchCurrent);
-    gsl_vector_scale(tempProfile, 8.618E-5);
-    gsl_vector_scale(rVec, 1E2);
-    save2VectorData(rVec, bTheta, param.fileBTheta);
-    save2VectorData(rVec, tempProfile, param.fileTemperature);
-
-    gsl_matrix_free(leftRadialProfile);
-    gsl_matrix_free(rightRadialProfile);
-    gsl_vector_free(tempProfile);
-    gsl_vector_free(bTheta);
-    gsl_vector_free(rVec);
-    gsl_vector_free(densityProfile);
-
-  }
+  
 
   /*
    * Plotting the temperature and magnetic field
    */
-  if (0) {
-
-    int status;
-  
-    FILE *gnuplot = popen("gnuplot", "w");
-
-    if (!gnuplot) {
-      fprintf (stderr,
-	       "incorrect parameters or too many files.\n");
-      return EXIT_FAILURE;
-    }
+  if (1) {
 
     char *tempKeywords = "set terminal png\nset size ratio 1\n"
-      "set output '/home/webertr/Downloads/180215012Temp.png'\n"
+      "set output '/home/fuze/Downloads/180215012Temp.png'\n"
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -139,18 +96,7 @@ int hologramAnalysis() {
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
 
-    fprintf(gnuplot, tempKeywords);
-  
-    fprintf(gnuplot, "plot '%s' using 1:2 with points pt 7 title ''\n", 
-	    param.fileTemperature);
-  
-    fflush(gnuplot);
-    getchar();
-    status = pclose(gnuplot);
-
-    if (status == -1) {
-      printf("Error reported bp close");
-    }
+    plotMatrixColVColDataFile(param.fileTemperature, 0, 1, tempKeywords);
     
   }
   
@@ -1229,5 +1175,58 @@ int invertFlatTopProfile() {
 
   return 0;
 
+
+}
+
+
+/******************************************************************************
+ * Function: calculateTempAndBTheta
+ * Inputs: 
+ * Returns: int
+ * Description: This will calculate the plasma radial temperature and 
+ * azimuthal magnetic field as a function of radius. Should be passed
+ * in units of cm, and cm^-3. Will save in units of Tesla, and eV
+ ******************************************************************************/
+
+int calculateTempAndBTheta(holographyParameters *param, double pinchCurrent,
+			   int plotColNum) {
+
+    int ii;
+    double radDen;
+
+    gsl_matrix *leftRadialProfile = readMatrixTextFile(param->fileLeftInvert);
+    gsl_matrix *rightRadialProfile = readMatrixTextFile(param->fileRightInvert);
+    gsl_vector *tempProfile = gsl_vector_alloc(param->numRows);
+    gsl_vector *bTheta = gsl_vector_alloc(param->numRows);
+    gsl_vector *rVec = gsl_vector_alloc(param->numRows),
+      *densityProfile = gsl_vector_alloc(param->numRows);
+    
+    for (ii = 0; ii < param->numRows; ii++) {
+      radDen = (gsl_matrix_get(leftRadialProfile, ii, plotColNum) +
+		gsl_matrix_get(rightRadialProfile, ii, plotColNum))/2;
+      gsl_vector_set(rVec, ii, gsl_matrix_get(leftRadialProfile, ii, 0)*1E-2);
+      gsl_vector_set(densityProfile, ii, radDen*1E2*1E2*1E2);
+    }
+
+    azimuthBFieldForceBalance(rVec, densityProfile, bTheta, pinchCurrent);
+    temperatureForceBalance(rVec, densityProfile, bTheta, tempProfile, pinchCurrent);
+
+    /* Converting to eV */
+    gsl_vector_scale(tempProfile, 8.618E-5);
+
+    /* Converting to back to cm */
+    gsl_vector_scale(rVec, 1E2);
+
+    save2VectorData(rVec, bTheta, param->fileBTheta);
+    save2VectorData(rVec, tempProfile, param->fileTemperature);
+
+    gsl_matrix_free(leftRadialProfile);
+    gsl_matrix_free(rightRadialProfile);
+    gsl_vector_free(tempProfile);
+    gsl_vector_free(bTheta);
+    gsl_vector_free(rVec);
+    gsl_vector_free(densityProfile);
+
+    return 0;
 
 }
