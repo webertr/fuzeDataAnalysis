@@ -18,7 +18,7 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
@@ -35,6 +35,9 @@ int hologramAnalysis() {
 
   //plotImageDataFile(param.fileFullInvert, "set size ratio -1\n");
 
+  /* 
+   * Fancy plot of the hologram
+   */
   if (0) {
 
     char *keywords = "set terminal png\nset size ratio -1\n"
@@ -50,6 +53,44 @@ int hologramAnalysis() {
 
   }
 
+  /*
+   * Calculating the temperature of the profile
+   */
+  if (1) {
+
+    param.numRows = 172;
+    param.numCols = 64;
+    double pinchCurrent = 100E3;
+    
+    gsl_matrix *radialProfile = readMatrixTextFile(param.fileLeftInvert);
+    gsl_vector *tempProfile = gsl_vector_alloc(param.numRows);
+    gsl_vector *bTheta = gsl_vector_alloc(param.numRows);
+    gsl_vector *rVec = gsl_vector_alloc(param.numRows),
+      *densityProfile = gsl_vector_alloc(param.numRows);
+    
+    int ii;
+    int plotColNum = 60;
+    for (ii = 0; ii < param.numRows; ii++) {
+      gsl_vector_set(rVec, ii, gsl_matrix_get(radialProfile, ii, 0)*1E-2);
+      gsl_vector_set(densityProfile, ii,
+		     gsl_matrix_get(radialProfile, ii, plotColNum)*1E2*1E2*1E2);
+    }
+
+    azimuthBFieldForceBalance(rVec, densityProfile, bTheta, pinchCurrent);
+    temperatureForceBalance(rVec, densityProfile, bTheta, tempProfile, pinchCurrent);
+    gsl_vector_scale(tempProfile, 8.618E-5);
+    save2VectorData(rVec, bTheta, param.fileBTheta);
+    save2VectorData(rVec, tempProfile, param.fileTemperature);
+    plotVectorData(rVec, tempProfile, "");
+
+    gsl_matrix_free(radialProfile);
+    gsl_vector_free(tempProfile);
+    gsl_vector_free(bTheta);
+    gsl_vector_free(rVec);
+    gsl_vector_free(densityProfile);
+    
+  }
+  
   return 0;
 
 }
@@ -208,8 +249,8 @@ int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output '/home/fuze/Downloads/%d_Mode.png'\n", shotNumber);
+  //fprintf(fp, "set terminal png\n");
+  //fprintf(fp, "set output '/home/fuze/Downloads/%d_Mode.png'\n", shotNumber);
   fprintf(fp, "set arrow from %g,0 to %g,1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
 	  dhiTime*1E6, dhiTime*1E6);
   fprintf(fp, "set label 'DHI trigger time' at %g,0.5 rotate by 90 font 'Times Bold, 12'\n", 

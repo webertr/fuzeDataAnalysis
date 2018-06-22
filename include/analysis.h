@@ -20,6 +20,8 @@
 #include "fit.h"
 #include "accelTrack.h"
 #include "DHI/holoParam.h"
+#include "DHI/forceBalance.h"
+
 
 int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 int plotIPApril2018Talk(int shotNumber);
@@ -80,18 +82,18 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .refSubtract = 1,
   .axialCorrection = 0,
   .convertDensity = 1,
-  //.fileRef = "/home/fuze/DHI_Images/180215/180215011.JPG",
-  //.filePlasma = "/home/fuze/DHI_Images/180215/180215012.JPG",
-  //.xLL = 2531,
-  //.yLL = 2437,
-  //.xUR = 3356,
-  //.yUR = 4349,
-  .fileRef = "/home/fuze/DHI_Images/180619/180619004_Baseline.JPG",
-  .filePlasma = "/home/fuze/DHI_Images/180619/180619004.JPG",
-  .xLL = 2780,
-  .yLL = 2458,
-  .xUR = 3835,
-  .yUR = 4891,
+  .fileRef = "/home/webertr/DHI_Images/180215/180215011.JPG",
+  .filePlasma = "/home/webertr/DHI_Images/180215/180215012.JPG",
+  .xLL = 2531,
+  .yLL = 2437,
+  .xUR = 3356,
+  .yUR = 4349,
+  //.fileRef = "/home/fuze/DHI_Images/180619/180619004_Baseline.JPG",
+  //.filePlasma = "/home/fuze/DHI_Images/180619/180619004.JPG",
+  //.xLL = 2780,
+  //.yLL = 2458,
+  //.xUR = 3835,
+  //.yUR = 4891,
   .saveHologram = 1,
   .fileHologram = "data/hologram.dat",
   .saveWrappedPhase = 1,
@@ -107,7 +109,9 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
   .fileFullInvertText = "data/fullAbelInvert.txt",
   .fileCentroid = "data/centroid.txt",
-  .fileError = "data/error.txt"
+  .fileError = "data/error.txt",
+  .fileBTheta = "data/bTheta.txt",
+  .fileTemperature = "data/temperature.txt"
 };
 
 #endif

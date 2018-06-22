@@ -69,7 +69,8 @@ int azimuthBFieldForceBalance(gsl_vector *position, gsl_vector *densityProfile,
  * Returns: int
  * Description: This function will calculate the radial temperature profile
  * from the radial density profile, azimuthal B-field and total current Ip. 
- * The calculating is based on the calculation form M. Ross's thesis.
+ * The calculating is based on the calculation form M. Ross's thesis. The temperature
+ * is returned in degrees Kelvin. To convert to eV, multiple by 8.618E-5 or 1/11604
  ******************************************************************************/
 
 int temperatureForceBalance(gsl_vector *position, gsl_vector *densityProfile,

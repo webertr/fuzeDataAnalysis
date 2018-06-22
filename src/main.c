@@ -12,13 +12,13 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /* 
    * Plotting post shot data
    */
   //plotPostAnalysis();
-  plotPostShotModeData(180619012, 35, 60, "\\b_p15_000_sm");
+  //plotPostShotModeData(180619012, 35, 60, "\\b_p15_000_sm");
 
   /*
    * Testing DHI abel inverison code 

@@ -47,6 +47,8 @@ struct holographyparameters {
   char fileFullInvertPos[100];  // The name of file for the full abel inverted data with pos info
   char fileFullInvertText[100]; // The name of the file for the full abel inverted data text file
   char fileCentroid[100];       // The name of the file for the centroid file
+  char fileBTheta[100];         // The name of the file for the centroid file
+  char fileTemperature[100];    // The name of the file for the centroid file
   double R_electrode;           // value of the radius of the inner electrode
   int rotateImage;              // 1 means to rotate the image by 90 degrees CW
   int flipImageRows;            // 1 means to flip the image rows
