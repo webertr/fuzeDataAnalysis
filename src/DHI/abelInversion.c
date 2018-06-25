@@ -912,7 +912,7 @@ static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput) {
 static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
 					 holographyParameters* param) {
 
-  int ii,
+  int ii, jj,
     numRows = densityWithError->size1,
     numCols = densityWithError->size2;
 
@@ -928,8 +928,13 @@ static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
   for (ii = 0; ii < (numCols-2)/2; ii++) {
     gsl_matrix_get_col(densityProfile, densityWithError, 2*ii+1);
     gsl_matrix_get_col(errorDensity, densityWithError, 2*ii+2);
+    gsl_vector_add(errorDensity, densityProfile);
     azimuthBFieldForceBalance(densityProfile, bThetaVec, param->pinchCurrent, param->deltaY);
     azimuthBFieldForceBalance(errorDensity, errorBField, param->pinchCurrent, param->deltaY);
+    gsl_vector_sub(errorBField, bThetaVec);
+    for (jj = 0; jj < numRows; jj++)
+      gsl_vector_set(errorBField, jj, fabs(gsl_vector_get(errorBField, jj)));
+
     gsl_matrix_set_col(bTheta, 2*ii+1, bThetaVec);
     gsl_matrix_set_col(bTheta, 2*ii+2, errorBField);
   }
