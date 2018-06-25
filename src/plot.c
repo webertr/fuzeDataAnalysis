@@ -560,3 +560,51 @@ int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY,
   return 0;
 
 }
+
+
+/******************************************************************************
+ * Function: plotMatrixColVColErrorData2Files2Axes
+ * Inputs: char *
+ * Returns: int
+ * Description: You pass this text file with columns and it will plot 1 of 
+ * the column. This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream. It will use
+ * error bars
+ ******************************************************************************/
+
+int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int colNumY1, 
+					  int colNumError1, char *label1,
+					  char *fileName2, int colNumX2, int colNumY2, 
+					  int colNumError2, char *label2, char *plotOptions) {
+
+  int status;
+  
+  FILE *gnuplot = popen("gnuplot", "w");
+
+  if (!gnuplot) {
+    fprintf (stderr,
+	     "incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+
+  fprintf(gnuplot, "%s\n", plotOptions);
+  
+  fprintf(gnuplot, "plot '%s' using %d:%d:%d pt 7 with yerrorbars title '%s',\\\n", 
+	  fileName1, colNumX1+1, colNumY1+1, colNumError1+1, label1);
+  fprintf(gnuplot, "     '%s' using %d:%d:%d pt 7 with yerrorbars title '%s' axes x1y2\n", 
+	  fileName2, colNumX2+1, colNumY2+1, colNumError2+1, label2);
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  return 0;
+
+}

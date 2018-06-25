@@ -109,7 +109,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
   .fileFullInvertText = "data/fullAbelInvert.txt",
   .fileCentroid = "data/centroid.txt",
-  .fileError = "data/error.txt",
+  .fileDensity = "data/error.txt",
   .fileBTheta = "data/bTheta.txt",
   .fileTemperature = "data/temperature.txt"
 };

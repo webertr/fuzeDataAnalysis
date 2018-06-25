@@ -18,12 +18,12 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
 
-  //plotMatrixColVColErrorDataFile(param.fileError, 0, 1+60*2, 1+60*2+1, "");
+  //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
 
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
   //plotMatrixColDataFile(param.fileLineIntText, 10, "");
@@ -70,7 +70,7 @@ int hologramAnalysis() {
       "set yrange [0:]\n"
       "set xlabel 'r (m)' font 'Times Bold, 18'\n"
       "set ylabel 'n_{e} (m^{-3})' font 'Times Bold, 18'\n";
-    plotMatrixColVColErrorDataFile(param.fileError, 0, 1+60*2, 1+60*2+1, errorKeywords);
+    plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, errorKeywords);
     
   }
 
@@ -112,6 +112,31 @@ int hologramAnalysis() {
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
 
     plotMatrixColVColErrorDataFile(param.fileTemperature, 0, 1+60*2, 1+60*2+1, tempKeywords);
+    
+  }
+
+
+  /*
+   * Plotting the temperature and b field on same axis
+   */
+  if (1) {
+
+    char *tempKeywords = "set size ratio 1\n"
+      //"set terminal png\n"
+      //"set output '/home/fuze/Downloads/180215012Temp.png'\n"
+      "set title 'Radial density and temperature profile for 180215012' font 'Time Bold, 16'\n"
+      "set tics font 'Times Bold, 14'\n"
+      "set grid\n"
+      "set xrange [0:0.0045]\n"
+      "set yrange [0:]\n"
+      "set xlabel 'r (m)' font 'Times Bold, 18'\n"
+      "set y2label 'T (eV)' font 'Times Bold, 18'\n"
+      "set y2tics nomirror tc lt 2\n"
+      "set ylabel 'n_{e} (m^{-3})' font 'Times Bold, 18'\n";
+
+    plotMatrixColVColErrorData2Files2Axes(param.fileDensity, 0, 1+60*2, 1+60*2+1, "Density", 
+					  param.fileTemperature, 0, 1+60*2, 1+60*2+1, 
+					  "Temperature", tempKeywords);
     
   }
 

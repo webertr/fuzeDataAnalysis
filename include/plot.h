@@ -24,5 +24,9 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
 		     char *y5Label, char *plotOptions);
 int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY, 
 				    int colNumError, char *plotOptions);
+int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int colNumY1, 
+					  int colNumError1, char *label1,
+					  char *fileName2, int colNumX2, int colNumY2, 
+					  int colNumError2, char *label2, char *plotOptions);
 
 #endif

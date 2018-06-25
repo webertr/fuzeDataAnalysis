@@ -223,7 +223,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
    */
   saveMatrixData(leftDensityProfileTemp, param->fileLeftInvert);
   saveMatrixData(rightDensityProfileTemp, param->fileRightInvert);
-  saveMatrixData(avgDensityWithError, param->fileError);
+  saveMatrixData(avgDensityWithError, param->fileDensity);
   saveMatrixData(azimuthalBField, param->fileBTheta);
   saveMatrixData(temperature, param->fileTemperature);
   saveVectorData(centroidLocation, param->fileCentroid);
@@ -781,8 +781,8 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
  ******************************************************************************/
 
 static gsl_matrix *getAvgDensityWithErrorDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
-					  gsl_matrix *rightProfile, gsl_vector *centroid,
-					  gsl_matrix *image, holographyParameters* param) {
+					     gsl_matrix *rightProfile, gsl_vector *centroid,
+					     gsl_matrix *image, holographyParameters* param) {
 
   int numRows = image->size1,
     numCols = image->size2,
@@ -928,7 +928,6 @@ static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
   for (ii = 0; ii < (numCols-2)/2; ii++) {
     gsl_matrix_get_col(densityProfile, densityWithError, 2*ii+1);
     gsl_matrix_get_col(errorDensity, densityWithError, 2*ii+2);
-    gsl_vector_add(errorDensity, densityProfile);
     azimuthBFieldForceBalance(densityProfile, bThetaVec, param->pinchCurrent, param->deltaY);
     azimuthBFieldForceBalance(errorDensity, errorBField, param->pinchCurrent, param->deltaY);
     gsl_matrix_set_col(bTheta, 2*ii+1, bThetaVec);
@@ -957,7 +956,7 @@ static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
 static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *azimuthalBField,
 				     holographyParameters* param) {
 
-  int ii,
+  int ii, jj,
     numRows = densityWithError->size1,
     numCols = densityWithError->size2;
 
@@ -982,7 +981,11 @@ static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *a
     temperatureForceBalance(densityProfile, bThetaVec, temperatureVec, 
 			    param->pinchCurrent, param->deltaY);
     temperatureForceBalance(errorDensity, errorBTheta, errorTemp, 
-			    param->pinchCurrent, param->deltaY);
+    			    param->pinchCurrent, param->deltaY);
+    gsl_vector_sub(errorTemp, temperatureVec);
+    for (jj = 0; jj < numRows; jj++)
+      gsl_vector_set(errorTemp, jj, fabs(gsl_vector_get(errorTemp, jj)));
+
     gsl_vector_scale(temperatureVec, 8.618E-5);
     gsl_vector_scale(errorTemp, 8.618E-5);
     gsl_matrix_set_col(temperature, 2*ii+1, temperatureVec);
@@ -1068,7 +1071,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .fileFullInvertPos = "data/fullAbelInvertPosition.dat",
   .fileFullInvertText = "data/fullAbelInvert.txt",
   .fileCentroid = "data/centroid.txt",
-  .fileError = "data/error.txt"
+  .fileDensity = "data/error.txt"
 };
 
 int testAbelInversionDHI() {
@@ -1210,7 +1213,7 @@ static int testInvertImageDHI() {
   plot2MatrixColDataFile(param.fileRightInvert, colPlot,
 			 "data/radialProfile.txt", colPlot, "set title 'Reconstructed right vs. original'");
 
-  plotMatrixColVColErrorDataFile(param.fileError, 0, 1+colPlot*2, 1+colPlot*2+1, "");
+  plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+colPlot*2, 1+colPlot*2+1, "");
   
   plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\nset title 'Full inversion'");
 
