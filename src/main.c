@@ -36,33 +36,6 @@ int main(int argc, char *argv[]) {
   //simluateAccel();
 
   /*
-   * Plotting IP for talk
-   */
-  //plotAccelApril2018Talk();
-
-  /*
-   * Plotting mode data for talk
-   */
-  //plotModeApril2018Talk();
-
-  /*
-   * Plotting DHI data for talk
-   */
-  //plotDHIApril2018Talk();
-
-  /*
-   * Plotting spectrscopy data for talk
-   */
-  //plotSpecCIIIImageApril2018Talk();
-
-
-  /*
-   * CII emission line
-   */
-  //plotCIIILineApril2018Talk();
-
-  
-  /*
    * Testing real FFT
    */
   //testMagnetic();

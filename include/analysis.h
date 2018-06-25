@@ -43,7 +43,7 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax);
 int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 int plotPostShotIV(int shotNumber, int tmin, int tmax);
 int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
-int calculateTempAndBTheta(holographyParameters *param, double pinchCurrent, int plotColNum);
+
 
 /*
  * This is the struct that will hold the default values,
@@ -51,20 +51,17 @@ int calculateTempAndBTheta(holographyParameters *param, double pinchCurrent, int
  * that includes it, so the compiler won't complain when linking, I think?
  */
 
-/* 1 is using meters, 100 if using CM */
-#define CM_ADJUST 100
-
 static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
-  .res = 3.85E-6*CM_ADJUST, 
-  .lambda = 532E-9*CM_ADJUST,
-  .d = 0.35*CM_ADJUST,
-  .deltaX = 0.000115*CM_ADJUST,
-  .deltaY = 0.000115*CM_ADJUST,
-  .zPosition = 0.140*CM_ADJUST,
-  .R_electrode = 0.100838*CM_ADJUST,
-  .deltaN = 1E21/(CM_ADJUST*CM_ADJUST*CM_ADJUST),
-  .c = 2.998E8*CM_ADJUST,
-  .e0 = 8.854e-12/(CM_ADJUST*CM_ADJUST*CM_ADJUST),
+  .res = 3.85E-6, 
+  .lambda = 532E-9,
+  .d = 0.35,
+  .deltaX = 0.000115,
+  .deltaY = 0.000115,
+  .zPosition = 0.140,
+  .R_electrode = 0.100838,
+  .deltaN = 1E21,
+  .c = 2.998E8,
+  .e0 = 8.854e-12,
   .q = 1.602e-19,
   .me = 9.109E-31,
   .Z = 2,
@@ -95,6 +92,8 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   //.yLL = 2458,
   //.xUR = 3835,
   //.yUR = 4891,
+  .pinchCurrent = 100E3,
+  .useCM = 1,
   .saveHologram = 1,
   .fileHologram = "data/hologram.dat",
   .saveWrappedPhase = 1,

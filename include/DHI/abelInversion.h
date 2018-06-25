@@ -26,6 +26,7 @@
 #include "holoParam.h"
 #include "save.h"
 #include "plot.h"
+#include "DHI/forceBalance.h"
 
 gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param);
 int testAbelInversionDHI();

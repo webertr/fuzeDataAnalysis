@@ -17,11 +17,12 @@
  * Returns: int
  * Description: This function will calculate the azimuthal magnetic field
  * from the radial density profile, and total current Ip. The calculating 
- * is based on the calculation form M. Ross's thesis.
+ * is based on the calculation form M. Ross's thesis. The units of the B-field
+ * are Tesla
  ******************************************************************************/
 
-int azimuthBFieldForceBalance(gsl_vector *position, gsl_vector *densityProfile,
-			      gsl_vector *azimuthalBField, double Ip) {
+int azimuthBFieldForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBField, 
+			      double Ip, double dr) {
 				
   int ii,
     numRows = densityProfile->size;
@@ -30,7 +31,6 @@ int azimuthBFieldForceBalance(gsl_vector *position, gsl_vector *densityProfile,
     QE = 1.60218E-19,
     PI = 3.1416,
     denInt = 0,
-    dr = gsl_vector_get(position,1) - gsl_vector_get(position,0),
     MU_0 = 1.2566E-6,
     thetaInt;
 
@@ -38,7 +38,7 @@ int azimuthBFieldForceBalance(gsl_vector *position, gsl_vector *densityProfile,
   
   /* Calculating the drift velocity */
   for (ii = 0; ii < numRows; ii++) {
-    denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*gsl_vector_get(position, ii);
+    denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*(dr*ii);
   }
 
   vd = Ip / (2*PI*QE*denInt);
@@ -49,9 +49,9 @@ int azimuthBFieldForceBalance(gsl_vector *position, gsl_vector *densityProfile,
 
   denInt = 0;
   for (ii = 0; ii < numRows; ii++) {
-    denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*gsl_vector_get(position, ii);
+    denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*(dr*ii);
     thetaInt = 2*PI*QE*vd*denInt; // Total current in amperian loop
-    thetaInt = MU_0*thetaInt/(2*PI*gsl_vector_get(position, ii));  
+    thetaInt = MU_0*thetaInt/(2*PI*(dr*ii));  
     gsl_vector_set(azimuthalBField, ii, thetaInt);
 
   }
@@ -73,8 +73,8 @@ int azimuthBFieldForceBalance(gsl_vector *position, gsl_vector *densityProfile,
  * is returned in degrees Kelvin. To convert to eV, multiple by 8.618E-5 or 1/11604
  ******************************************************************************/
 
-int temperatureForceBalance(gsl_vector *position, gsl_vector *densityProfile,
-			    gsl_vector *azimuthalBField, gsl_vector *temperature, double Ip) {
+int temperatureForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBField, 
+			    gsl_vector *temperature, double Ip, double dr) {
 				
   int ii,
     numRows = densityProfile->size,
@@ -84,16 +84,24 @@ int temperatureForceBalance(gsl_vector *position, gsl_vector *densityProfile,
     QE = 1.60218E-19,
     PI = 3.1416,
     denInt = 0,
-    dr = gsl_vector_get(position,1) - gsl_vector_get(position,0),
+    maxDen = gsl_vector_max(densityProfile),
     tempValue = 0,
     tempInt = 0,
     KB = 1.38065E-23;
 
 
+  /* Finding edge value */
+  for (ii = 0; ii < numRows; ii++) {
+    if ( fabs(gsl_vector_get(densityProfile, ii)/maxDen) < 0.1) {
+      edge = ii;
+      break;
+    }
+  }
+
   
   /* Calculating the drift velocity */
   for (ii = 0; ii < numRows; ii++) {
-    denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*gsl_vector_get(position, ii);
+    denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*(dr*ii);
   }
 
   vd = Ip / (2*PI*QE*denInt);
@@ -214,9 +222,9 @@ int testForceBalance() {
   gsl_vector *tempProfile = gsl_vector_alloc(numRows);
   gsl_vector *Btheta = gsl_vector_alloc(numRows);
 
-  azimuthBFieldForceBalance(xVec, yVec, Btheta, 70E3);
+  azimuthBFieldForceBalance(yVec, Btheta, 70E3, param.deltaY);
     
-  temperatureForceBalance(xVec, yVec, Btheta, tempProfile, 70E3);
+  temperatureForceBalance(yVec, Btheta, tempProfile, 70E3, param.deltaY);
 
   
   save2VectorData(xVec, Btheta, "data/fitBTheta180516014.txt");
