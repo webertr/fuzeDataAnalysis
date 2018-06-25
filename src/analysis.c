@@ -18,7 +18,7 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, "set size ratio -1");
@@ -39,16 +39,17 @@ int hologramAnalysis() {
   /* 
    * Fancy plot of the hologram
    */
-  if (0) {
+  if (1) {
 
-    char *keywords = "set terminal png\nset size ratio -1\n"
-      "set output '/home/fuze/Downloads/180619004.png'\n"
-      "set title 'Pulse 180619004\n"
-      "set xrange [13.49:14.50]\n"
-      "set yrange [-0.90:0.90]\n"
-      "set xlabel 'z (cm)'\n"
-      "set ylabel 'b (cm)'\n"
-      "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
+    char *keywords = "set size ratio -1\n"
+      //"set terminal png\n"
+      //"set output '/home/fuze/Downloads/180619004.png'\n"
+      "set title 'Pulse 180215012\n"
+      "set xrange [.1349:.1450]\n"
+      "set yrange [-0.0090:0.0090]\n"
+      "set xlabel 'z (m)'\n"
+      "set ylabel 'b (m)'\n"
+      "set label front 'Line integrated n_{e} (m^{-2})' at graph 1.60,0.20 "
       "rotate by 90 font 'Times Bold, 14'\n";
     plotImageDataFile(param.fileLineIntPos, keywords);
 
@@ -67,8 +68,8 @@ int hologramAnalysis() {
       "set grid\n"
       "set xrange [0:]\n"
       "set yrange [0:]\n"
-      "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
-      "set ylabel 'n_{e} (cm^{-3})' font 'Times Bold, 18'\n";
+      "set xlabel 'r (m)' font 'Times Bold, 18'\n"
+      "set ylabel 'n_{e} (m^{-3})' font 'Times Bold, 18'\n";
     plotMatrixColVColErrorDataFile(param.fileError, 0, 1+60*2, 1+60*2+1, errorKeywords);
     
   }
@@ -85,9 +86,9 @@ int hologramAnalysis() {
       "set title 'Radial B_{/Symbol q} profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.004]\n"
+      "set xrange [0:0.0045]\n"
       "set yrange [0:]\n"
-      "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
+      "set xlabel 'r (m)' font 'Times Bold, 18'\n"
       "set ylabel 'B_{/Symbol q} (Tesla)' font 'Times Bold, 18'\n";
 
     plotMatrixColVColErrorDataFile(param.fileBTheta, 0, 1+60*2, 1+60*2+1, bThetaKeywords);
@@ -105,9 +106,9 @@ int hologramAnalysis() {
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:]\n"
+      "set xrange [0:0.0045]\n"
       "set yrange [0:]\n"
-      "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
+      "set xlabel 'r (m)' font 'Times Bold, 18'\n"
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
 
     plotMatrixColVColErrorDataFile(param.fileTemperature, 0, 1+60*2, 1+60*2+1, tempKeywords);
