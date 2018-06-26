@@ -362,8 +362,12 @@ int plotImageData (gsl_matrix *mInput, char *plotOptions) {
 int plotImageDataFile(char *fileName, double xScale, double yScale, double zScale,
 		      char *plotOptions) {
 
-  int status;
-  
+  int status,
+    useScale = 1;
+
+  if ( (xScale == 1) && (yScale == 1) && (zScale == 1) )
+    useScale = 0;
+
   FILE *gnuplot = popen("gnuplot", "w");
 
   if (!gnuplot) {
@@ -374,8 +378,13 @@ int plotImageDataFile(char *fileName, double xScale, double yScale, double zScal
 
   fprintf(gnuplot, "set palette rgb 33,13,10\n");
   fprintf(gnuplot, "%s\n", plotOptions);
-  fprintf(gnuplot, "plot '%s' binary matrix using ($1*%g):($2*%g):($3*%g) with image title ''\n", 
-	  fileName, xScale, yScale, zScale);
+  
+  if (useScale) {
+    fprintf(gnuplot, "plot '%s' binary matrix using ($1*%g):($2*%g):($3*%g) with image title ''\n", 
+	    fileName, xScale, yScale, zScale);
+  } else {
+    fprintf(gnuplot, "plot '%s' binary matrix with image title ''\n", fileName);
+  }
 
   fflush(gnuplot);
 

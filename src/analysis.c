@@ -18,10 +18,10 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
 
   //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
 
@@ -39,7 +39,7 @@ int hologramAnalysis() {
   /* 
    * Fancy plot of the hologram
    */
-  if (1) {
+  if (0) {
 
     char *keywords = "set size ratio -1\n"
       "set terminal png\n"
@@ -58,7 +58,7 @@ int hologramAnalysis() {
   /*
    * Fancy plot for the abel inversion with error bars 
    */
-  if (1) {
+  if (0) {
 
     char *errorKeywords = "set size ratio 1\n"
       "set term png\n"
@@ -79,7 +79,7 @@ int hologramAnalysis() {
   /*
    * Plotting the azimuthal magnetic field
    */
-  if (1) {
+  if (0) {
 
     char *bThetaKeywords = "set size ratio 1\n"
       "set terminal png\n"
@@ -100,7 +100,7 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature 
    */
-  if (1) {
+  if (0) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"
@@ -122,7 +122,7 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature and b field on same axis
    */
-  if (1) {
+  if (0) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"
