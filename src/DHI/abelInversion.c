@@ -1218,9 +1218,11 @@ static int testInvertImageDHI() {
   plot2MatrixColDataFile(param.fileRightInvert, colPlot,
 			 "data/radialProfile.txt", colPlot, "set title 'Reconstructed right vs. original'");
 
-  plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+colPlot*2, 1+colPlot*2+1, "");
+  plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+colPlot*2, 1+colPlot*2+1, 
+				 1, 1, 1, "");
   
-  plotImageDataFile(param.fileFullInvert, "set cbrange [0:1.2]\nset title 'Full inversion'");
+  plotImageDataFile(param.fileFullInvert, 1, 1, 1,
+		    "set cbrange [0:1.2]\nset title 'Full inversion'");
 
   return 0;
 

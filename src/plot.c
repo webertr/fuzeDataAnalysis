@@ -359,7 +359,8 @@ int plotImageData (gsl_matrix *mInput, char *plotOptions) {
  * back to the parent process, and in gnuplot, it will open this binary file.
  ******************************************************************************/
 
-int plotImageDataFile(char *fileName, char *plotOptions) {
+int plotImageDataFile(char *fileName, double xScale, double yScale, double zScale,
+		      char *plotOptions) {
 
   int status;
   
@@ -373,7 +374,8 @@ int plotImageDataFile(char *fileName, char *plotOptions) {
 
   fprintf(gnuplot, "set palette rgb 33,13,10\n");
   fprintf(gnuplot, "%s\n", plotOptions);
-  fprintf(gnuplot, "plot '%s' binary matrix with image title ''\n", fileName);
+  fprintf(gnuplot, "plot '%s' binary matrix using ($1*%g):($2*%g):($3*%g) with image title ''\n", 
+	  fileName, xScale, yScale, zScale);
 
   fflush(gnuplot);
 
@@ -529,7 +531,8 @@ int plotMatrixColVColDataFile (char *fileName, int colNumX, int colNumY, char *p
  ******************************************************************************/
 
 int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY, 
-				    int colNumError, char *plotOptions) {
+				    int colNumError, double xScale, double yScale, 
+				    double errorScale, char *plotOptions) {
 
   int status;
   
@@ -543,8 +546,8 @@ int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY,
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using %d:%d:%d pt 7 with yerrorbars title ''\n", 
-	  fileName, colNumX+1, colNumY+1, colNumError+1);
+  fprintf(gnuplot, "plot '%s' using ($%d*%g):($%d*%g):($%d*%g) pt 7 with yerrorbars title ''\n", 
+	  fileName, colNumX+1, xScale, colNumY+1, yScale, colNumError+1, errorScale);
   
   fflush(gnuplot);
 
@@ -573,9 +576,11 @@ int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY,
  ******************************************************************************/
 
 int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int colNumY1, 
-					  int colNumError1, char *label1,
+					  int colNumError1, char *label1, double xScale1,
+					  double yScale1, double errorScale1,
 					  char *fileName2, int colNumX2, int colNumY2, 
-					  int colNumError2, char *label2, char *plotOptions) {
+					  int colNumError2, double xScale2, double yScale2, 
+					  double errorScale2, char *label2, char *plotOptions) {
 
   int status;
   
@@ -589,10 +594,14 @@ int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int col
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot '%s' using %d:%d:%d pt 7 with yerrorbars title '%s',\\\n", 
-	  fileName1, colNumX1+1, colNumY1+1, colNumError1+1, label1);
-  fprintf(gnuplot, "     '%s' using %d:%d:%d pt 7 with yerrorbars title '%s' axes x1y2\n", 
-	  fileName2, colNumX2+1, colNumY2+1, colNumError2+1, label2);
+  fprintf(gnuplot, 
+	  "plot '%s' using ($%d*%g):($%d*%g):($%d*%g) pt 7 with yerrorbars title '%s',\\\n", 
+	  fileName1, colNumX1+1, xScale1, colNumY1+1, yScale1, colNumError1+1, 
+	  errorScale1, label1);
+  fprintf(gnuplot,
+	  "     '%s' using ($%d*%g):($%d*%g):($%d*%g) pt 7 with yerrorbars title '%s' axes x1y2\n",
+	  fileName2, colNumX2+1, xScale2, colNumY2+1, yScale2, colNumError2+1, 
+	  errorScale2, label2);
   
   fflush(gnuplot);
 
