@@ -18,7 +18,8 @@
  * Description: This function will calculate the azimuthal magnetic field
  * from the radial density profile, and total current Ip. The calculating 
  * is based on the calculation form M. Ross's thesis. The units of the B-field
- * are Tesla
+ * are Tesla. The pressure from the magnetic field is:
+ * P_B = Btheta(r)/(MU_0 x r) x (Btheta(r+dr)*(r+dr) - Btheta(r)*r)/dr
  ******************************************************************************/
 
 int azimuthBFieldForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBField, 
@@ -72,6 +73,10 @@ int azimuthBFieldForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalB
  * from the radial density profile, azimuthal B-field and total current Ip. 
  * The calculating is based on the calculation form M. Ross's thesis. The temperature
  * is returned in degrees Kelvin. To convert to eV, multiple by 8.618E-5 or 1/11604
+ * The pressure should be 2 x ne x kB x T (in m^-3 and Kelvin. The 2 is because electron
+ * and ion pressure.
+ * P = 2 x ne x kB x T
+ * kB = 1.38065E-23;
  ******************************************************************************/
 
 int temperatureForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBField, 
