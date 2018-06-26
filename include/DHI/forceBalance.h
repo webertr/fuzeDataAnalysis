@@ -15,9 +15,9 @@
 
 int testForceBalance();
 int azimuthBFieldForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBField, 
-			      double Ip, double dr);
+			      double Ip, double dr, int edge);
 int temperatureForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBField, 
-			    gsl_vector *temperature, double Ip, double dr);
+			    gsl_vector *temperature, double Ip, double dr, int edge);
 
 
 

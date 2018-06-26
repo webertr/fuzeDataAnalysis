@@ -16,11 +16,10 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
 				       gsl_matrix *rightDensityProfile, gsl_matrix *imageM, 
 				       gsl_vector *centroidLocation, holographyParameters* param);
 static gsl_matrix *getAvgDensityWithErrorDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
-					  gsl_matrix *rightProfile, gsl_vector *centroid,
-					  gsl_matrix *image, holographyParameters* param);
+					     gsl_matrix *rightProfile, gsl_vector *centroid,
+					     gsl_matrix *image, holographyParameters* param);
 static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput);
-static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
-					 holographyParameters* param);
+static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *density, holographyParameters* param);
 static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *azimuthalBField,
 				     holographyParameters* param);
 
@@ -202,20 +201,20 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
    * between that forward projected image and the passed image. Then, abel inverting 
    * that difference
    */
-  gsl_matrix *avgDensityWithError = getAvgDensityWithErrorDHI(projectMatrix, leftDensityProfile, 
+  gsl_matrix *avgDensity = getAvgDensityWithErrorDHI(projectMatrix, leftDensityProfile, 
 							      rightDensityProfile, 
 							      centroidLocation, imageM, param);
 
   /* 
    * Calculating the azimuthal magnetic field
    */
-  gsl_matrix *azimuthalBField = getAzimuthalBFieldDHI(avgDensityWithError, param);
+  gsl_matrix *azimuthalBField = getAzimuthalBFieldDHI(avgDensity, param);
 
 
   /* 
    * Calculating the temperature
    */
-  gsl_matrix *temperature = getTemperatureDHI(avgDensityWithError, azimuthalBField, param);
+  gsl_matrix *temperature = getTemperatureDHI(avgDensity, azimuthalBField, param);
 
 
   /*
@@ -223,7 +222,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
    */
   saveMatrixData(leftDensityProfileTemp, param->fileLeftInvert);
   saveMatrixData(rightDensityProfileTemp, param->fileRightInvert);
-  saveMatrixData(avgDensityWithError, param->fileDensity);
+  saveMatrixData(avgDensity, param->fileDensity);
   saveMatrixData(azimuthalBField, param->fileBTheta);
   saveMatrixData(temperature, param->fileTemperature);
   saveVectorData(centroidLocation, param->fileCentroid);
@@ -239,7 +238,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_free(leftDensityProfileTemp);
   gsl_matrix_free(rightDensityProfileTemp);
   gsl_matrix_free(projectMatrix);
-  gsl_matrix_free(avgDensityWithError);
+  gsl_matrix_free(avgDensity);
   gsl_matrix_free(azimuthalBField);
   gsl_matrix_free(temperature);
   
@@ -909,28 +908,36 @@ static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput) {
  * and return it in a matrix with the position and error bars. Units of Tesla
  ******************************************************************************/
 
-static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
-					 holographyParameters* param) {
+static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *density, holographyParameters* param) {
 
   int ii, jj,
-    numRows = densityWithError->size1,
-    numCols = densityWithError->size2;
+    numRows = density->size1,
+    numCols = density->size2,
+    edge = numRows - 1;
 
+  double maxDen;
 
   gsl_vector *densityProfile = gsl_vector_alloc(numRows),
     *bThetaVec = gsl_vector_alloc(numRows),
     *errorDensity = gsl_vector_alloc(numRows),
     *errorBField = gsl_vector_alloc(numRows);
   gsl_matrix *bTheta = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix_memcpy(bTheta, densityWithError);
+  gsl_matrix_memcpy(bTheta, density);
     
 
   for (ii = 0; ii < (numCols-2)/2; ii++) {
-    gsl_matrix_get_col(densityProfile, densityWithError, 2*ii+1);
-    gsl_matrix_get_col(errorDensity, densityWithError, 2*ii+2);
+    gsl_matrix_get_col(densityProfile, density, 2*ii+1);
+    gsl_matrix_get_col(errorDensity, density, 2*ii+2);
     gsl_vector_add(errorDensity, densityProfile);
-    azimuthBFieldForceBalance(densityProfile, bThetaVec, param->pinchCurrent, param->deltaY);
-    azimuthBFieldForceBalance(errorDensity, errorBField, param->pinchCurrent, param->deltaY);
+    maxDen = gsl_vector_max(densityProfile);
+    for (jj = 0; jj < numRows; jj++) {
+      if ( fabs(gsl_vector_get(densityProfile, jj)/maxDen) < 0.1) {
+	edge = jj;
+	break;
+      }
+    }
+    azimuthBFieldForceBalance(densityProfile, bThetaVec, param->pinchCurrent, param->deltaY, edge);
+    azimuthBFieldForceBalance(errorDensity, errorBField, param->pinchCurrent, param->deltaY, edge);
     gsl_vector_sub(errorBField, bThetaVec);
     for (jj = 0; jj < numRows; jj++)
       gsl_vector_set(errorBField, jj, fabs(gsl_vector_get(errorBField, jj)));
@@ -958,13 +965,15 @@ static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *densityWithError,
  * and return it in a matrix with the position and error bars. Units of eV
  ******************************************************************************/
 
-static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *azimuthalBField,
+static gsl_matrix* getTemperatureDHI(gsl_matrix *density, gsl_matrix *azimuthalBField,
 				     holographyParameters* param) {
 
   int ii, jj,
-    numRows = densityWithError->size1,
-    numCols = densityWithError->size2;
+    numRows = density->size1,
+    numCols = density->size2,
+    edge = numRows - 1;
 
+  double maxDen;
 
   gsl_vector *densityProfile = gsl_vector_alloc(numRows),
     *temperatureVec = gsl_vector_alloc(numRows),
@@ -973,20 +982,26 @@ static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *a
     *errorTemp = gsl_vector_alloc(numRows),
     *bThetaVec = gsl_vector_alloc(numRows);
   gsl_matrix *temperature = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix_memcpy(temperature, densityWithError);
+  gsl_matrix_memcpy(temperature, density);
     
-
   for (ii = 0; ii < (numCols-2)/2; ii++) {
-    gsl_matrix_get_col(densityProfile, densityWithError, 2*ii+1);
-    gsl_matrix_get_col(errorDensity, densityWithError, 2*ii+2);
+    gsl_matrix_get_col(densityProfile, density, 2*ii+1);
+    gsl_matrix_get_col(errorDensity, density, 2*ii+2);
     gsl_matrix_get_col(bThetaVec, azimuthalBField, 2*ii+1);
     gsl_matrix_get_col(errorBTheta, azimuthalBField, 2*ii+2);
     gsl_vector_add(errorDensity, densityProfile);
     gsl_vector_add(errorBTheta, bThetaVec);
+    maxDen = gsl_vector_max(densityProfile);
+    for (jj = 0; jj < numRows; jj++) {
+      if ( fabs(gsl_vector_get(densityProfile, jj)/maxDen) < 0.1) {
+	edge = jj;
+	break;
+      }
+    }
     temperatureForceBalance(densityProfile, bThetaVec, temperatureVec, 
-			    param->pinchCurrent, param->deltaY);
+			    param->pinchCurrent, param->deltaY, edge);
     temperatureForceBalance(errorDensity, errorBTheta, errorTemp, 
-    			    param->pinchCurrent, param->deltaY);
+    			    param->pinchCurrent, param->deltaY, edge);
     gsl_vector_sub(errorTemp, temperatureVec);
     for (jj = 0; jj < numRows; jj++)
       gsl_vector_set(errorTemp, jj, fabs(gsl_vector_get(errorTemp, jj)));

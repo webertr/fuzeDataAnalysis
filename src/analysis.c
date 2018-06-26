@@ -62,11 +62,11 @@ int hologramAnalysis() {
 
     char *errorKeywords = "set size ratio 1\n"
       //"set term png\n"
-      //"set output '/home/fuze/Downloads/180215012Invert.png'\n"
+      //"set output '/home/fuze/Downloads/180215012ne.png'\n"
       "set title 'Radial density profile for Pulse 180215012' font 'Times Bold, 14'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.45]\n"
+      "set xrange [0:]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'n_{e} (cm^{-3})' font 'Times Bold, 18'\n";
@@ -83,11 +83,11 @@ int hologramAnalysis() {
 
     char *bThetaKeywords = "set size ratio 1\n"
       //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180215012Temp.png'\n"
+      //"set output '/home/fuze/Downloads/180215012BField.png'\n"
       "set title 'Radial B_{/Symbol q} profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.45]\n"
+      "set xrange [0:]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'B_{/Symbol q} (Tesla)' font 'Times Bold, 18'\n";
@@ -108,7 +108,7 @@ int hologramAnalysis() {
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.45]\n"
+      "set xrange [0:]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
@@ -122,7 +122,7 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature and b field on same axis
    */
-  if (0) {
+  if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
       //"set terminal png\n"
@@ -139,7 +139,7 @@ int hologramAnalysis() {
 
     plotMatrixColVColErrorData2Files2Axes(param.fileDensity, 0, 1+60*2, 1+60*2+1, "Density", 
 					  1E2, 1E-6, 1E-6, param.fileTemperature, 
-					  0, 1+60*2, 1+60*2+1, 1E3, 1, 1, 
+					  0, 1+60*2, 1+60*2+1, 1E2, 1, 1, 
 					  "Temperature", tempKeywords);
     
   }
