@@ -90,7 +90,7 @@ int temperatureForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalBFi
 
   
   /* Calculating the drift velocity */
-  for (ii = 0; ii < numRows; ii++) {
+  for (ii = 0; ii < edge; ii++) {
     denInt = denInt + dr*gsl_vector_get(densityProfile, ii)*(dr*ii);
   }
 
