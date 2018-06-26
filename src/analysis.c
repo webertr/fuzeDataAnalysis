@@ -18,7 +18,7 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
@@ -42,8 +42,8 @@ int hologramAnalysis() {
   if (1) {
 
     char *keywords = "set size ratio -1\n"
-      //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180619004.png'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180215012.png'\n"
       "set title 'Pulse 180215012\n"
       "set xrange [13.628:14.37]\n"
       "set yrange [-0.685:0.68]\n"
@@ -61,12 +61,12 @@ int hologramAnalysis() {
   if (1) {
 
     char *errorKeywords = "set size ratio 1\n"
-      //"set term png\n"
-      //"set output '/home/fuze/Downloads/180215012ne.png'\n"
+      "set term png\n"
+      "set output '/home/fuze/Downloads/180215012ne.png'\n"
       "set title 'Radial density profile for Pulse 180215012' font 'Times Bold, 14'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:]\n"
+      "set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'n_{e} (cm^{-3})' font 'Times Bold, 18'\n";
@@ -82,12 +82,12 @@ int hologramAnalysis() {
   if (1) {
 
     char *bThetaKeywords = "set size ratio 1\n"
-      //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180215012BField.png'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180215012BField.png'\n"
       "set title 'Radial B_{/Symbol q} profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:]\n"
+      "set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'B_{/Symbol q} (Tesla)' font 'Times Bold, 18'\n";
@@ -103,12 +103,12 @@ int hologramAnalysis() {
   if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
-      //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180215012Temp.png'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180215012Temp.png'\n"
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:]\n"
+      "set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
@@ -125,8 +125,8 @@ int hologramAnalysis() {
   if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
-      //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180215012Temp.png'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180215012Tempne.png'\n"
       "set title 'Radial density and temperature profile for 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
