@@ -57,7 +57,9 @@ int azimuthBFieldForceBalance(gsl_vector *densityProfile, gsl_vector *azimuthalB
   }
 
   for (ii = edge; ii < numRows; ii++) {
-    gsl_vector_set(azimuthalBField, ii, 0.0);
+    thetaInt = 2*PI*QE*vd*denInt; // Total current in amperian loop
+    thetaInt = MU_0*thetaInt/(2*PI*(dr*ii));  
+    gsl_vector_set(azimuthalBField, ii, thetaInt);
   }
   
   return 0;

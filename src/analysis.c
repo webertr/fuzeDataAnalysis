@@ -18,10 +18,10 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
-  plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
 
   //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
 
@@ -42,8 +42,8 @@ int hologramAnalysis() {
   if (0) {
 
     char *keywords = "set size ratio -1\n"
-      "set terminal png\n"
-      "set output '/home/fuze/Downloads/180215012.png'\n"
+      //"set terminal png\n"
+      //"set output '/home/fuze/Downloads/180215012.png'\n"
       "set title 'Pulse 180215012\n"
       "set xrange [13.628:14.37]\n"
       "set yrange [-0.685:0.68]\n"
@@ -61,8 +61,8 @@ int hologramAnalysis() {
   if (0) {
 
     char *errorKeywords = "set size ratio 1\n"
-      "set term png\n"
-      "set output '/home/fuze/Downloads/180215012ne.png'\n"
+      //"set term png\n"
+      //"set output '/home/fuze/Downloads/180215012ne.png'\n"
       "set title 'Radial density profile for Pulse 180215012' font 'Times Bold, 14'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -79,15 +79,15 @@ int hologramAnalysis() {
   /*
    * Plotting the azimuthal magnetic field
    */
-  if (0) {
+  if (1) {
 
     char *bThetaKeywords = "set size ratio 1\n"
       "set terminal png\n"
-      "set output '/home/fuze/Downloads/180215012BField.png'\n"
+      "set output '/home/webertr/Downloads/180215012BField.png'\n"
       "set title 'Radial B_{/Symbol q} profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.45]\n"
+      "set xrange [0:]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'B_{/Symbol q} (Tesla)' font 'Times Bold, 18'\n";
@@ -100,11 +100,11 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature 
    */
-  if (0) {
+  if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"
-      "set output '/home/fuze/Downloads/180215012Temp.png'\n"
+      "set output '/home/webertr/Downloads/180215012Temp.png'\n"
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -122,11 +122,11 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature and b field on same axis
    */
-  if (0) {
+  if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"
-      "set output '/home/fuze/Downloads/180215012Tempne.png'\n"
+      "set output '/home/webertr/Downloads/180215012Tempne.png'\n"
       "set title 'Radial density and temperature profile for 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -217,10 +217,10 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, 30, 60, "\\b_p15_000_sm", "/home/fuze/Downloads/mode.png");
+    plotPostShotModeData(shotNumber, 0, 30, "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, 30, 60, "/home/fuze/Downloads/neutron.png");
+    plotPostShotNeutronData(shotNumber, 0, 100, "");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -232,7 +232,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotIV(shotNumber, -100, 800, "/home/fuze/Downloads/iv.png");
+    plotPostShotIV(shotNumber, -100, 800, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {

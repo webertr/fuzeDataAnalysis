@@ -12,12 +12,12 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
   //plotPostShotModeData(180215012, 0, 50, "\\b_p15_000_sm");
 
   /*
