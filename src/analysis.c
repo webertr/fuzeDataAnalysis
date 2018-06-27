@@ -217,10 +217,10 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, 0, 100, "\\b_p15_000_sm");
+    plotPostShotModeData(shotNumber, 30, 60, "\\b_p15_000_sm", "/home/fuze/Downloads/mode.png");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, 0, 200);
+    plotPostShotNeutronData(shotNumber, 30, 60, "/home/fuze/Downloads/neutron.png");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -232,7 +232,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotIV(shotNumber, -100, 800);
+    plotPostShotIV(shotNumber, -100, 800, "/home/fuze/Downloads/iv.png");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
@@ -260,7 +260,7 @@ int plotPostAnalysis() {
  * magnetic mode data
  ******************************************************************************/
 
-int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName) {
+int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, char *saveFile) {
 
   int status;
 
@@ -303,8 +303,11 @@ int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  //fprintf(fp, "set terminal png\n");
-  //fprintf(fp, "set output '/home/webertr/Downloads/%d_Mode.png'\n", shotNumber);
+
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
   fprintf(fp, "set arrow from %g,0 to %g,1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
 	  dhiTime*1E6, dhiTime*1E6);
   fprintf(fp, "set label 'DHI trigger time' at %g,0.5 rotate by 90 font 'Times Bold, 12'\n", 
@@ -380,7 +383,7 @@ title 'Pinch Current' axes x1y2\n", modeFile);
  * total plasma current and voltage across the hot and cold plate
  ******************************************************************************/
 
-int plotPostShotIV(int shotNumber, int tmin, int tmax) {
+int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile) {
 
   char *data1Node = "\\v_gap",
     *data1Name = "V_{GAP}",
@@ -424,6 +427,11 @@ int plotPostShotIV(int shotNumber, int tmin, int tmax) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
+
   fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
   fprintf(fp, "set grid\n");
   fprintf(fp, "set title 'I_{P} and V_{GAP} for Pulse #%d' font '0,18'\n", shotNumber);
@@ -714,18 +722,20 @@ title '%s'\n", accelFile, data5Name);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
+int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile) {
 
   char *data1Node = "\\neutron_1",
     *data1Name = "ND #1",
     *data2Node = "\\neutron_2",
     *data2Name = "ND #2",
-    *data3Node = "\\neutron_5",
-    *data3Name = "ND #5",
-    *data4Node = "\\neutron_6",
-    *data4Name = "ND #6",
-    *data5Node = "\\neutron_7",
-    *data5Name = "ND #7";
+    *data3Node = "\\neutron_4",
+    *data3Name = "ND #4",
+    *data4Node = "\\neutron_5",
+    *data4Name = "ND #5",
+    *data5Node = "\\neutron_6",
+    *data5Name = "ND #6",
+    *data6Node = "\\neutron_7",
+    *data6Name = "ND #7";
 
   int status;
 
@@ -739,6 +749,7 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
     *data3 = gsl_vector_alloc(sigSize),
     *data4 = gsl_vector_alloc(sigSize),
     *data5 = gsl_vector_alloc(sigSize),
+    *data6 = gsl_vector_alloc(sigSize),
     *time = gsl_vector_alloc(sigSize);
 
   initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
@@ -746,10 +757,11 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
   initializeMagneticData(shotNumber, data3Node, data3);
   initializeMagneticData(shotNumber, data4Node, data4);
   initializeMagneticData(shotNumber, data5Node, data5);
+  initializeMagneticData(shotNumber, data6Node, data6);
 
 
   /* Saving data */
-  save6VectorData(time, data1, data2, data3, data4, data5, accelFile);
+  save7VectorData(time, data1, data2, data3, data4, data5, data6, accelFile);
 
 
   /* Creating gnuplot file */
@@ -767,12 +779,16 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax) {
   }
 
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
   fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
   fprintf(fp, "set key left bottom\n");
   fprintf(fp, "set grid\n");
   fprintf(fp, "set title 'Neutron Diagnostics for Pulse #%d' font '0,18'\n", shotNumber);
   fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Voltage (V)' font ',16' offset 0,0\n");
   fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
 title '%s',\\\n", accelFile, data1Name);
   fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
@@ -781,8 +797,10 @@ title '%s',\\\n", accelFile, data2Name);
 title '%s',\\\n", accelFile, data3Name);
   fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
 title '%s',\\\n", accelFile, data4Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
-title '%s'\n", accelFile, data5Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'green' \
+title '%s',\\\n", accelFile, data5Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", accelFile, data6Name);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

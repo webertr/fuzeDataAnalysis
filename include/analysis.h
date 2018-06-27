@@ -35,13 +35,13 @@ int plotModeCompApril2018Talk();
 int plasmaParameters();
 int simluateAccel();
 int plotPostAnalysis();
-int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName);
+int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, char *saveFile);
 int plotOffAxisDisplacement(int shotNumber);
 int invertFlatTopProfile();
 int flatTopRadialForceBalance();
-int plotPostShotNeutronData(int shotNumber, int tmin, int tmax);
+int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
 int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
-int plotPostShotIV(int shotNumber, int tmin, int tmax);
+int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
 int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
 
@@ -86,12 +86,12 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   //.yLL = 2437,
   //.xUR = 3356,
   //.yUR = 4349,
-  .fileRef = "/home/fuze/DHI_Images/180626/180626004_Baseline.JPG",
-  .filePlasma = "/home/fuze/DHI_Images/180626/180626004.JPG",
-  .xLL = 2785,
-  .yLL = 2458,
-  .xUR = 3800,
-  .yUR = 4891,
+  .fileRef = "/home/fuze/DHI_Images/180627/180627007_Baseline.JPG",
+  .filePlasma = "/home/fuze/DHI_Images/180627/180627007.JPG",
+  .xLL = 2750,
+  .yLL = 2424,
+  .xUR = 3804,
+  .yUR = 4867,
   .pinchCurrent = 100E3,
   .useCM = 1,
   .saveHologram = 1,
