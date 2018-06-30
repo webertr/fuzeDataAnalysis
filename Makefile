@@ -21,7 +21,8 @@ SOURCE := src/magnetic.c \
 	src/analysis.c \
 	src/save.c \
 	src/fit.c \
-	src/accelTrack.c
+	src/accelTrack.c \
+	src/mdsplusRead.c
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
 PROD = run

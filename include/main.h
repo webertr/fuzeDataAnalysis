@@ -14,5 +14,6 @@
 #include "DHI/holoParam.h"
 #include "DHI/forceBalance.h"
 #include "analysis.h"
+#include "mdsplusRead.h"
 
 #endif
