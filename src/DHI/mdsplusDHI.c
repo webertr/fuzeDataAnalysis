@@ -1,4 +1,4 @@
-#include <mdsplusRead.h>
+#include <DHI/mdsplusDHI.h>
 
 /******************************************************************************
  * Example Usage:

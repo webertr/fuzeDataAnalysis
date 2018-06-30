@@ -17,12 +17,12 @@ SOURCE := src/magnetic.c \
 	src/DHI/imageAnalysis.c \
 	src/DHI/readJPEG.c \
 	src/DHI/forceBalance.c \
+	src/DHI/mdsplusDHI.c \
 	src/plasmaParam.c \
 	src/analysis.c \
 	src/save.c \
 	src/fit.c \
-	src/accelTrack.c \
-	src/mdsplusRead.c
+	src/accelTrack.c
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
 PROD = run

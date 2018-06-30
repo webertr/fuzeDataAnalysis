@@ -1,5 +1,5 @@
-#ifndef MDSPLUS_READ_H
-#define MDSPLUS_READ_H
+#ifndef MDSPLUS_DHI_H
+#define MDSPLUS_DHI_H
 
 #include <stdio.h>
 #include <gsl/gsl_math.h>
