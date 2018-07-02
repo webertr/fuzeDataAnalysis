@@ -77,13 +77,14 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeNameImage, gsl_vector *xVe
     sigDescrXVector,
     sigDescrYVector,
     numRows = image->size1,
-    numCols = image->size2;
+    numCols = image->size2,
+    one = 1;
   
   char *treeName = "my_tree";
   
   sigDescrImage = descr(&dTypeDouble, image->data, &numRows, &numCols, &null);
-  sigDescrXVector = descr(&dTypeDouble, xVec->data, &numCols, &null);
-  sigDescrYVector = descr(&dTypeDouble, yVec->data, &numRows, &null);
+  sigDescrXVector = descr(&dTypeDouble, xVec->data, &numCols, &one, &null);
+  sigDescrYVector = descr(&dTypeDouble, yVec->data, &numRows, &one, &null);
 
   connectionID = MdsConnect("localhost");
   if (connectionID == -1) {
@@ -104,15 +105,16 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeNameImage, gsl_vector *xVe
     MdsDisconnect();
     return -1;
   }
-  
-  connectionStatus = MdsPut(nodeNameYVec, "$1", &sigDescrYVector, &null);
+
+  char *dimString = "build_signal(build_with_units($1,'m'),,)";
+  connectionStatus = MdsPut(nodeNameYVec, dimString, &sigDescrYVector, &null);
   if ( !statusOk(connectionStatus) ) {
     fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
     MdsDisconnect();
     return -1;
   }
   
-  connectionStatus = MdsPut(nodeNameXVec, "$1", &sigDescrXVector, &null);
+  connectionStatus = MdsPut(nodeNameXVec, dimString, &sigDescrXVector, &null);
   if ( !statusOk(connectionStatus) ) {
     fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
     MdsDisconnect();
@@ -181,9 +183,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
   numRows = (int) shape[0];
   numCols = (int) shape[1];
   shape = (float *)malloc(size * sizeof(float));  
-
   gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols);
-
   size = getSignalLength(nodeName);
   data = (float *)malloc(size * sizeof(float));  
   sigDescrData = descr(&dtype_float, data, &size, &null);
@@ -300,40 +300,52 @@ gsl_vector *readDHIMDSplusDimension(int shotNumber, char *nodeName, int dimNum) 
 int mdsplusReadTest() {
 
   int shotNumber = 1;
-  gsl_matrix *test = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT");
-
-  int numRows = test->size1,
-    numCols = test->size2,
+  int numRows = 10,
+    numCols = 8,
     ii, jj;
-  gsl_vector *xVec = gsl_vector_alloc(numCols);
-  gsl_vector *yVec = gsl_vector_alloc(numRows);
+
+  gsl_matrix *image = gsl_matrix_alloc(numRows, numCols);
+  gsl_vector *rVec = gsl_vector_alloc(numRows);
+  gsl_vector *zVec = gsl_vector_alloc(numCols);
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      gsl_matrix_set(image, ii, jj, (double) (ii*10+jj));
+    }
+  }
+  for (jj = 0; jj < numCols; jj++) {
+    gsl_vector_set(zVec, jj, jj/50.0);
+  }
+  for (ii = 0; ii < numRows; ii++) {
+    gsl_vector_set(rVec, ii, ii/20.0);
+  }
+  
+  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", zVec, "DHI:LINE_INT:Z",
+  		       rVec, "DHI:LINE_INT:R", shotNumber);
+  
+  gsl_matrix *imageRead = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT");
 
   printf("Image:\n");
   for (ii = 0; ii < numRows; ii++) {
-    gsl_vector_set(yVec, ii, (double) ii);
     for (jj = 0; jj < numCols; jj++) {
-      gsl_vector_set(xVec, jj, (double) jj);
-      printf("|%g| ", gsl_matrix_get(test, ii, jj));
+      printf("|%g| ", gsl_matrix_get(imageRead, ii, jj));
     }
     printf("\n------------------\n");
   }
 
-  //writeDHIMDSplusImage(test, "\\DHI:LINE_INT:RAW", xVec, "\\DHI:LINE_INT:Z",
-  //		       yVec, "\\DHI:LINE_INT:R", 1);
-
-  gsl_vector *testVec1 = readDHIMDSplusDimension(shotNumber, "\\DHI:LINE_INT", 0);
+  gsl_vector *rVecRead = readDHIMDSplusDimension(shotNumber, "DHI:LINE_INT", 0);
 
   printf("r vector:\n");
-  for (ii = 0; ii < (testVec1->size); ii++) {
-    printf("%g\n", gsl_vector_get(testVec1, ii));
+  for (ii = 0; ii < (rVecRead->size); ii++) {
+    printf("%g\n", gsl_vector_get(rVecRead, ii));
     printf("--\n");
   }
 
-  gsl_vector *testVec2 = readDHIMDSplusDimension(shotNumber, "\\DHI:LINE_INT", 1);
+  gsl_vector *zVecRead = readDHIMDSplusDimension(shotNumber, "DHI:LINE_INT", 1);
 
   printf("z vector:\n");
-  for (ii = 0; ii < (testVec2->size); ii++) {
-    printf("%g\n", gsl_vector_get(testVec2, ii));
+  for (ii = 0; ii < (zVecRead->size); ii++) {
+    printf("%g\n", gsl_vector_get(zVecRead, ii));
     printf("--\n");
   }
 
