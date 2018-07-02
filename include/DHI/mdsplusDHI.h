@@ -26,6 +26,9 @@
 
 gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName);
 gsl_vector *readDHIMDSplusDimension(int shotNumber, char *nodeName, int dimNum);
+int writeDHIMDSplusImage(gsl_matrix* image, char *nodeNameImage, gsl_vector *xVec,
+			 char *nodeNameXVec, gsl_vector *yVec, char *nodeNameYVec,
+			 int shotNumber);
 int mdsplusReadTest();
 
 #endif
