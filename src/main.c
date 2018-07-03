@@ -12,12 +12,12 @@ int main(int argc, char *argv[]) {
   /*
    * Testing mdsplus read 
    */
-  //mdsplusReadTest();
+  mdsplusReadTest();
   
   /*
    * Running the DHI analysis
    */
-  hologramAnalysis();
+  //hologramAnalysis();
 
   /* 
    * Plotting post shot data

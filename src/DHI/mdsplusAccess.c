@@ -367,22 +367,24 @@ int mdsplusReadTest() {
   
 }
 
-/***********************************
+/**********************************************************************************
 To populate this tree:
 webertr@fuze2:~/Documents/my_tree$ export my_tree_path=/home/webertr/Documents/my_tree
 webertr@fuze2:~/Documents/my_tree$ mdstcl 
-TCL> edit my_tree/new
-TCL> add node .DHI
-TCL> add node .DHI:LINE_INT/usage=SIGNAL
-TCL> add node .DHI:LINE_INT:RAW/usage=NUMERIC
-TCL> add node .DHI:LINE_INT:R/usage=SIGNAL
-TCL> add node .DHI:LINE_INT:Z/usage=SIGNAL
-TCL> put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-3'),,)"
-TCL> write
-TCL> close
-TCL> set tree my_tree
-TCL> create pulse 1
-TCL> quit
+TCL> @script
+
+webertr@fuze2:~/Documents/my_tree$ more script
+edit my_tree/new
+add node .DHI
+add node .DHI:LINE_INT/usage=SIGNAL
+add node .DHI:LINE_INT:RAW/usage=NUMERIC
+add node .DHI:LINE_INT:R/usage=SIGNAL
+add node .DHI:LINE_INT:Z/usage=SIGNAL
+put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-3'),,)"
+write
+close
+set tree my_tree
+create pulse 1
 
 Then, to run the server:
 webertr@fuze2:~/Documents/mdsplusCTest$ export my_tree_path=/home/webertr/Documents/my_tree
