@@ -1,4 +1,4 @@
-#include <DHI/mdsplusDHI.h>
+#include <DHI/mdsplusAccess.h>
 
 /******************************************************************************
  * Example Usage:
@@ -63,28 +63,23 @@ static int getSignalLength(const char *signal) {
  * Inputs: gsl_matrix *, int, char *
  * Returns: int
  * Description: This will write an image to the DHI tree in mdsplus.
+ * For this raw data, expression can just be:
+ * expression = "$1"
  ******************************************************************************/
 
-int writeDHIMDSplusImage(gsl_matrix* image, char *nodeNameImage, gsl_vector *xVec,
-			 char *nodeNameXVec, gsl_vector *yVec, char *nodeNameYVec,
-			 int shotNumber) {
+int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber) {
 
   int connectionStatus,
     connectionID,
     dTypeDouble = DTYPE_DOUBLE,
     null = 0,
     sigDescrImage,
-    sigDescrXVector,
-    sigDescrYVector,
     numRows = image->size1,
-    numCols = image->size2,
-    one = 1;
+    numCols = image->size2;
   
   char *treeName = "my_tree";
   
   sigDescrImage = descr(&dTypeDouble, image->data, &numRows, &numCols, &null);
-  sigDescrXVector = descr(&dTypeDouble, xVec->data, &numCols, &one, &null);
-  sigDescrYVector = descr(&dTypeDouble, yVec->data, &numRows, &one, &null);
 
   connectionID = MdsConnect("localhost");
   if (connectionID == -1) {
@@ -94,33 +89,69 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeNameImage, gsl_vector *xVe
 
   connectionStatus = MdsOpen(treeName, &shotNumber);
   if ( !statusOk(connectionStatus) ) {
-    fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    fprintf(stderr,"\nMdsOpen error. Message: %s.\n", MdsGetMsg(connectionStatus));
     MdsDisconnect();
     return -1;
   }
 
-  connectionStatus = MdsPut(nodeNameImage, "$1", &sigDescrImage, &null);
+  connectionStatus = MdsPut(nodeName, "$1", &sigDescrImage, &null);
   if ( !statusOk(connectionStatus) ) {
     fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
     MdsDisconnect();
     return -1;
   }
 
-  char *dimString = "build_signal(build_with_units($1,'m'),,)";
-  connectionStatus = MdsPut(nodeNameYVec, dimString, &sigDescrYVector, &null);
-  if ( !statusOk(connectionStatus) ) {
-    fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
-    MdsDisconnect();
-    return -1;
-  }
+  connectionStatus = MdsClose(treeName, &shotNumber);
   
-  connectionStatus = MdsPut(nodeNameXVec, dimString, &sigDescrXVector, &null);
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: writeDHIMDSplusVector
+ * Inputs: gsl_vector *, char *, char *, int
+ * Returns: int
+ * Description: This will write an image to the DHI tree in mdsplus.
+ * Expression could be:
+ * "build_signal(build_with_units($1,'m'),,)";
+ ******************************************************************************/
+
+int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, int shotNumber) {
+
+  int connectionStatus,
+    connectionID,
+    dTypeDouble = DTYPE_DOUBLE,
+    null = 0,
+    sigDescrVector,
+    numRows = vecIn->size;
+  
+  char *treeName = "my_tree";
+  
+  sigDescrVector = descr(&dTypeDouble, vecIn->data, &numRows, &null);
+
+  connectionID = MdsConnect("localhost");
+  if (connectionID == -1) {
+    fprintf(stderr, "Connection Failed\n");
+    return -1;
+  }
+
+  connectionStatus = MdsOpen(treeName, &shotNumber);
   if ( !statusOk(connectionStatus) ) {
-    fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    fprintf(stderr,"\nMdsOpen error. Message: %s.\n", MdsGetMsg(connectionStatus));
     MdsDisconnect();
     return -1;
   }
- 
+
+  connectionStatus = MdsPut(nodeName, expression, &sigDescrVector, &null);
+  if ( !statusOk(connectionStatus) ) {
+    fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
+    MdsDisconnect();
+    return -1;
+  }
+   
   connectionStatus = MdsClose(treeName, &shotNumber);
   
   return 0;
@@ -176,6 +207,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
   connectionStatus = MdsValue(buf, &sigDescrShape, &null, 0);
   if ( !statusOk(connectionStatus) ) {
     fprintf(stderr,"\nMdsValue error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
     MdsDisconnect();
     return nullM;
 
@@ -190,6 +222,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
   connectionStatus = MdsValue(nodeName, &sigDescrData, &null, 0);
   if ( !statusOk(connectionStatus) ) {
     fprintf(stderr,"\nError message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
     MdsDisconnect();
     return nullM;
 
@@ -210,31 +243,26 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
 
 
 /******************************************************************************
- * Function: readDHIMDSplusDimension
+ * Function: readDHIMDSplusVector
  * Inputs: int, char *
  * Returns: gsl_matrix*
  * Description: 
  ******************************************************************************/
 
-gsl_vector *readDHIMDSplusDimension(int shotNumber, char *nodeName, int dimNum) {
+gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName) {
 
   int connectionStatus,
     connectionID,
     size,
     dtype_float = DTYPE_FLOAT,
     null = 0,
-    sigDescrShape,
-    sigDescrDim,
-    numRowsDim,
-    numColsDim,
+    sigDescrVector,
     ii;
     
-  float *shape,
-    *dim;
+  float *vectorData;
   
-  char *treeName = "my_tree",
-    buf[1024];
-
+  char *treeName = "my_tree";
+  
   gsl_vector *nullVec = 0;
   
   connectionID = MdsConnect("localhost");
@@ -250,36 +278,24 @@ gsl_vector *readDHIMDSplusDimension(int shotNumber, char *nodeName, int dimNum) 
     return nullVec;
   }
 
-  snprintf(buf,sizeof(buf)-1,"shape(DIM_OF(%s))",nodeName);
-  size = getSignalLength(buf);
-  shape = (float *)malloc(size * sizeof(float));  
-  sigDescrShape = descr(&dtype_float, shape, &size, &null);
-  connectionStatus = MdsValue("shape(DIM_OF(DHI:LINE_INT))", &sigDescrShape, &null, 0);
+  size = getSignalLength(nodeName);
+  vectorData = (float *)malloc(size * sizeof(float));  
+  sigDescrVector = descr(&dtype_float, vectorData, &size, &null);
+  connectionStatus = MdsValue(nodeName, &sigDescrVector, &null, 0);
   if ( !statusOk(connectionStatus) ) {
     fprintf(stderr,"\nError message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
     MdsDisconnect();
     return nullVec;
 
   }
-  numRowsDim = (int) shape[0];
-  numColsDim = (int) shape[1];
-  snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName);
-  size = getSignalLength(buf);
-  dim = (float *)malloc(size * sizeof(float));  
-  sigDescrDim = descr(&dtype_float, dim, &size, &null);
-  connectionStatus = MdsValue(buf, &sigDescrDim, &null, 0);
-  if ( !statusOk(connectionStatus) ) {
-    MdsDisconnect();
-    return nullVec;
-  }
 
-  gsl_vector *vRet = gsl_vector_alloc(numRowsDim);
-  
   connectionStatus = MdsClose(treeName, &shotNumber);
-
-  (void) numColsDim; // Suppresses compiler warning
-  for (ii = 0; ii < numRowsDim; ii++) {
-    gsl_vector_set(vRet, ii, dim[ii+dimNum*numRowsDim]);
+  
+  gsl_vector *vRet = gsl_vector_alloc(size);  
+  connectionStatus = MdsClose(treeName, &shotNumber);
+  for (ii = 0; ii < size; ii++) {
+    gsl_vector_set(vRet, ii, vectorData[ii]);
   }
   
   return vRet;
@@ -300,8 +316,8 @@ gsl_vector *readDHIMDSplusDimension(int shotNumber, char *nodeName, int dimNum) 
 int mdsplusReadTest() {
 
   int shotNumber = 1;
-  int numRows = 10,
-    numCols = 8,
+  int numRows = 5,
+    numCols = 10,
     ii, jj;
 
   gsl_matrix *image = gsl_matrix_alloc(numRows, numCols);
@@ -320,8 +336,11 @@ int mdsplusReadTest() {
     gsl_vector_set(rVec, ii, ii/20.0);
   }
   
-  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", zVec, "DHI:LINE_INT:Z",
-  		       rVec, "DHI:LINE_INT:R", shotNumber);
+  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", "$1", shotNumber);
+  writeDHIMDSplusVector(rVec, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
+			shotNumber);
+  writeDHIMDSplusVector(zVec, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
+			shotNumber);
   
   gsl_matrix *imageRead = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT");
 
@@ -333,7 +352,7 @@ int mdsplusReadTest() {
     printf("\n------------------\n");
   }
 
-  gsl_vector *rVecRead = readDHIMDSplusDimension(shotNumber, "DHI:LINE_INT", 0);
+  gsl_vector *rVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:R");
 
   printf("r vector:\n");
   for (ii = 0; ii < (rVecRead->size); ii++) {
@@ -341,7 +360,7 @@ int mdsplusReadTest() {
     printf("--\n");
   }
 
-  gsl_vector *zVecRead = readDHIMDSplusDimension(shotNumber, "DHI:LINE_INT", 1);
+  gsl_vector *zVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:Z");
 
   printf("z vector:\n");
   for (ii = 0; ii < (zVecRead->size); ii++) {
@@ -363,58 +382,21 @@ TCL> add node .DHI:LINE_INT/usage=SIGNAL
 TCL> add node .DHI:LINE_INT:RAW/usage=NUMERIC
 TCL> add node .DHI:LINE_INT:R/usage=SIGNAL
 TCL> add node .DHI:LINE_INT:Z/usage=SIGNAL
-TCL> put .DHI:LINE_INT:RAW "[[1.1,1.1,1.1], [2.2, 2.2, 2.4], [5.5, 5.6, 5.7]]"
-TCL> put DHI:LINE_INT:R "build_signal(build_with_units([0, .1, .2],'m'),,)"
-TCL> put DHI:LINE_INT:Z "build_signal(build_with_units([0, .2, .4],'m'),,)"
-TCL> put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-3'),,[DHI:LINE_INT:R,DHI:LINE_INT:Z])"
+TCL> put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-3'),,)"
 TCL> write
 TCL> close
 TCL> set tree my_tree
 TCL> create pulse 1
 TCL> quit
-webertr@fuze2:~/Documents/my_tree$ tdic 
-TDI> treeopen("my_tree", 1)
-265388041
-TDI> data(DHI:LINE_INT)
-[[1.1,1.1,1.1], [2.2,2.2,2.4], [5.5,5.6,5.7]]
-TDI> data(DHI:LINE_INT:R)
-[0.,.1,.2]
-TDI> data(DHI:LINE_INT:Z)
-[0.,.2,.4]
-TDI> data(units_of(DHI:LINE_INT:Z))
-"m"
-TDI> data(units_of(DHI:LINE_INT))
-"m^-3"
-TDI> data(units_of(DHI:LINE_INT:R))
-"m"
-TDI> data(shape(DHI:LINE_INT:R))
-[3]
-TDI> data(shape(DHI:LINE_INT:Z))
-[3]
-TDI> data(shape(DHI:LINE_INT))
-[3,3]
-TDI> data(shape(DIM_OF(DHI:LINE_INT)))
-[3,2]
-TDI> data(shape(DIM_OF(DHI:LINE_INT:R)))
-[3]
-TDI> data(shape(DIM_OF(DHI:LINE_INT:Z)))
-[3]
-
 
 Then, to run the server:
 webertr@fuze2:~/Documents/mdsplusCTest$ export my_tree_path=/home/webertr/Documents/my_tree
 webertr@fuze2:~/Documents/mdsplusCTest$ mdsip -p 8000 -m -h mdsip.hosts
 
-
 with mdsip.hosts:
 /O=Grid/O=National Fusion Collaboratory/OU=MIT/CN=Thomas W. Fredian/Email=twf@psfc.mit.edu | twf
 * | MAP_TO_LOCAL
 * | webertr
-
-
-Then, finally, 
-
-gcc -Wall -I/usr/local/mdsplus/include -L/usr/local/mdsplus/lib -lMdsLib -lMdsShr main.c -o run
 
 
 ******************************************************************************/

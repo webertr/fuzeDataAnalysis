@@ -13,7 +13,7 @@
 #include "DHI/imageAnalysis.h"
 #include "DHI/holoParam.h"
 #include "DHI/forceBalance.h"
+#include "DHI/mdsplusAccess.h"
 #include "analysis.h"
-#include "mdsplusRead.h"
 
 #endif
