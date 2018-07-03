@@ -91,6 +91,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   //.xUR = 3804,
   //.yUR = 4867,
   .pinchCurrent = 95E3,
+  .edgeFracFB = 0.1,
   .saveMDSplus = 1,
   .shotNumber = 1,
   .saveHologram = 1,
