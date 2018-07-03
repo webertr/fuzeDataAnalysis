@@ -25,6 +25,7 @@
 
 #include "DHI/holoParam.h"
 #include "DHI/abelInversion.h"
+#include "DHI/mdsplusAccess.h"
 #include "save.h"
 #include "readJPEG.h"
 

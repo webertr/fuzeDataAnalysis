@@ -15,10 +15,13 @@ static gsl_matrix* getProjectMatrixDHI(int sizeM, double res);
 static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile, 
 				       gsl_matrix *rightDensityProfile, gsl_matrix *imageM, 
 				       gsl_vector *centroidLocation, holographyParameters* param);
-static gsl_matrix *getAvgDensityWithErrorDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
-					     gsl_matrix *rightProfile, gsl_vector *centroid,
-					     gsl_matrix *image, holographyParameters* param);
 static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput);
+static gsl_matrix *getAverageDensity(gsl_matrix *leftProfile, gsl_matrix *rightProfile);
+static gsl_matrix *getDensityError(gsl_matrix *projectMatrix, gsl_matrix *averageDensity,
+				   gsl_vector *centroid, gsl_matrix *image,
+				   holographyParameters* param);
+static gsl_matrix *interlayColumnsWithR(gsl_matrix *matrixLeft, gsl_matrix *matrixRight,
+					holographyParameters* param);
 static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *density, holographyParameters* param);
 static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *azimuthalBField,
 				     holographyParameters* param);
@@ -194,39 +197,30 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
     gsl_matrix_set(rightDensityProfileTemp, ii, 0, ii*param->deltaY);
   }
 
-
-  /* 
-   * Calculating the average density with error bars. The error bars are found by forward 
-   * projecting the average of the left and right profiles, and then finding the difference 
-   * between that forward projected image and the passed image. Then, abel inverting 
-   * that difference
-   */
-  gsl_matrix *avgDensity = getAvgDensityWithErrorDHI(projectMatrix, leftDensityProfile, 
-							      rightDensityProfile, 
-							      centroidLocation, imageM, param);
-
+  gsl_matrix *averageDensity = getAverageDensity(leftDensityProfile, rightDensityProfile);
+  gsl_matrix *errorDensity = getDensityError(projectMatrix, averageDensity, centroidLocation,
+					     imageM, param);
+  gsl_matrix *averageDensityWithError = interlayColumnsWithR(averageDensity, errorDensity, param);
+  
   /* 
    * Calculating the azimuthal magnetic field
    */
-  gsl_matrix *azimuthalBField = getAzimuthalBFieldDHI(avgDensity, param);
-
-
+  gsl_matrix *azimuthalBField = getAzimuthalBFieldDHI(averageDensityWithError, param);
+    
   /* 
    * Calculating the temperature
    */
-  gsl_matrix *temperature = getTemperatureDHI(avgDensity, azimuthalBField, param);
-
+  gsl_matrix *temperature = getTemperatureDHI(averageDensityWithError, azimuthalBField, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
   saveMatrixData(leftDensityProfileTemp, param->fileLeftInvert);
   saveMatrixData(rightDensityProfileTemp, param->fileRightInvert);
-  saveMatrixData(avgDensity, param->fileDensity);
+  saveMatrixData(averageDensityWithError, param->fileDensity);
   saveMatrixData(azimuthalBField, param->fileBTheta);
   saveMatrixData(temperature, param->fileTemperature);
   saveVectorData(centroidLocation, param->fileCentroid);
-
 
   /* Deleting vectors and matrices */
   gsl_vector_free(centroidLocation);
@@ -238,10 +232,12 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_free(leftDensityProfileTemp);
   gsl_matrix_free(rightDensityProfileTemp);
   gsl_matrix_free(projectMatrix);
-  gsl_matrix_free(avgDensity);
+  gsl_matrix_free(averageDensity);
+  gsl_matrix_free(errorDensity);
+  gsl_matrix_free(averageDensityWithError);
   gsl_matrix_free(azimuthalBField);
   gsl_matrix_free(temperature);
-  
+
   return fullDensityProfile;
 
 }
@@ -771,35 +767,22 @@ static int axialVariationCorrectionDHI(gsl_matrix *leftDensityProfile,
 
 
 /******************************************************************************
- * Function: getAvgDensityWithError
- * Inputs: gsl_matrix*, gsl_matrix*, gsl_matrix*, gsl_matrix *
+ * Function: getAverageDensity
+ * Inputs: gsl_matrix*, gsl_matrix*
  * Returns: gsl_matrix *
  * Description: This function will forward project an average of the left and
- * right density profile, then take the difference between that projection
- * and the original image. Then, it will abel invert that difference.
+ * right density profile
  ******************************************************************************/
 
-static gsl_matrix *getAvgDensityWithErrorDHI(gsl_matrix *projectMatrix, gsl_matrix *leftProfile,
-					     gsl_matrix *rightProfile, gsl_vector *centroid,
-					     gsl_matrix *image, holographyParameters* param) {
+static gsl_matrix *getAverageDensity(gsl_matrix *leftProfile, gsl_matrix *rightProfile) {
 
-  int numRows = image->size1,
-    numCols = image->size2,
-    ii, jj,
-    center;
+  int numRows = leftProfile->size1,
+    numCols = rightProfile->size2,
+    ii, jj;
 
   double avg;
 
-  gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols*2+1);
-  gsl_matrix *mError = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix *mDiff = gsl_matrix_alloc(numRows, numCols);
-
   gsl_matrix *average = gsl_matrix_alloc(numRows, numCols);
-  gsl_vector *profileVec = gsl_vector_alloc(numRows);
-  gsl_vector *projectVec = gsl_vector_alloc(numRows);
-  gsl_vector *crossSection = gsl_vector_alloc(numRows);
-  gsl_vector *leftError = gsl_vector_alloc(numRows);
-  gsl_vector *rightError = gsl_vector_alloc(numRows);
 
   /* Calculating the average of the left and right profile */
   for (ii = 0; ii < numRows; ii++) {
@@ -809,11 +792,42 @@ static gsl_matrix *getAvgDensityWithErrorDHI(gsl_matrix *projectMatrix, gsl_matr
     }
   }
 
+  return average;
+  
+}
+
+
+/******************************************************************************
+ * Function: getDensityError
+ * Inputs: gsl_matrix*, gsl_matrix*, gsl_matrix*, gsl_matrix *
+ * Returns: gsl_matrix *
+ * Description: This function will forward project an average of the left and
+ * right density profile, then take the difference between that projection
+ * and the original image. Then, it will abel invert that difference.
+ ******************************************************************************/
+
+static gsl_matrix *getDensityError(gsl_matrix *projectMatrix, gsl_matrix *averageDensity,
+				   gsl_vector *centroid, gsl_matrix *image,
+				   holographyParameters* param) {
+
+  int numRows = image->size1,
+    numCols = image->size2,
+    ii, jj,
+    center;
+
+  gsl_matrix *mError = gsl_matrix_alloc(numRows, numCols);
+  gsl_matrix *mDiff = gsl_matrix_alloc(numRows, numCols);
+
+  gsl_vector *profileVec = gsl_vector_alloc(numRows);
+  gsl_vector *projectVec = gsl_vector_alloc(numRows);
+  gsl_vector *crossSection = gsl_vector_alloc(numRows);
+  gsl_vector *leftError = gsl_vector_alloc(numRows);
+  gsl_vector *rightError = gsl_vector_alloc(numRows);
   
   /* Forward projecting the average and taking the difference with the original image */
   for (jj = 0; jj < numCols; jj++) {
 
-    gsl_matrix_get_col(profileVec, average, jj);
+    gsl_matrix_get_col(profileVec, averageDensity, jj);
     projectVec = matrixMultDHI(projectMatrix, profileVec);
     center = gsl_vector_get(centroid, jj);
 
@@ -842,22 +856,44 @@ static gsl_matrix *getAvgDensityWithErrorDHI(gsl_matrix *projectMatrix, gsl_matr
 
   }
 
+  gsl_matrix_free(mDiff);
+  gsl_vector_free(profileVec);
+  gsl_vector_free(projectVec);
+  gsl_vector_free(leftError);
+  gsl_vector_free(rightError);
+
+  return mError;
+
+}
+
+
+/******************************************************************************
+ * Function: interlayMatricesWithR
+ * Inputs: gsl_matrix*, gsl_matrix*,holographParameters
+ * Returns: gsl_matrix *
+ * Description: This will interlay the columns of two matrices with the r value
+ * as the first column
+ ******************************************************************************/
+
+static gsl_matrix *interlayColumnsWithR(gsl_matrix *matrixLeft, gsl_matrix *matrixRight,
+					holographyParameters* param) {
+
+  int numRows = matrixLeft->size1,
+    numCols = matrixLeft->size2,
+    ii, jj;
+
+  gsl_matrix *mRet = gsl_matrix_alloc(numRows, numCols*2+1);
+  
   for (ii = 0; ii < numRows; ii++) {
     gsl_matrix_set(mRet, ii, 0, ii*param->deltaY);
   }
 
   for (ii = 0; ii < numRows; ii++) {
     for (jj = 0; jj < numCols; jj++) {
-      gsl_matrix_set(mRet, ii, jj*2+1, gsl_matrix_get(average, ii, jj));
-      gsl_matrix_set(mRet, ii, (jj+1)*2, gsl_matrix_get(mError, ii, jj));
+      gsl_matrix_set(mRet, ii, jj*2+1, gsl_matrix_get(matrixLeft, ii, jj));
+      gsl_matrix_set(mRet, ii, jj*2+2, gsl_matrix_get(matrixRight, ii, jj));
     }
   }
-
-  gsl_matrix_free(average);
-  gsl_matrix_free(mDiff);
-  gsl_matrix_free(mError);
-  gsl_vector_free(profileVec);
-  gsl_vector_free(projectVec);
 
   return mRet;
 
@@ -1043,8 +1079,6 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .res = 3.85E-6*CM_ADJUST, 
   .lambda = 532E-9*CM_ADJUST,
   .d = 0.35*CM_ADJUST,
-  .deltaX = 0.000115*CM_ADJUST,
-  .deltaY = 0.000115*CM_ADJUST,
   .zPosition = 0.140*CM_ADJUST,
   .R_electrode = 0.100838*CM_ADJUST,
   .deltaN = 1E21/(CM_ADJUST*CM_ADJUST*CM_ADJUST),

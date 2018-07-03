@@ -18,7 +18,7 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
@@ -58,7 +58,7 @@ int hologramAnalysis() {
   /*
    * Fancy plot for the abel inversion with error bars 
    */
-  if (0) {
+  if (1) {
 
     char *errorKeywords = "set size ratio 1\n"
       //"set term png\n"
@@ -82,8 +82,8 @@ int hologramAnalysis() {
   if (1) {
 
     char *bThetaKeywords = "set size ratio 1\n"
-      "set terminal png\n"
-      "set output '/home/webertr/Downloads/180215012BField.png'\n"
+      //"set terminal png\n"
+      //"set output '/home/webertr/Downloads/180215012BField.png'\n"
       "set title 'Radial B_{/Symbol q} profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -103,8 +103,8 @@ int hologramAnalysis() {
   if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
-      "set terminal png\n"
-      "set output '/home/webertr/Downloads/180215012Temp.png'\n"
+      //"set terminal png\n"
+      //"set output '/home/webertr/Downloads/180215012Temp.png'\n"
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
@@ -122,11 +122,11 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature and b field on same axis
    */
-  if (1) {
+  if (0) {
 
     char *tempKeywords = "set size ratio 1\n"
-      "set terminal png\n"
-      "set output '/home/webertr/Downloads/180215012Tempne.png'\n"
+      //"set terminal png\n"
+      //"set output '/home/webertr/Downloads/180215012Tempne.png'\n"
       "set title 'Radial density and temperature profile for 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"

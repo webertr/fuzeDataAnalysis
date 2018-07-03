@@ -1047,6 +1047,17 @@ int hologramMain(holographyParameters* param) {
   }
 
   /*
+   * if specified, save data to mdsplus
+   */
+  if (param->saveMDSplus == 1) {
+    writeDHIMDSplusImage(twinImageUnwrap, "DHI:LINE_INT:RAW", "$1", param->shotNumber);
+    writeDHIMDSplusVector(yPhase, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
+			  param->shotNumber);
+    writeDHIMDSplusVector(xPhase, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
+			  param->shotNumber);
+  }
+
+  /*
    * If specified, perform an abel inversion on the image
    */
   if (param->invertImage == 1) {

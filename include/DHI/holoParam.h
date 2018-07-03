@@ -60,9 +60,10 @@ struct holographyparameters {
   int axialCorrection;          // If 1, will correct for axial phase variation of hologram
   int convertDensity;           // If 1, this will convert from the phase to density
   int Z;                        // Atomic number of main ion population (1 = H, 2 = He)
-  char fileDensity[100];          // The name of the error bar file
+  char fileDensity[100];        // The name of the error bar file
   double pinchCurrent;          // The total pinch current
-  int useCM;                    // 1 if using cm for final units
+  int saveMDSplus;              // If 1, will save data to mdsplus
+  int shotNumber;               // The shotnumber if saving to mdsplus
 };
 
 typedef struct holographyparameters holographyParameters;
