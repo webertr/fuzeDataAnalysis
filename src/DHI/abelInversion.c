@@ -216,8 +216,11 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix *temperature = getTemperatureDHI(density, azimuthalBField, param);
   gsl_matrix *temperatureError = getTemperatureErrorDHI(density, densityError, azimuthalBField,
 							azimuthalBFieldError, temperature, param);
+  gsl_matrix_scale(temperature, 8.618E-5);
+  gsl_matrix_scale(temperatureError, 8.618E-5);
   gsl_matrix *temperatureWithError = interlayColumnsWithRDHI(temperature, temperatureError, param);
 
+  
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
    */
@@ -1079,8 +1082,6 @@ static gsl_matrix* getTemperatureDHI(gsl_matrix *density, gsl_matrix *azimuthalB
     }
     temperatureForceBalance(densityVec, bThetaVec, temperatureVec, 
 			    param->pinchCurrent, param->deltaY, edge);
-
-    gsl_vector_scale(temperatureVec, 8.618E-5);
     gsl_matrix_set_col(temperature, ii, temperatureVec);
   }
 
@@ -1142,8 +1143,7 @@ static gsl_matrix* getTemperatureErrorDHI(gsl_matrix *density, gsl_matrix *densi
     gsl_vector_sub(temperatureErrorVec, temperatureVec);
     for (jj = 0; jj < numRows; jj++)
       gsl_vector_set(temperatureErrorVec, jj, fabs(gsl_vector_get(temperatureErrorVec, jj)));
-
-    gsl_vector_scale(temperatureErrorVec, 8.618E-5);
+    
     gsl_matrix_set_col(temperatureError, ii, temperatureErrorVec);
   }
 
