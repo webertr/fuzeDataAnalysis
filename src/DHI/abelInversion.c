@@ -25,8 +25,13 @@ static gsl_matrix *interlayColumnsWithRDHI(gsl_matrix *matrixLeft, gsl_matrix *m
 static gsl_matrix* getAzimuthalBFieldDHI(gsl_matrix *density, holographyParameters* param);
 static gsl_matrix* getAzimuthalBFieldErrorDHI(gsl_matrix *density, gsl_matrix *densityError,
 					      gsl_matrix *bTheta, holographyParameters* param);
-static gsl_matrix* getTemperatureDHI(gsl_matrix *densityWithError, gsl_matrix *azimuthalBField,
+static gsl_matrix* getTemperatureDHI(gsl_matrix *density, gsl_matrix *azimuthalBField,
 				     holographyParameters* param);
+static gsl_matrix* getTemperatureErrorDHI(gsl_matrix *density, gsl_matrix *densityError,
+					  gsl_matrix *azimuthalBField,
+					  gsl_matrix *azimuthalBFieldError,
+					  gsl_matrix *temperature,
+					  holographyParameters* param);
 
 
 /******************************************************************************
@@ -208,7 +213,10 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 								azimuthalBField, param);
   gsl_matrix *azimuthalBFieldWithError = interlayColumnsWithRDHI(azimuthalBField,
 								 azimuthalBFieldError, param);
-  gsl_matrix *temperature = getTemperatureDHI(densityWithError, azimuthalBFieldWithError, param);
+  gsl_matrix *temperature = getTemperatureDHI(density, azimuthalBField, param);
+  gsl_matrix *temperatureError = getTemperatureErrorDHI(density, densityError, azimuthalBField,
+							azimuthalBFieldError, temperature, param);
+  gsl_matrix *temperatureWithError = interlayColumnsWithRDHI(temperature, temperatureError, param);
 
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
@@ -217,7 +225,7 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   saveMatrixData(rightDensityProfileTemp, param->fileRightInvert);
   saveMatrixData(densityWithError, param->fileDensity);
   saveMatrixData(azimuthalBFieldWithError, param->fileBTheta);
-  saveMatrixData(temperature, param->fileTemperature);
+  saveMatrixData(temperatureWithError, param->fileTemperature);
   saveVectorData(centroidLocation, param->fileCentroid);
 
   /* Deleting vectors and matrices */
@@ -237,6 +245,8 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_free(azimuthalBFieldError);
   gsl_matrix_free(azimuthalBFieldWithError);
   gsl_matrix_free(temperature);
+  gsl_matrix_free(temperatureError);
+  gsl_matrix_free(temperatureWithError);
 
   return fullDensityProfile;
 
@@ -1007,9 +1017,9 @@ static gsl_matrix* getAzimuthalBFieldErrorDHI(gsl_matrix *density, gsl_matrix *d
     gsl_matrix_get_col(densityErrorVec, densityError, ii);
     gsl_matrix_get_col(bThetaVec, bTheta, ii);
     gsl_vector_add(densityErrorVec, densityVec);
-    maxDen = gsl_vector_max(densityErrorVec);
+    maxDen = gsl_vector_max(densityVec);
     for (jj = 0; jj < numRows; jj++) {
-      if ( fabs(gsl_vector_get(densityErrorVec, jj)/maxDen) < (param->edgeFracFB)) {
+      if ( fabs(gsl_vector_get(densityVec, jj)/maxDen) < (param->edgeFracFB)) {
 	edge = jj;
 	break;
       }
@@ -1051,52 +1061,101 @@ static gsl_matrix* getTemperatureDHI(gsl_matrix *density, gsl_matrix *azimuthalB
 
   double maxDen;
 
-  gsl_vector *densityProfile = gsl_vector_alloc(numRows),
+  gsl_vector *densityVec = gsl_vector_alloc(numRows),
     *temperatureVec = gsl_vector_alloc(numRows),
-    *errorDensity = gsl_vector_alloc(numRows),
-    *errorBTheta = gsl_vector_alloc(numRows),
-    *errorTemp = gsl_vector_alloc(numRows),
     *bThetaVec = gsl_vector_alloc(numRows);
+  
   gsl_matrix *temperature = gsl_matrix_alloc(numRows, numCols);
-  gsl_matrix_memcpy(temperature, density);
     
-  for (ii = 0; ii < (numCols-2)/2; ii++) {
-    gsl_matrix_get_col(densityProfile, density, 2*ii+1);
-    gsl_matrix_get_col(errorDensity, density, 2*ii+2);
-    gsl_matrix_get_col(bThetaVec, azimuthalBField, 2*ii+1);
-    gsl_matrix_get_col(errorBTheta, azimuthalBField, 2*ii+2);
-    gsl_vector_add(errorDensity, densityProfile);
-    gsl_vector_add(errorBTheta, bThetaVec);
-    maxDen = gsl_vector_max(densityProfile);
+  for (ii = 0; ii < numCols; ii++) {
+    gsl_matrix_get_col(densityVec, density, ii);
+    gsl_matrix_get_col(bThetaVec, azimuthalBField, ii);
+    maxDen = gsl_vector_max(densityVec);
     for (jj = 0; jj < numRows; jj++) {
-      if ( fabs(gsl_vector_get(densityProfile, jj)/maxDen) < 0.1) {
+      if ( fabs(gsl_vector_get(densityVec, jj)/maxDen) < 0.1) {
 	edge = jj;
 	break;
       }
     }
-    temperatureForceBalance(densityProfile, bThetaVec, temperatureVec, 
+    temperatureForceBalance(densityVec, bThetaVec, temperatureVec, 
 			    param->pinchCurrent, param->deltaY, edge);
-    temperatureForceBalance(errorDensity, errorBTheta, errorTemp, 
-    			    param->pinchCurrent, param->deltaY, edge);
-    gsl_vector_sub(errorTemp, temperatureVec);
-    for (jj = 0; jj < numRows; jj++)
-      gsl_vector_set(errorTemp, jj, fabs(gsl_vector_get(errorTemp, jj)));
 
     gsl_vector_scale(temperatureVec, 8.618E-5);
-    gsl_vector_scale(errorTemp, 8.618E-5);
-    gsl_matrix_set_col(temperature, 2*ii+1, temperatureVec);
-    gsl_matrix_set_col(temperature, 2*ii+2, errorTemp);
+    gsl_matrix_set_col(temperature, ii, temperatureVec);
   }
 
-    
-  gsl_vector_free(errorTemp);
-  gsl_vector_free(errorDensity);
-  gsl_vector_free(errorBTheta);
   gsl_vector_free(bThetaVec);
-  gsl_vector_free(densityProfile);
+  gsl_vector_free(densityVec);
   gsl_vector_free(temperatureVec);
 
   return temperature;
+
+}
+
+/******************************************************************************
+ * Function: getTemperatureErrorDHI
+ * Inputs: gsl_matrix *, gsl_matrix *, holographyParameters *
+ * Returns: gsl_matrix*
+ * Description: This function will calculate the radial tempearture profile
+ * and return it in a matrix with the position and error bars. Units of eV
+ ******************************************************************************/
+
+static gsl_matrix* getTemperatureErrorDHI(gsl_matrix *density, gsl_matrix *densityError,
+					  gsl_matrix *azimuthalBField,
+					  gsl_matrix *azimuthalBFieldError,
+					  gsl_matrix *temperature,
+					  holographyParameters* param) {
+  
+  int ii, jj,
+    numRows = density->size1,
+    numCols = density->size2,
+    edge = numRows - 1;
+
+  double maxDen;
+
+  gsl_vector *densityVec = gsl_vector_alloc(numRows),
+    *densityErrorVec = gsl_vector_alloc(numRows),
+    *bThetaErrorVec = gsl_vector_alloc(numRows),
+    *bThetaVec = gsl_vector_alloc(numRows),
+    *temperatureVec = gsl_vector_alloc(numRows),
+    *temperatureErrorVec = gsl_vector_alloc(numRows);
+  
+  gsl_matrix *temperatureError = gsl_matrix_alloc(numRows, numCols);
+    
+  for (ii = 0; ii < numCols; ii++) {
+    gsl_matrix_get_col(densityVec, density, ii);
+    gsl_matrix_get_col(densityErrorVec, densityError, ii);
+    gsl_matrix_get_col(bThetaVec, azimuthalBField, ii);
+    gsl_matrix_get_col(bThetaErrorVec, azimuthalBFieldError, ii);
+    gsl_matrix_get_col(temperatureVec, temperature, ii);
+    gsl_vector_add(densityErrorVec, densityVec);
+    gsl_vector_add(bThetaErrorVec, bThetaVec);
+    maxDen = gsl_vector_max(densityVec);
+    for (jj = 0; jj < numRows; jj++) {
+      if ( fabs(gsl_vector_get(densityVec, jj)/maxDen) < 0.1) {
+	edge = jj;
+	break;
+      }
+    }
+    temperatureForceBalance(densityErrorVec, bThetaErrorVec, temperatureErrorVec, 
+    			    param->pinchCurrent, param->deltaY, edge);
+    gsl_vector_sub(temperatureErrorVec, temperatureVec);
+    for (jj = 0; jj < numRows; jj++)
+      gsl_vector_set(temperatureErrorVec, jj, fabs(gsl_vector_get(temperatureErrorVec, jj)));
+
+    gsl_vector_scale(temperatureErrorVec, 8.618E-5);
+    gsl_matrix_set_col(temperatureError, ii, temperatureErrorVec);
+  }
+
+
+  gsl_vector_free(temperatureVec);
+  gsl_vector_free(temperatureErrorVec);
+  gsl_vector_free(densityVec);
+  gsl_vector_free(densityErrorVec);
+  gsl_vector_free(bThetaVec);
+  gsl_vector_free(bThetaErrorVec);
+
+  return temperatureError;
 
 }
 

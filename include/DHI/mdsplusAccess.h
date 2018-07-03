@@ -24,10 +24,12 @@
 #include <gsl/gsl_sf_trig.h>
 #include <sys/stat.h>
 
-gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName);
-gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName);
-int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber);
-int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, int shotNumber);
+gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName);
+gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName);
+int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
+			 char *treeName);
+int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, int shotNumber,
+			  char *treeName);
 int mdsplusReadTest();
 
 #endif

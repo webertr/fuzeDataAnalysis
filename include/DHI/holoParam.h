@@ -64,7 +64,8 @@ struct holographyparameters {
   double pinchCurrent;          // The total pinch current
   int saveMDSplus;              // If 1, will save data to mdsplus
   int shotNumber;               // The shotnumber if saving to mdsplus
-  double edgeFracFB;  // Fraction of density to define edge at for force balance calc
+  double edgeFracFB;            // Fraction of density to define edge at for force balance calc
+  char mdsPlusTree[100];        // The MDSplus tree name
 };
 
 typedef struct holographyparameters holographyParameters;

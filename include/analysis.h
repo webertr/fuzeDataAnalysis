@@ -93,6 +93,7 @@ static const holographyParameters HOLOGRAPHY_PARAMETERS_DEFAULT = {
   .pinchCurrent = 95E3,
   .edgeFracFB = 0.1,
   .saveMDSplus = 1,
+  .mdsPlusTree = "my_tree",
   .shotNumber = 1,
   .saveHologram = 1,
   .fileHologram = "data/hologram.dat",

@@ -67,7 +67,8 @@ static int getSignalLength(const char *signal) {
  * expression = "$1"
  ******************************************************************************/
 
-int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber) {
+int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
+			 char *treeName) {
 
   int connectionStatus,
     connectionID,
@@ -76,8 +77,6 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, in
     sigDescrImage,
     numRows = image->size1,
     numCols = image->size2;
-  
-  char *treeName = "my_tree";
   
   sigDescrImage = descr(&dTypeDouble, image->data, &numRows, &numCols, &null);
 
@@ -118,7 +117,8 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, in
  * "build_signal(build_with_units($1,'m'),,)";
  ******************************************************************************/
 
-int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, int shotNumber) {
+int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, int shotNumber,
+			  char *treeName) {
 
   int connectionStatus,
     connectionID,
@@ -126,8 +126,6 @@ int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, i
     null = 0,
     sigDescrVector,
     numRows = vecIn->size;
-  
-  char *treeName = "my_tree";
   
   sigDescrVector = descr(&dTypeDouble, vecIn->data, &numRows, &null);
 
@@ -166,7 +164,7 @@ int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, i
  * Description: 
  ******************************************************************************/
 
-gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
+gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName) {
 
   int connectionStatus,
     connectionID,
@@ -182,8 +180,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
   float *shape,
     *data;
   
-  char *treeName = "my_tree",
-    buf[1024];
+  char buf[1024];
 
   gsl_matrix *nullM = 0;
   
@@ -249,7 +246,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName) {
  * Description: 
  ******************************************************************************/
 
-gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName) {
+gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName) {
 
   int connectionStatus,
     connectionID,
@@ -260,8 +257,6 @@ gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName) {
     ii;
     
   float *vectorData;
-  
-  char *treeName = "my_tree";
   
   gsl_vector *nullVec = 0;
   
@@ -336,13 +331,13 @@ int mdsplusReadTest() {
     gsl_vector_set(rVec, ii, ii/20.0);
   }
   
-  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", "$1", shotNumber);
+  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", "$1", shotNumber, "my_tree");
   writeDHIMDSplusVector(rVec, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
-			shotNumber);
+			shotNumber, "my_tree");
   writeDHIMDSplusVector(zVec, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
-			shotNumber);
+			shotNumber, "my_tree");
   
-  gsl_matrix *imageRead = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT");
+  gsl_matrix *imageRead = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT", "my_tree");
 
   printf("Image:\n");
   for (ii = 0; ii < numRows; ii++) {
@@ -352,7 +347,7 @@ int mdsplusReadTest() {
     printf("\n------------------\n");
   }
 
-  gsl_vector *rVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:R");
+  gsl_vector *rVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:R", "my_tree");
 
   printf("r vector:\n");
   for (ii = 0; ii < (rVecRead->size); ii++) {
@@ -360,7 +355,7 @@ int mdsplusReadTest() {
     printf("--\n");
   }
 
-  gsl_vector *zVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:Z");
+  gsl_vector *zVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:Z", "my_tree");
 
   printf("z vector:\n");
   for (ii = 0; ii < (zVecRead->size); ii++) {

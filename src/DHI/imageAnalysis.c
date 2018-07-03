@@ -1050,11 +1050,12 @@ int hologramMain(holographyParameters* param) {
    * if specified, save data to mdsplus
    */
   if (param->saveMDSplus == 1) {
-    writeDHIMDSplusImage(twinImageUnwrap, "DHI:LINE_INT:RAW", "$1", param->shotNumber);
+    writeDHIMDSplusImage(twinImageUnwrap, "DHI:LINE_INT:RAW", "$1", param->shotNumber,
+			 param->mdsPlusTree);
     writeDHIMDSplusVector(yPhase, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
-			  param->shotNumber);
+			  param->shotNumber, param->mdsPlusTree);
     writeDHIMDSplusVector(xPhase, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
-			  param->shotNumber);
+			  param->shotNumber, param->mdsPlusTree);
   }
 
   /*
