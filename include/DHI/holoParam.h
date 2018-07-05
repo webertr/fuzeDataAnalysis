@@ -66,7 +66,7 @@ struct holographyparameters {
   int shotNumber;               // The shotnumber if saving to mdsplus
   double edgeFracFB;            // Fraction of density to define edge at for force balance calc
   char mdsPlusTree[100];        // The MDSplus tree name
-  char mdsPlusHost[100];        // The MDSplus tree name
+  char mdsPlusHost[100];        // The MDSplus host name
 };
 
 typedef struct holographyparameters holographyParameters;

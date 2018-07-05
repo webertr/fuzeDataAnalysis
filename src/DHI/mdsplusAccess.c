@@ -95,7 +95,7 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, in
 
   connectionStatus = MdsPut(nodeName, "$1", &sigDescrImage, &null);
   if ( !statusOk(connectionStatus) ) {
-    fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    fprintf(stderr,"\nMdsPut error (%s). Message: %s.\n", nodeName, MdsGetMsg(connectionStatus));
     MdsClose(treeName, &shotNumber);
     MdsDisconnect();
     return -1;
@@ -144,7 +144,7 @@ int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, i
 
   connectionStatus = MdsPut(nodeName, expression, &sigDescrVector, &null);
   if ( !statusOk(connectionStatus) ) {
-    fprintf(stderr,"\nMdsPut error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    fprintf(stderr,"\nMdsPut error (%s). Message: %s.\n", nodeName, MdsGetMsg(connectionStatus));
     MdsClose(treeName, &shotNumber);
     MdsDisconnect();
     return -1;

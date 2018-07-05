@@ -1051,11 +1051,11 @@ int hologramMain(holographyParameters* param) {
    */
   if (param->saveMDSplus == 1) {
     writeDHIMDSplusImage(twinImageUnwrap, "DHI:LINE_INT:RAW", "$1", param->shotNumber,
-			 param->mdsPlusTree);
+			 param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(yPhase, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
-			  param->shotNumber, param->mdsPlusTree);
+			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(xPhase, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
-			  param->shotNumber, param->mdsPlusTree);
+			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
   }
 
   /*
