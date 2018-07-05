@@ -382,17 +382,23 @@ add node .DHI:LINE_INT:R/usage=SIGNAL
 add node .DHI:LINE_INT:Z/usage=SIGNAL
 add node .DHI:NE/usage=SIGNAL
 add node .DHI:NE:RAW/usage=NUMERIC
-add node .DHI:NE:R/usage=SIGNAL
-add node .DHI:NE:Z/usage=SIGNAL
 add node .DHI:NE:ERROR/usage=SIGNAL
+add node .DHI:NE:ERROR:RAW/usage=NUMERIC
 add node .DHI:T/usage=SIGNAL
 add node .DHI:T:RAW/usage=NUMERIC
-add node .DHI:T:R/usage=SIGNAL
-add node .DHI:T:Z/usage=SIGNAL
 add node .DHI:T:ERROR/usage=SIGNAL
-put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-3'),,)"
+add node .DHI:T:ERROR:RAW/usage=NUMERIC
+add node .DHI:BTHETA/usage=SIGNAL
+add node .DHI:BTHETA:RAW/usage=NUMERIC
+add node .DHI:BTHETA:ERROR/usage=SIGNAL
+add node .DHI:BTHETA:ERROR:RAW/usage=NUMERIC
+put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-2'),,)"
 put DHI:NE "build_signal(build_with_units(DHI:NE:RAW,'m^-3'),,)"
-put DHI:T "build_signal(build_with_units(DHI:T:RAW,'m^-3'),,)"
+put DHI:NE:ERROR "build_signal(build_with_units(DHI:NE:ERROR:RAW,'m^-3'),,)"
+put DHI:T "build_signal(build_with_units(DHI:T:RAW,'eV'),,)"
+put DHI:T:ERROR "build_signal(build_with_units(DHI:T:ERROR:RAW,'eV'),,)"
+put DHI:BTHETA "build_signal(build_with_units(DHI:BTHETA:RAW,'T'),,)"
+put DHI:BTHETA:ERROR "build_signal(build_with_units(DHI:BTHETA:ERROR:RAW,'T'),,)"
 write
 close
 set tree my_tree

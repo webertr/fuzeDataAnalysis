@@ -220,6 +220,18 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix_scale(temperatureError, 8.618E-5);
   gsl_matrix *temperatureWithError = interlayColumnsWithRDHI(temperature, temperatureError, param);
 
+  if (param->saveMDSplus == 1) {
+    writeDHIMDSplusImage(density, "DHI:NE:RAW", "$1", param->shotNumber, param->mdsPlusTree);
+    writeDHIMDSplusImage(densityError, "DHI:NE:ERROR:RAW", "$1", param->shotNumber,
+			 param->mdsPlusTree);
+    writeDHIMDSplusImage(azimuthalBField, "DHI:BTHETA:RAW", "$1", param->shotNumber,
+			 param->mdsPlusTree);
+    writeDHIMDSplusImage(azimuthalBFieldError, "DHI:BTHETA:ERROR:RAW", "$1", param->shotNumber,
+			 param->mdsPlusTree);
+    writeDHIMDSplusImage(temperature, "DHI:T:RAW", "$1", param->shotNumber, param->mdsPlusTree);
+    writeDHIMDSplusImage(temperatureError, "DHI:T:ERROR:RAW", "$1", param->shotNumber,
+			 param->mdsPlusTree);
+  }
   
   /*
    * Saving data, leftDensityProfile, rightDensityProfile, and the centroidLocation
