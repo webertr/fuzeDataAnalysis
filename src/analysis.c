@@ -23,17 +23,14 @@ int hologramAnalysis() {
   gsl_matrix *imageRead = readDHIMDSplusImage(param.shotNumber, "DHI:LINE_INT:RAW",
 					      param.mdsPlusTree, param.mdsPlusHost);
 
-  int ii, jj,
-    numRows = imageRead->size1,
-    numCols = imageRead->size2;
-  FILE *fp = fopen("data/readBack.txt", "w");
-  for (ii = 0; ii < numRows; ii++) {
-    for (jj = 0; jj < numCols; jj++) {
-      fprintf(fp, "%d, %d: %g\t", ii, jj, gsl_matrix_get(imageRead, ii, jj));
+  int ii, jj;
+  printf("Readback\n");
+  for (ii = 0; ii < 5; ii++) {
+    for (jj = 0; jj < 5; jj++) {
+      printf("%d, %d: %g\t", ii, jj, gsl_matrix_get(imageRead, ii, jj));
     }
-    fprintf(fp, "\n");
+    printf("\n");
   }
-  fclose(fp);
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
 

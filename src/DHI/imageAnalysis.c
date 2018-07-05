@@ -1050,17 +1050,14 @@ int hologramMain(holographyParameters* param) {
    * if specified, save data to mdsplus
    */
   if (param->saveMDSplus == 1) {
-    int ii, jj,
-      numRows = twinImageUnwrap->size1,
-      numCols = twinImageUnwrap->size2;
-    FILE *fp = fopen("data/write.txt", "w");
-    for (ii = 0; ii < numRows; ii++) {
-      for (jj = 0; jj < numCols; jj++) {
-	fprintf(fp, "%d, %d: %g\t", ii, jj, gsl_matrix_get(twinImageUnwrap, ii, jj));
+    int ii, jj;
+    printf("Write\n");
+    for (ii = 0; ii < 5; ii++) {
+      for (jj = 0; jj < 5; jj++) {
+	printf("%d, %d: %g\t", ii, jj, gsl_matrix_get(twinImageUnwrap, ii, jj));
       }
-      fprintf(fp, "\n");
+      printf("\n");
     }
-    fclose(fp);
     writeDHIMDSplusImage(twinImageUnwrap, "DHI:LINE_INT:RAW", "$1", param->shotNumber,
 			 param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(yPhase, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
