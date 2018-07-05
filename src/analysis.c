@@ -20,9 +20,6 @@ int hologramAnalysis() {
 
   hologramMain(&param);
 
-  gsl_matrix *imageRead = readDHIMDSplusImage(param.shotNumber, "DHI:LINE_INT:RAW",
-					      param.mdsPlusTree, param.mdsPlusHost);
-  
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
 
