@@ -402,7 +402,7 @@ put DHI:BTHETA:ERROR "build_signal(build_with_units(DHI:BTHETA:ERROR:RAW,'T'),,)
 write
 close
 set tree my_tree
-create pulse 1
+create pulse 12345
 
 Then, to run the server:
 webertr@fuze2:~/Documents/mdsplusCTest$ export my_tree_path=/home/webertr/Documents/my_tree
