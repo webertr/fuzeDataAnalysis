@@ -68,7 +68,7 @@ static int getSignalLength(const char *signal) {
  ******************************************************************************/
 
 int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
-			 char *treeName) {
+			 char *treeName, char *host) {
 
   int connectionStatus,
     connectionID,
@@ -80,7 +80,7 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, in
   
   sigDescrImage = descr(&dTypeDouble, image->data, &numRows, &numCols, &null);
 
-  connectionID = MdsConnect("localhost");
+  connectionID = MdsConnect(host);
   if (connectionID == -1) {
     fprintf(stderr, "Connection Failed\n");
     return -1;
@@ -118,7 +118,7 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, in
  ******************************************************************************/
 
 int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, int shotNumber,
-			  char *treeName) {
+			  char *treeName, char *host) {
 
   int connectionStatus,
     connectionID,
@@ -129,7 +129,7 @@ int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, i
   
   sigDescrVector = descr(&dTypeDouble, vecIn->data, &numRows, &null);
 
-  connectionID = MdsConnect("localhost");
+  connectionID = MdsConnect(host);
   if (connectionID == -1) {
     fprintf(stderr, "Connection Failed\n");
     return -1;
@@ -164,7 +164,7 @@ int writeDHIMDSplusVector(gsl_vector *vecIn, char *nodeName, char *expression, i
  * Description: 
  ******************************************************************************/
 
-gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName) {
+gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName, char *host) {
 
   int connectionStatus,
     connectionID,
@@ -184,7 +184,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName) 
 
   gsl_matrix *nullM = 0;
   
-  connectionID = MdsConnect("localhost");
+  connectionID = MdsConnect(host);
   if (connectionID == -1) {
     fprintf(stderr, "Connection Failed\n");
     return nullM;
@@ -246,7 +246,7 @@ gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName) 
  * Description: 
  ******************************************************************************/
 
-gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName) {
+gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName, char *host) {
 
   int connectionStatus,
     connectionID,
@@ -260,7 +260,7 @@ gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName)
   
   gsl_vector *nullVec = 0;
   
-  connectionID = MdsConnect("localhost");
+  connectionID = MdsConnect(host);
   if (connectionID == -1) {
     fprintf(stderr, "Connection Failed\n");
     return nullVec;
@@ -315,6 +315,7 @@ int mdsplusReadTest() {
     numCols = 10,
     ii, jj;
 
+  char *host = "10.10.10.240";
   gsl_matrix *image = gsl_matrix_alloc(numRows, numCols);
   gsl_vector *rVec = gsl_vector_alloc(numRows);
   gsl_vector *zVec = gsl_vector_alloc(numCols);
@@ -331,13 +332,13 @@ int mdsplusReadTest() {
     gsl_vector_set(rVec, ii, ii/20.0);
   }
   
-  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", "$1", shotNumber, "my_tree");
+  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", "$1", shotNumber, "my_tree", host);
   writeDHIMDSplusVector(rVec, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
-			shotNumber, "my_tree");
+			shotNumber, "my_tree", host);
   writeDHIMDSplusVector(zVec, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
-			shotNumber, "my_tree");
+			shotNumber, "my_tree", host);
   
-  gsl_matrix *imageRead = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT", "my_tree");
+  gsl_matrix *imageRead = readDHIMDSplusImage(shotNumber, "DHI:LINE_INT", "my_tree", host);
 
   printf("Image:\n");
   for (ii = 0; ii < numRows; ii++) {
@@ -347,7 +348,7 @@ int mdsplusReadTest() {
     printf("\n------------------\n");
   }
 
-  gsl_vector *rVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:R", "my_tree");
+  gsl_vector *rVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:R", "my_tree", host);
 
   printf("r vector:\n");
   for (ii = 0; ii < (rVecRead->size); ii++) {
@@ -355,7 +356,7 @@ int mdsplusReadTest() {
     printf("--\n");
   }
 
-  gsl_vector *zVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:Z", "my_tree");
+  gsl_vector *zVecRead = readDHIMDSplusVector(shotNumber, "DHI:LINE_INT:Z", "my_tree", host);
 
   printf("z vector:\n");
   for (ii = 0; ii < (zVecRead->size); ii++) {
