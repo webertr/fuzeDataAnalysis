@@ -226,9 +226,9 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
 			 param->mdsPlusHost);
     writeDHIMDSplusImage(densityError, "SIGNALS.HOLOGRAPHY:NE:ERROR:RAW", "$1", param->shotNumber,
 			 param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusImage(azimuthalBField, "SIGNALS.HOLOGRAPHY:BTHETA:RAW", "$1", param->shotNumber,
+    writeDHIMDSplusImage(azimuthalBField, "SIGNALS.HOLOGRAPHY:B_THETA:RAW", "$1", param->shotNumber,
 			 param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusImage(azimuthalBFieldError, "SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW", "$1",
+    writeDHIMDSplusImage(azimuthalBFieldError, "SIGNALS.HOLOGRAPHY:B_THETA:ERROR:RAW", "$1",
 			 param->shotNumber,
 			 param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusImage(temperature, "SIGNALS.HOLOGRAPHY:T:RAW", "$1", param->shotNumber,

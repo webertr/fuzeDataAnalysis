@@ -1064,10 +1064,10 @@ int hologramMain(holographyParameters* param) {
     writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:NE:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:BTHETA:R",
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:B_THETA:R",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:BTHETA:Z",
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:B_THETA:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:T:R",
