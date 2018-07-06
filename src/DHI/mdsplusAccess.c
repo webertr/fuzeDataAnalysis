@@ -404,30 +404,37 @@ TCL> @script
 
 webertr@fuze2:~/Documents/my_tree$ more script
 edit my_tree/new
-add node .DHI
-add node .DHI:LINE_INT/usage=SIGNAL
-add node .DHI:LINE_INT:RAW/usage=NUMERIC
-add node .DHI:LINE_INT:R/usage=SIGNAL
-add node .DHI:LINE_INT:Z/usage=SIGNAL
-add node .DHI:NE/usage=SIGNAL
-add node .DHI:NE:RAW/usage=NUMERIC
-add node .DHI:NE:ERROR/usage=SIGNAL
-add node .DHI:NE:ERROR:RAW/usage=NUMERIC
-add node .DHI:T/usage=SIGNAL
-add node .DHI:T:RAW/usage=NUMERIC
-add node .DHI:T:ERROR/usage=SIGNAL
-add node .DHI:T:ERROR:RAW/usage=NUMERIC
-add node .DHI:BTHETA/usage=SIGNAL
-add node .DHI:BTHETA:RAW/usage=NUMERIC
-add node .DHI:BTHETA:ERROR/usage=SIGNAL
-add node .DHI:BTHETA:ERROR:RAW/usage=NUMERIC
-put DHI:LINE_INT "build_signal(build_with_units(DHI:LINE_INT:RAW,'m^-2'),,)"
-put DHI:NE "build_signal(build_with_units(DHI:NE:RAW,'m^-3'),,)"
-put DHI:NE:ERROR "build_signal(build_with_units(DHI:NE:ERROR:RAW,'m^-3'),,)"
-put DHI:T "build_signal(build_with_units(DHI:T:RAW,'eV'),,)"
-put DHI:T:ERROR "build_signal(build_with_units(DHI:T:ERROR:RAW,'eV'),,)"
-put DHI:BTHETA "build_signal(build_with_units(DHI:BTHETA:RAW,'T'),,)"
-put DHI:BTHETA:ERROR "build_signal(build_with_units(DHI:BTHETA:ERROR:RAW,'T'),,)"
+add node .SIGNALS
+add node .SIGNALS.HOLOGRAPHY
+add node .SIGNALS.HOLOGRAPHY:LINE_INT/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:LINE_INT:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:LINE_INT:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:LINE_INT:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:NE:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:ERROR/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:ERROR:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:T/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:T:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:ERROR/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:ERROR:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:BTHETA/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:BTHETA:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:ERROR/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW/usage=NUMERIC
+put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:LINE_INT:RAW,'m^-2'),,)"
+put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:RAW,'m^-3'),,)"
+put SIGNALS.HOLOGRAPHY:NE:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:ERROR:RAW,'m^-3'),,)"
+put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,)"
+put SIGNALS.HOLOGRAPHY:T:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:ERROR:RAW,'eV'),,)"
+put SIGNALS.HOLOGRAPHY:BTHETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:RAW,'T'),,)"
+put SIGNALS.HOLOGRAPHY:BTHETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW,'T'),,)"
 write
 close
 set tree my_tree
@@ -441,6 +448,46 @@ with mdsip.hosts:
 /O=Grid/O=National Fusion Collaboratory/OU=MIT/CN=Thomas W. Fredian/Email=twf@psfc.mit.edu | twf
 * | MAP_TO_LOCAL
 * | webertr
+
+
+Here is the script I ran to update the fuze tree:
+
+
+fuze@fuze:~/Documents/weberTest$ more run.sh
+set tree fuze
+create pulse 12345
+edit fuze/shot=12345
+add node .SIGNALS.HOLOGRAPHY:LINE_INT/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:LINE_INT:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:LINE_INT:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:LINE_INT:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:NE:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:ERROR/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:NE:ERROR:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:T/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:T:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:ERROR/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:T:ERROR:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:BTHETA/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:BTHETA:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:ERROR/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW/usage=NUMERIC
+put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:LINE_INT:RAW,'m^-2'),,)"
+put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:RAW,'m^-3'),,)"
+put SIGNALS.HOLOGRAPHY:NE:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:ERROR:RAW,'m^-3'),,)"
+put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,)"
+put SIGNALS.HOLOGRAPHY:T:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:ERROR:RAW,'eV'),,)"
+put SIGNALS.HOLOGRAPHY:BTHETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:RAW,'T'),,)"
+put SIGNALS.HOLOGRAPHY:BTHETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW,'T'),,)"
+write
+close
 
 
 ******************************************************************************/

@@ -1050,12 +1050,32 @@ int hologramMain(holographyParameters* param) {
    * if specified, save data to mdsplus
    */
   if (param->saveMDSplus == 1) {
-    writeDHIMDSplusImage(twinImageUnwrap, "DHI:LINE_INT:RAW", "$1", param->shotNumber,
+    writeDHIMDSplusImage(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:LINE_INT:RAW", "$1", param->shotNumber,
 			 param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
-			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
-			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:LINE_INT:R",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:LINE_INT:Z",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:NE:R",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:NE:Z",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:BTHETA:R",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:BTHETA:Z",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:T:R",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:T:Z",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
   }
 
   /*
