@@ -488,8 +488,8 @@ put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:R
 put SIGNALS.HOLOGRAPHY:NE:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:ERROR:RAW,'m^-3'),,)"
 put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,)"
 put SIGNALS.HOLOGRAPHY:T:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:ERROR:RAW,'eV'),,)"
-put SIGNALS.HOLOGRAPHY:BTHETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:RAW,'T'),,)"
-put SIGNALS.HOLOGRAPHY:BTHETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW,'T'),,)"
+put SIGNALS.HOLOGRAPHY:B_THETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:RAW,'T'),,)"
+put SIGNALS.HOLOGRAPHY:B_THETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:ERROR:RAW,'T'),,)"
 write
 close
 
