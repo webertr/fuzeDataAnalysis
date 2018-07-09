@@ -471,7 +471,7 @@ with mdsip.hosts:
 
 Here is the script I ran to update the fuze tree:
 
-fuze@fuze:~/Documents/weberTest$ more run.sh
+fuze@fuze:~/Documents/weberTest$ more mdsplusUpdate.sh 
 set tree fuze
 create pulse 12345
 edit fuze/shot=12345
@@ -506,13 +506,13 @@ add tag .SIGNALS.HOLOGRAPHY:IMAGE DHI_IMAGE
 add tag .SIGNALS.HOLOGRAPHY:NE NE_DHI
 add tag .SIGNALS.HOLOGRAPHY:T T_DHI
 add tag .SIGNALS.HOLOGRAPHY:B_THETA B_THETA_DHI
-put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:LINE_INT:RAW,'m^-2'),,SIGNALS.HOLOGRAPHY:LINE_INT:R,SIGNALS.HOLOGRAPHY:LINE_INT:Z)"
-put SIGNALS.HOLOGRAPHY:IMAGE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:IMAGE:RAW,'m^-2'),,build_,SIGNALS.HOLOGRAPHY:LINE_INT:R,SIGNALS.HOLOGRAPHY:LINE_INT:Z)"
-put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:RAW,'m^-3'),,SIGNALS.HOLOGRAPHY:NE:R,SIGNALS.HOLOGRAPHY:NE:Z)"
+put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:LINE_INT:RAW,'m^-2'),,)"
+put SIGNALS.HOLOGRAPHY:IMAGE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:IMAGE:RAW,'m^-2'),,)"
+put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:RAW,'m^-3'),,)"
 put SIGNALS.HOLOGRAPHY:NE:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:ERROR:RAW,'m^-3'),,)"
-put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,SIGNALS.HOLOGRAPHY:T:R,SIGNALS.HOLOGRAPHY:T:Z)"
+put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,)"
 put SIGNALS.HOLOGRAPHY:T:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:ERROR:RAW,'eV'),,)"
-put SIGNALS.HOLOGRAPHY:B_THETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:RAW,'T'),,SIGNALS.HOLOGRAPHY:B_THETA:R,SIGNALS.HOLOGRAPHY:B_THETA:Z)"
+put SIGNALS.HOLOGRAPHY:B_THETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:RAW,'T'),,)"
 put SIGNALS.HOLOGRAPHY:B_THETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:ERROR:RAW,'T'),,)"
 write
 close
