@@ -460,44 +460,6 @@ webertr@fuze2:~/Documents/my_tree$ export my_tree_path=/home/webertr/Documents/m
 webertr@fuze2:~/Documents/my_tree$ mdstcl 
 TCL> @script
 
-webertr@fuze2:~/Documents/my_tree$ more script
-edit my_tree/new
-add node .SIGNALS
-add node .SIGNALS.HOLOGRAPHY
-add node .SIGNALS.HOLOGRAPHY:LINE_INT/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:LINE_INT:RAW/usage=NUMERIC
-add node .SIGNALS.HOLOGRAPHY:LINE_INT:R/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:LINE_INT:Z/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:NE/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:NE:RAW/usage=NUMERIC
-add node .SIGNALS.HOLOGRAPHY:NE:R/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:NE:Z/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:NE:ERROR/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:NE:ERROR:RAW/usage=NUMERIC
-add node .SIGNALS.HOLOGRAPHY:T/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:T:RAW/usage=NUMERIC
-add node .SIGNALS.HOLOGRAPHY:T:R/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:T:Z/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:T:ERROR/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:T:ERROR:RAW/usage=NUMERIC
-add node .SIGNALS.HOLOGRAPHY:BTHETA/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:BTHETA:RAW/usage=NUMERIC
-add node .SIGNALS.HOLOGRAPHY:BTHETA:R/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:BTHETA:Z/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:BTHETA:ERROR/usage=SIGNAL
-add node .SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW/usage=NUMERIC
-put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:LINE_INT:RAW,'m^-2'),,)"
-put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:RAW,'m^-3'),,)"
-put SIGNALS.HOLOGRAPHY:NE:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:ERROR:RAW,'m^-3'),,)"
-put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,)"
-put SIGNALS.HOLOGRAPHY:T:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:ERROR:RAW,'eV'),,)"
-put SIGNALS.HOLOGRAPHY:BTHETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:RAW,'T'),,)"
-put SIGNALS.HOLOGRAPHY:BTHETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:BTHETA:ERROR:RAW,'T'),,)"
-write
-close
-set tree my_tree
-create pulse 12345
-
 Then, to run the server:
 webertr@fuze2:~/Documents/mdsplusCTest$ export my_tree_path=/home/webertr/Documents/my_tree
 webertr@fuze2:~/Documents/mdsplusCTest$ mdsip -p 8000 -m -h mdsip.hosts
@@ -506,7 +468,6 @@ with mdsip.hosts:
 /O=Grid/O=National Fusion Collaboratory/OU=MIT/CN=Thomas W. Fredian/Email=twf@psfc.mit.edu | twf
 * | MAP_TO_LOCAL
 * | webertr
-
 
 Here is the script I ran to update the fuze tree:
 
