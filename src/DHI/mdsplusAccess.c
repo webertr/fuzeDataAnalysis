@@ -59,7 +59,7 @@ static int getSignalLength(const char *signal) {
 
 
 /******************************************************************************
- * Function: writeDHIMDSplusImage
+ * Function: writeDHIMDSplusMatrix
  * Inputs: gsl_matrix *, int, char *
  * Returns: int
  * Description: This will write an image to the DHI tree in mdsplus.
@@ -67,8 +67,8 @@ static int getSignalLength(const char *signal) {
  * expression = "$1"
  ******************************************************************************/
 
-int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
-			 char *treeName, char *host) {
+int writeDHIMDSplusMatrix(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
+			  char *treeName, char *host) {
 
   int connectionStatus,
     connectionID,
@@ -86,6 +86,64 @@ int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, in
     }
   }
   sigDescrImage = descr(&dTypeDouble, data, &numRows, &numCols, &null);
+
+  connectionID = MdsConnect(host);
+  if (connectionID == -1) {
+    fprintf(stderr, "Connection Failed\n");
+    return -1;
+  }
+
+  connectionStatus = MdsOpen(treeName, &shotNumber);
+  if ( !statusOk(connectionStatus) ) {
+    fprintf(stderr,"\nMdsOpen error. Message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsDisconnect();
+    return -1;
+  }
+
+  connectionStatus = MdsPut(nodeName, "$1", &sigDescrImage, &null);
+  if ( !statusOk(connectionStatus) ) {
+    fprintf(stderr,"\nMdsPut error (%s). Message: %s.\n", nodeName, MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
+    MdsDisconnect();
+    return -1;
+  }
+
+  connectionStatus = MdsClose(treeName, &shotNumber);
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: writeDHIMDSplusImage
+ * Inputs: gsl_matrix *, int, char *
+ * Returns: int
+ * Description: This will write an image to the DHI tree in mdsplus.
+ * For this raw data, expression can just be:
+ * expression = "$1"
+ ******************************************************************************/
+
+int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
+			 char *treeName, char *host) {
+
+  int connectionStatus,
+    connectionID,
+    dTypeWord = DTYPE_WU,
+    null = 0,
+    sigDescrImage,
+    ii, jj,
+    numRows = image->size1,
+    numCols = image->size2;
+
+  double maxVal = gsl_matrix_max(image);
+  short *data = (short *)malloc(numRows*numCols * sizeof(short));
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      data[ii+jj*numRows] = (short) (16000*gsl_matrix_get(image, ii, jj)/maxVal);
+    }
+  }
+  sigDescrImage = descr(&dTypeWord, data, &numRows, &numCols, &null);
 
   connectionID = MdsConnect(host);
   if (connectionID == -1) {
@@ -340,7 +398,7 @@ int mdsplusReadTest() {
     gsl_vector_set(rVec, ii, ii/20.0);
   }
   
-  writeDHIMDSplusImage(image, "DHI:LINE_INT:RAW", "$1", shotNumber, treeName, host);
+  writeDHIMDSplusMatrix(image, "DHI:LINE_INT:RAW", "$1", shotNumber, treeName, host);
   writeDHIMDSplusVector(rVec, "DHI:LINE_INT:R", "build_signal(build_with_units($1,'m'),,)",
 			shotNumber, treeName, host);
   writeDHIMDSplusVector(zVec, "DHI:LINE_INT:Z", "build_signal(build_with_units($1,'m'),,)",
@@ -452,7 +510,6 @@ with mdsip.hosts:
 
 Here is the script I ran to update the fuze tree:
 
-
 fuze@fuze:~/Documents/weberTest$ more run.sh
 set tree fuze
 create pulse 12345
@@ -461,6 +518,10 @@ add node .SIGNALS.HOLOGRAPHY:LINE_INT/usage=SIGNAL
 add node .SIGNALS.HOLOGRAPHY:LINE_INT:RAW/usage=NUMERIC
 add node .SIGNALS.HOLOGRAPHY:LINE_INT:R/usage=SIGNAL
 add node .SIGNALS.HOLOGRAPHY:LINE_INT:Z/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:IMAGE/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:IMAGE:RAW/usage=NUMERIC
+add node .SIGNALS.HOLOGRAPHY:IMAGE:R/usage=SIGNAL
+add node .SIGNALS.HOLOGRAPHY:IMAGE:Z/usage=SIGNAL
 add node .SIGNALS.HOLOGRAPHY:NE/usage=SIGNAL
 add node .SIGNALS.HOLOGRAPHY:NE:RAW/usage=NUMERIC
 add node .SIGNALS.HOLOGRAPHY:NE:R/usage=SIGNAL
@@ -480,20 +541,20 @@ add node .SIGNALS.HOLOGRAPHY:B_THETA:Z/usage=SIGNAL
 add node .SIGNALS.HOLOGRAPHY:B_THETA:ERROR/usage=SIGNAL
 add node .SIGNALS.HOLOGRAPHY:B_THETA:ERROR:RAW/usage=NUMERIC
 add tag .SIGNALS.HOLOGRAPHY:LINE_INT NL_DHI
+add tag .SIGNALS.HOLOGRAPHY:IMAGE DHI_IMAGE
 add tag .SIGNALS.HOLOGRAPHY:NE NE_DHI
 add tag .SIGNALS.HOLOGRAPHY:T T_DHI
 add tag .SIGNALS.HOLOGRAPHY:B_THETA B_THETA_DHI
-put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units((set_range(0:0,1:(shape(SIGNALS.HOLOGRAPHY:LINE_INT:RAW)[0]),1:(shape(SIGNALS.HOLOGRAPHY:LINE_INT:RAW)[1]), SIGNALS.HOLOGRAPHY:LINE_INT:RAW)),'m^-2'),,\T_DHI_GATE,SIGNALS.HOLOGRAPHY:LINE_INT:R,SIGNALS.HOLOGRAPHY:LINE_INT:Z)"
-put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units((set_range(0:0,1:(shape(SIGNALS.HOLOGRAPHY:NE:RAW)[0]),1:(shape(SIGNALS.HOLOGRAPHY:NE:RAW)[1]), SIGNALS.HOLOGRAPHY:NE:RAW)),'m^-3'),,\T_DHI_GATE,SIGNALS.HOLOGRAPHY:NE:R,SIGNALS.HOLOGRAPHY:NE:Z)"
+put SIGNALS.HOLOGRAPHY:LINE_INT "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:LINE_INT:RAW,'m^-2'),,SIGNALS.HOLOGRAPHY:LINE_INT:R,SIGNALS.HOLOGRAPHY:LINE_INT:Z)"
+put SIGNALS.HOLOGRAPHY:IMAGE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:IMAGE:RAW,'m^-2'),,build_,SIGNALS.HOLOGRAPHY:LINE_INT:R,SIGNALS.HOLOGRAPHY:LINE_INT:Z)"
+put SIGNALS.HOLOGRAPHY:NE "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:RAW,'m^-3'),,SIGNALS.HOLOGRAPHY:NE:R,SIGNALS.HOLOGRAPHY:NE:Z)"
 put SIGNALS.HOLOGRAPHY:NE:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:NE:ERROR:RAW,'m^-3'),,)"
-put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units((set_range(0:0,1:(shape(SIGNALS.HOLOGRAPHY:T:RAW)[0]),1:(shape(SIGNALS.HOLOGRAPHY:T:RAW)[1]), SIGNALS.HOLOGRAPHY:T:RAW)),'eV'),,\T_DHI_GATE,SIGNALS.HOLOGRAPHY:T:R,SIGNALS.HOLOGRAPHY:T:Z)"
+put SIGNALS.HOLOGRAPHY:T "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:RAW,'eV'),,SIGNALS.HOLOGRAPHY:T:R,SIGNALS.HOLOGRAPHY:T:Z)"
 put SIGNALS.HOLOGRAPHY:T:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:T:ERROR:RAW,'eV'),,)"
-put SIGNALS.HOLOGRAPHY:B_THETA "build_signal(build_with_units((set_range(0:0,1:(shape(SIGNALS.HOLOGRAPHY:B_THETA:RAW)[0]),1:(shape(SIGNALS.HOLOGRAPHY:B_THETA:RAW)[1]), SIGNALS.HOLOGRAPHY:B_THETA:RAW)),'T'),,\T_DHI_GATE,SIGNALS.HOLOGRAPHY:B_THETA:R,SIGNALS.HOLOGRAPHY:B_THETA:Z)"
+put SIGNALS.HOLOGRAPHY:B_THETA "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:RAW,'T'),,SIGNALS.HOLOGRAPHY:B_THETA:R,SIGNALS.HOLOGRAPHY:B_THETA:Z)"
 put SIGNALS.HOLOGRAPHY:B_THETA:ERROR "build_signal(build_with_units(SIGNALS.HOLOGRAPHY:B_THETA:ERROR:RAW,'T'),,)"
 write
 close
-
-
 
 
 

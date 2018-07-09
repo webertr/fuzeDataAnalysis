@@ -1050,12 +1050,20 @@ int hologramMain(holographyParameters* param) {
    * if specified, save data to mdsplus
    */
   if (param->saveMDSplus == 1) {
-    writeDHIMDSplusImage(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:LINE_INT:RAW", "$1", param->shotNumber,
-			 param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusMatrix(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:LINE_INT:RAW", "$1", 
+			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusImage(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:IMAGE:RAW", "$1", 
+			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:LINE_INT:R",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:LINE_INT:Z",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:IMAGE:R",
+			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
+			  param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:IMAGE:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
     writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:NE:R",
