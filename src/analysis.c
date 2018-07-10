@@ -39,7 +39,7 @@ int hologramAnalysis() {
   /* 
    * Fancy plot of the hologram
    */
-  if (0) {
+  if (1) {
 
     char *keywords = "set size ratio -1\n"
       //"set terminal png\n"
@@ -58,7 +58,7 @@ int hologramAnalysis() {
   /*
    * Fancy plot for the abel inversion with error bars 
    */
-  if (0) {
+  if (1) {
 
     char *errorKeywords = "set size ratio 1\n"
       //"set term png\n"
