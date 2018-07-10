@@ -221,17 +221,17 @@ gsl_matrix *invertImageDHI(gsl_matrix* imageM, holographyParameters* param) {
   gsl_matrix *temperatureWithError = interlayColumnsWithRDHI(temperature, temperatureError, param);
 
   if (param->saveMDSplus == 1) {
-    writeDHIMDSplusMatrix(density, "SIGNALS.HOLOGRAPHY:NE:RAW", "$1", param->shotNumber,
+    writeDHIMDSplusMatrix(density, "SIGNALS.HOLOGRAPHY:NE_DHI:RAW", "$1", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusMatrix(densityError, "SIGNALS.HOLOGRAPHY:NE:ERROR:RAW", "$1", param->shotNumber,
-			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusMatrix(azimuthalBField, "SIGNALS.HOLOGRAPHY:B_THETA:RAW", "$1", 
+    writeDHIMDSplusMatrix(densityError, "SIGNALS.HOLOGRAPHY:NE_DHI:ERROR:RAW", "$1", 
 			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusMatrix(azimuthalBFieldError, "SIGNALS.HOLOGRAPHY:B_THETA:ERROR:RAW", "$1",
+    writeDHIMDSplusMatrix(azimuthalBField, "SIGNALS.HOLOGRAPHY:B_THETA_DHI:RAW", "$1", 
+			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
+    writeDHIMDSplusMatrix(azimuthalBFieldError, "SIGNALS.HOLOGRAPHY:B_THETA_DHI:ERROR:RAW", "$1",
 			 param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusMatrix(temperature, "SIGNALS.HOLOGRAPHY:T:RAW", "$1", param->shotNumber,
+    writeDHIMDSplusMatrix(temperature, "SIGNALS.HOLOGRAPHY:T_DHI:RAW", "$1", param->shotNumber,
 			 param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusMatrix(temperatureError, "SIGNALS.HOLOGRAPHY:T:ERROR:RAW", "$1", 
+    writeDHIMDSplusMatrix(temperatureError, "SIGNALS.HOLOGRAPHY:T_DHI:ERROR:RAW", "$1", 
 			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
   }
   

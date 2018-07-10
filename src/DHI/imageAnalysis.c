@@ -1050,38 +1050,38 @@ int hologramMain(holographyParameters* param) {
    * if specified, save data to mdsplus
    */
   if (param->saveMDSplus == 1) {
-    writeDHIMDSplusMatrix(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:LINE_INT:RAW", "$1", 
+    writeDHIMDSplusMatrix(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:NL_DHI:RAW", "$1", 
 			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusImage(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:IMAGE:RAW", "$1", 
+    writeDHIMDSplusImage(twinImageUnwrap, "SIGNALS.HOLOGRAPHY:DHI_IMAGE:RAW", "$1", 
 			  param->shotNumber, param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:LINE_INT:R",
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:NL_DHI:Y",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:LINE_INT:Z",
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:NL_DHI:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:IMAGE:R",
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:DHI_IMAGE:Y",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:IMAGE:Z",
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:DHI_IMAGE:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:NE:R",
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:NE_DHI:R",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:NE:Z",
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:NE_DHI:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:B_THETA:R",
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:B_THETA_DHI:R",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:B_THETA:Z",
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:B_THETA_DHI:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:T:R",
+    writeDHIMDSplusVector(yPhase, "SIGNALS.HOLOGRAPHY:T_DHI:R",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
-    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:T:Z",
+    writeDHIMDSplusVector(xPhase, "SIGNALS.HOLOGRAPHY:T_DHI:Z",
 			  "build_signal(build_with_units($1,'m'),,)", param->shotNumber,
 			  param->mdsPlusTree, param->mdsPlusHost);
   }
