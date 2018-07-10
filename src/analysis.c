@@ -217,10 +217,10 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, 0, 30, "\\b_p15_000_sm", "");
+    plotPostShotModeData(shotNumber, 0, 100, "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, 0, 100, "");
+    //plotPostShotNeutronData(shotNumber, 0, 100, "");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
