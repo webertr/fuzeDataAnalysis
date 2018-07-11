@@ -37,7 +37,9 @@ struct holographyparameters {
   int invertImage;              // 1 means to perform an inversion
   int saveLineInt;              // 1 means to save the line integrated data
   int saveWrappedPhase;         // 1 means to save the file before it's unwrapped
+  int saveTwinImage;            // 1 means to save the twin image
   char fileWrappedPhase[100];   // The name of the file to save the wrapped phase of the hologram
+  char fileTwinImage[100];      // The name of the file to save the twin image
   char fileLineIntPos[100];     // The name of file for the line integrated data with positon info
   char fileLineInt[100];        // The name of the file for the line integrated data
   char fileLineIntText[100];    // The name of the file for the line integrated data in Ascii form
@@ -67,6 +69,7 @@ struct holographyparameters {
   double edgeFracFB;            // Fraction of density to define edge at for force balance calc
   char mdsPlusTree[100];        // The MDSplus tree name
   char mdsPlusHost[100];        // The MDSplus host name
+  int unwrap;                   // If 1, unwrap the phase of the raw hologram
 };
 
 typedef struct holographyparameters holographyParameters;

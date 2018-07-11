@@ -21,6 +21,8 @@ int hologramAnalysis() {
   hologramMain(&param);
 
   plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
   plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
 
   //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
@@ -39,12 +41,12 @@ int hologramAnalysis() {
   /* 
    * Fancy plot of the hologram
    */
-  if (0) {
+  if (1) {
 
     char *keywords = "set size ratio -1\n"
-      //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180215012.png'\n"
-      "set title 'Pulse 180215012\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180710008.png'\n"
+      "set title 'Pulse 180710008\n"
       "set xrange [13.628:14.37]\n"
       "set yrange [-0.685:0.68]\n"
       "set xlabel 'z (cm)'\n"
@@ -217,26 +219,26 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, 0, 100, "\\b_p15_000_sm", "");
+    plotPostShotModeData(shotNumber, 40, 60, "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
     //plotPostShotNeutronData(shotNumber, 0, 100, "");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotPostShotSymmetryCheck(shotNumber, 0, 100);
+    //plotPostShotSymmetryCheck(shotNumber, 0, 100);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotPostShotAccelData(shotNumber, 0, 100);
+    //plotPostShotAccelData(shotNumber, 0, 100);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotIV(shotNumber, -100, 800, "");
+    //plotPostShotIV(shotNumber, -100, 800, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotPostShotGVCurrent(shotNumber, -800, 0);
+    //plotPostShotGVCurrent(shotNumber, -800, 0);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {

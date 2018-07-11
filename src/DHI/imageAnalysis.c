@@ -1004,6 +1004,13 @@ int hologramMain(holographyParameters* param) {
   /* Extracting the 1st order image from the reconstruction */
   gsl_matrix *twinImage = extractTwinImage(phase, param);
 
+  /*
+   * if specified, save the twin image
+   */
+  if (param->saveTwinImage == 1) {
+    saveImageData(twinImage, param->fileTwinImage);
+  }
+
   /* Taking every param->sampleInterval the element */
   gsl_matrix *twinImageReduce = matrixReduceElements(twinImage, param);
 
@@ -1019,8 +1026,12 @@ int hologramMain(holographyParameters* param) {
     
   }
 
-  /* Unwrapping the phase of the smoothed image and subtracting an offset */
-  unwrapPhase(twinImageUnwrap, param);
+  /* 
+   * Unwrapping the phase of the smoothed image and subtracting an offset if param specified 
+   */
+  if (param->unwrap == 1) {
+    unwrapPhase(twinImageUnwrap, param);
+  }
 
   /*
    * if specified, Converting phase difference to electron density
