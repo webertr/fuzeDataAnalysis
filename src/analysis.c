@@ -20,10 +20,10 @@ int hologramAnalysis() {
 
   hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
 
   //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
 
@@ -44,11 +44,11 @@ int hologramAnalysis() {
   if (0) {
 
     char *keywords = "set size ratio -1\n"
-      "set terminal png\n"
-      "set output '/home/fuze/Downloads/180710008.png'\n"
+      //"set terminal png\n"
+      //"set output '/home/fuze/Downloads/180710008.png'\n"
       "set title 'Pulse 180710008\n"
-      "set xrange [13.628:14.37]\n"
-      "set yrange [-0.685:0.68]\n"
+      //"set xrange [13.628:14.37]\n"
+      //"set yrange [-0.685:0.68]\n"
       "set xlabel 'z (cm)'\n"
       "set ylabel 'b (cm)'\n"
       "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
@@ -68,7 +68,7 @@ int hologramAnalysis() {
       "set title 'Radial density profile for Pulse 180215012' font 'Times Bold, 14'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.45]\n"
+      //"set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'n_{e} (cm^{-3})' font 'Times Bold, 18'\n";
@@ -110,7 +110,7 @@ int hologramAnalysis() {
       "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      "set xrange [0:0.45]\n"
+      //"set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
