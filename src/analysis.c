@@ -218,11 +218,14 @@ int plotPostAnalysis() {
   int pid2 = fork();
   int pid3 = fork();
 
+  int timeI = 0,
+    timeF = 60;
+  
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, 40, 60, "\\b_p15_000_sm", "");
+    plotPostShotModeData(shotNumber, timeI, timeF, "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    //plotPostShotNeutronData(shotNumber, 0, 100, "");
+    plotPostShotNeutronData(shotNumber, timeI, timeF, "");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -230,7 +233,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotPostShotAccelData(shotNumber, 0, 100);
+    plotPostShotAccelData(shotNumber, timeI, timeF);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
