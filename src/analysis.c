@@ -218,30 +218,33 @@ int plotPostAnalysis() {
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeI = 0,
-    timeF = 60;
+  int timeCompI = 30,
+    timeCompF = 60,
+    timeAccelI = 0,
+    timeAccelF = 40; 
   
+
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, timeI, timeF, "\\b_p15_000_sm", "");
+    plotPostShotModeData(shotNumber, timeCompI, timeCompF, "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, timeI, timeF, "");
+    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    //plotPostShotSymmetryCheck(shotNumber, 0, 100);
+    plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotPostShotAccelData(shotNumber, timeI, timeF);
+    plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotPostShotIV(shotNumber, -100, 800, "");
+    plotPostShotIV(shotNumber, -100, 800, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotPostShotGVCurrent(shotNumber, -800, 0);
+    plotPostShotGVCurrent(shotNumber, -800, 0);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -802,7 +805,7 @@ title '%s',\\\n", accelFile, data2Name);
 title '%s',\\\n", accelFile, data3Name);
   fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
 title '%s',\\\n", accelFile, data4Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'green' \
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'orange' \
 title '%s',\\\n", accelFile, data5Name);
   fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 lc rgb 'yellow' \
 title '%s'\n", accelFile, data6Name);
