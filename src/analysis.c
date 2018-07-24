@@ -18,12 +18,13 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
-  plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
-  plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
-  plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
-  plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileLineInt, 1, 1, 1, "set size ratio -1");
 
   //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
 
@@ -45,12 +46,13 @@ int hologramAnalysis() {
 
     char *keywords = "set size ratio -1\n"
       //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180710008.png'\n"
-      "set title 'Pulse 180710008\n"
-      //"set xrange [13.628:14.37]\n"
-      //"set yrange [-0.685:0.68]\n"
+      //"set output '/home/fuze/Downloads/180710008_Line_Integrated.png'\n"
+      "set title 'Pulse 180723022\n"
+      "set xrange [13.5475:14.4675]\n"
+      "set yrange [-0.85:0.85]\n"
       "set xlabel 'z (cm)'\n"
       "set ylabel 'b (cm)'\n"
+      "set xtics 13.5, 0.25, 14.5\n"
       "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
       "rotate by 90 font 'Times Bold, 14'\n";
     plotImageDataFile(param.fileLineIntPos, 100, 100, 1E-4, keywords);
@@ -60,19 +62,19 @@ int hologramAnalysis() {
   /*
    * Fancy plot for the abel inversion with error bars 
    */
-  if (0) {
+  if (1) {
 
     char *errorKeywords = "set size ratio 1\n"
-      //"set term png\n"
-      //"set output '/home/fuze/Downloads/180215012ne.png'\n"
-      "set title 'Radial density profile for Pulse 180215012' font 'Times Bold, 14'\n"
+      "set term png\n"
+      "set output '/home/fuze/Downloads/180723022ne.png'\n"
+      "set title 'Radial density profile for Pulse 180723022' font 'Times Bold, 14'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
       //"set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'n_{e} (cm^{-3})' font 'Times Bold, 18'\n";
-    plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, 
+    plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+10*2, 1+10*2+1, 
 				   1E2, 1E-6, 1E-6, errorKeywords);
     
   }
@@ -81,12 +83,12 @@ int hologramAnalysis() {
   /*
    * Plotting the azimuthal magnetic field
    */
-  if (0) {
+  if (1) {
 
     char *bThetaKeywords = "set size ratio 1\n"
-      //"set terminal png\n"
-      //"set output '/home/webertr/Downloads/180215012BField.png'\n"
-      "set title 'Radial B_{/Symbol q} profile for Pulse 180215012' font 'Time Bold, 16'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180723022BField.png'\n"
+      "set title 'Radial B_{/Symbol q} profile for Pulse 180723022' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
       "set xrange [0:]\n"
@@ -94,7 +96,7 @@ int hologramAnalysis() {
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'B_{/Symbol q} (Tesla)' font 'Times Bold, 18'\n";
 
-    plotMatrixColVColErrorDataFile(param.fileBTheta, 0, 1+60*2, 1+60*2+1, 
+    plotMatrixColVColErrorDataFile(param.fileBTheta, 0, 1+10*2, 1+10*2+1, 
 				   1E2, 1, 1, bThetaKeywords);
     
   }
@@ -102,12 +104,12 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature 
    */
-  if (0) {
+  if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
-      //"set terminal png\n"
-      //"set output '/home/webertr/Downloads/180215012Temp.png'\n"
-      "set title 'Radial temperature profile for Pulse 180215012' font 'Time Bold, 16'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180723022Temp.png'\n"
+      "set title 'Radial temperature profile for Pulse 180723022' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
       //"set xrange [0:0.45]\n"
@@ -115,7 +117,7 @@ int hologramAnalysis() {
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
 
-    plotMatrixColVColErrorDataFile(param.fileTemperature, 0, 1+60*2, 1+60*2+1, 
+    plotMatrixColVColErrorDataFile(param.fileTemperature, 0, 1+10*2, 1+10*2+1, 
 				   1E2, 1, 1, tempKeywords);
     
   }
@@ -225,7 +227,8 @@ int plotPostAnalysis() {
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, timeCompI, timeCompF, "\\b_p15_000_sm", "");
+    plotPostShotModeData(shotNumber, timeCompI, timeCompF, 
+			 "\\b_p15_000_sm", "/home/fuze/Downloads/180723022_Mode.png");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
     plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
