@@ -15,5 +15,6 @@
 #include "DHI/forceBalance.h"
 #include "DHI/mdsplusAccess.h"
 #include "analysis.h"
+#include "pinchAnalysis.h"
 
 #endif

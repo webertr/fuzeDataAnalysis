@@ -17,7 +17,12 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  hologramAnalysis();
+  //hologramAnalysis();
+
+  /*
+   * Running the pinch formation analysis
+   */
+  pinchAnalysis();
 
   /* 
    * Plotting post shot data
