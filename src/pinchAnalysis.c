@@ -10,7 +10,7 @@ static int plotModeData(int shotNumber, int zVal, int tmin, int tmax,
 			char *nodeName, char *saveFile, int uniqueID);
 static int plotAccelData(int shotNumber, int tmin, int tmax, int uniqueID);
 static int plotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID);
-
+static int plotIV(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID);
 
 /******************************************************************************
  * Function: pinchAnalysis
@@ -21,46 +21,50 @@ static int plotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile, i
 
 int pinchAnalysis() {
 
-  int shotNumber = 180723020;
+  int shotNumber = 180723010;
 
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 20,
-    timeCompF = 100,
+  int timeCompI = 40,
+    timeCompF = 50,
     timeAccelI = 0,
     timeAccelF = 100;
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "", 1);
+    //plotModeData(shotNumber, 5, timeCompI, timeCompF, "\\b_p05_000_sm", "", 1);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotModeData(shotNumber, 25, timeCompI, timeCompF, "\\b_p25_000_sm", "", 2);
+    plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "/home/webertr/Downloads/180723010Mode.png", 2);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 3);
+    //plotModeData(shotNumber, 25, timeCompI, timeCompF, "\\b_p25_000_sm", "", 3);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 4);
+    //plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 4);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
+    //plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 5);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotNeutronData(shotNumber, timeCompI, timeCompF, "", 1);
+    //plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
+    plotNeutronData(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180723010Neutron.png", 1);
+    //plotNeutronData(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotIV(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180723012IV.png", 1);
+    //plotIV(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
 
@@ -148,10 +152,10 @@ static int plotModeData(int shotNumber, int zVal, int tmin, int tmax,
   fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'blue' \
 title 'm=1',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'green' \
-title 'm=2',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'yellow' \
-title 'm=3',\\\n", modeFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'green' title 'm=2',\\\n",
+  modeFile);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'yellow' title 'm=3',\\\n",
+  modeFile);
   fprintf(fp, "     '%s' using ($1*1E6):($2*1E-3) with line lw 3 dt 2 lc rgb 'black' \
 title 'I_{P}' axes x1y2,\\\n", ipFile);
   fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 dt 2 lc rgb 'red' \
@@ -473,6 +477,128 @@ title '%s'\n", neutronFile, data6Name);
   gsl_vector_free(data5);
   gsl_vector_free(time);
 
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotIV
+ * Inputs: int, int, int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * total plasma current and voltage across the hot and cold plate
+ ******************************************************************************/
+
+static int plotIV(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID) {
+
+  char *data1Node = "\\v_gap",
+    *data1Name = "V_{GAP}",
+    *data2Node = "\\i_p",
+    *data2Name = "I_{P}";
+
+  int status;
+
+  int sizeString = snprintf(NULL, 0, "script/tempIV_%d.sh", uniqueID);
+  char *gnuPlotFile = (char *)malloc(sizeString + 1);
+  snprintf(gnuPlotFile, sizeString+1, "script/tempIV_%d.sh", uniqueID);
+
+  sizeString = snprintf(NULL, 0, "data/iv_%d.txt", uniqueID);
+  char *ivFile = (char *)malloc(sizeString + 1);
+  snprintf(ivFile, sizeString+1, "data/iv_%d.txt", uniqueID);
+    
+  /* Getting data */
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  
+
+  /* Saving data */
+  save3VectorData(time, data1, data2, ivFile);
+
+
+  
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
+
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'I_{P} and V_{GAP} for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'I_{P} (kA)' font ',16' offset 0,0\n");
+  fprintf(fp, "set y2label 'V_{GAP} (kV)' font 'Times Bold,16' offset 0,0\n");
+  fprintf(fp, "set y2tics nomirror tc lt 2\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2*1E-3) with line lw 3 lc rgb 'red' \
+title '%s' axes x1y2,\\\n", ivFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3*1E-3) with line lw 3 lc rgb 'black' \
+title '%s'\n", ivFile, data2Name);
+
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+  remove(gnuPlotFile);
+  remove(ivFile);
+
+  free(gnuPlotFile);
+  free(ivFile);
+  
+  /* Freeing vectors */
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(time);
+
+  
   return 0;
 
 }
