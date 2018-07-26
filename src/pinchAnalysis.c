@@ -8,6 +8,9 @@
 
 static int plotModeData(int shotNumber, int zVal, int tmin, int tmax,
 			char *nodeName, char *saveFile, int uniqueID);
+static int plotAccelData(int shotNumber, int tmin, int tmax, int uniqueID);
+static int plotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID);
+
 
 /******************************************************************************
  * Function: pinchAnalysis
@@ -24,8 +27,10 @@ int pinchAnalysis() {
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 30,
-    timeCompF = 60;
+  int timeCompI = 20,
+    timeCompF = 100,
+    timeAccelI = 0,
+    timeAccelF = 100;
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
@@ -37,16 +42,19 @@ int pinchAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotModeData(shotNumber, 5, timeCompI, timeCompF, "\\b_p5_000_sm", "", 3);
+    plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 3);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
+    plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 4);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
+    plotNeutronData(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -191,6 +199,280 @@ title 'Pinch Current' axes x1y2\n", modeFile);
   /* Freeing vectors */
   gsl_matrix_free(azimuthArray);
   
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotAccelData
+ * Inputs: int
+ * Returns: int
+ * Description: Pass it a shot number, and it will plot data to view after
+ * each pulse.
+ ******************************************************************************/
+
+static int plotAccelData(int shotNumber, int tmin, int tmax, int uniqueID) {
+
+  char *data1Node = "\\b_n45_180_sm",
+    *data1Name = "n45",
+    *data2Node = "\\b_n35_000_sm",
+    *data2Name = "n35",
+    *data3Node = "\\b_n25_000_sm",
+    *data3Name = "n25",
+    *data4Node = "\\b_n15_000_sm",
+    *data4Name = "n15",
+    *data5Node = "\\b_n05_000_sm",
+    *data5Name = "n05";
+
+  int status;
+
+  int sizeString = snprintf(NULL, 0, "script/tempAccel_%d.sh", uniqueID);
+  char *gnuPlotFile = (char *)malloc(sizeString + 1);
+  snprintf(gnuPlotFile, sizeString+1, "script/tempAccel_%d.sh", uniqueID);
+
+  sizeString = snprintf(NULL, 0, "data/accel_%d.txt", uniqueID);
+  char *accelFile = (char *)malloc(sizeString + 1);
+  snprintf(accelFile, sizeString+1, "data/accel_%d.txt", uniqueID);
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *data5 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
+  initializeMagneticData(shotNumber, data4Node, data4);
+  initializeMagneticData(shotNumber, data5Node, data5);
+
+
+  /* Saving data */
+  save6VectorData(time, data1, data2, data3, data4, data5, accelFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set key left top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", accelFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s',\\\n", accelFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", accelFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+title '%s',\\\n", accelFile, data4Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", accelFile, data5Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+  remove(gnuPlotFile);
+  remove(accelFile);
+
+  free(gnuPlotFile);
+  free(accelFile);
+
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(data3);
+  gsl_vector_free(data4);
+  gsl_vector_free(data5);
+  gsl_vector_free(time);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotNeutronData
+ * Inputs: int
+ * Returns: int
+ * Description: Pass it a shot number, and it will plot data to view after
+ * each pulse.
+ ******************************************************************************/
+
+static int plotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID) {
+
+  char *data1Node = "\\neutron_1",
+    *data1Name = "ND #1",
+    *data2Node = "\\neutron_2",
+    *data2Name = "ND #2",
+    *data3Node = "\\neutron_4",
+    *data3Name = "ND #4",
+    *data4Node = "\\neutron_5",
+    *data4Name = "ND #5",
+    *data5Node = "\\neutron_6",
+    *data5Name = "ND #6",
+    *data6Node = "\\neutron_7",
+    *data6Name = "ND #7";
+
+  int status;
+
+  int sizeString = snprintf(NULL, 0, "script/tempNeutron_%d.sh", uniqueID);
+  char *gnuPlotFile = (char *)malloc(sizeString + 1);
+  snprintf(gnuPlotFile, sizeString+1, "script/tempNeutron_%d.sh", uniqueID);
+
+  sizeString = snprintf(NULL, 0, "data/neutron_%d.txt", uniqueID);
+  char *neutronFile = (char *)malloc(sizeString + 1);
+  snprintf(neutronFile, sizeString+1, "data/neutron_%d.txt", uniqueID);
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *data5 = gsl_vector_alloc(sigSize),
+    *data6 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
+  initializeMagneticData(shotNumber, data4Node, data4);
+  initializeMagneticData(shotNumber, data5Node, data5);
+  initializeMagneticData(shotNumber, data6Node, data6);
+
+
+  /* Saving data */
+  save7VectorData(time, data1, data2, data3, data4, data5, data6, neutronFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set key left bottom\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Neutron Diagnostics for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Voltage (V)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", neutronFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s',\\\n", neutronFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", neutronFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+title '%s',\\\n", neutronFile, data4Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'orange' \
+title '%s',\\\n", neutronFile, data5Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", neutronFile, data6Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+  remove(gnuPlotFile);
+  remove(neutronFile);
+
+  free(gnuPlotFile);
+  free(neutronFile);
+  
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(data3);
+  gsl_vector_free(data4);
+  gsl_vector_free(data5);
+  gsl_vector_free(time);
+
   return 0;
 
 }
