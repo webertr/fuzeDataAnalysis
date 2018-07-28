@@ -21,16 +21,17 @@ static int plotIV(int shotNumber, int tmin, int tmax, char *saveFile, int unique
 
 int pinchAnalysis() {
 
-  int shotNumber = 180723010;
+  //int shotNumber = 180723015;
+  int shotNumber = 180222035;
 
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 40,
-    timeCompF = 50,
-    timeAccelI = 0,
-    timeAccelF = 100;
+  int timeCompI = 0-16,
+    timeCompF = 40,
+    timeAccelI = 0-16,
+    timeAccelF = 100-16;
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
@@ -38,7 +39,7 @@ int pinchAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "/home/webertr/Downloads/180723010Mode.png", 2);
+    //plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "/home/webertr/Downloads/180222035Mode.png", 2);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -58,13 +59,11 @@ int pinchAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
-    plotNeutronData(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180723010Neutron.png", 1);
     //plotNeutronData(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotIV(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180723012IV.png", 1);
-    //plotIV(shotNumber, timeCompI, timeCompF, "", 1);
+    plotIV(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180222035IV.png", 1);
     exit(0);
   }
 
@@ -87,9 +86,9 @@ static int plotModeData(int shotNumber, int zVal, int tmin, int tmax,
 
   int status;
   
-  int sizeString = snprintf(NULL, 0, "script/temp_%d.sh", uniqueID);
+  int sizeString = snprintf(NULL, 0, "script/tempMode_%d.sh", uniqueID);
   char *gnuPlotFile = (char *)malloc(sizeString + 1);
-  snprintf(gnuPlotFile, sizeString+1, "script/temp_%d.sh", uniqueID);
+  snprintf(gnuPlotFile, sizeString+1, "script/tempMode_%d.sh", uniqueID);
 
   sizeString = snprintf(NULL, 0, "data/ipMode_%d.txt", uniqueID);
   char *ipFile = (char *)malloc(sizeString + 1);
@@ -150,12 +149,12 @@ static int plotModeData(int shotNumber, int zVal, int tmin, int tmax,
   fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
   fprintf(fp, "set y2tics nomirror tc lt 2\n");
   fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'blue' \
-title 'm=1',\\\n", modeFile);
+  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'blue' title 'm=1',\\\n",
+	  modeFile);
   fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'green' title 'm=2',\\\n",
-  modeFile);
+	  modeFile);
   fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'yellow' title 'm=3',\\\n",
-  modeFile);
+	  modeFile);
   fprintf(fp, "     '%s' using ($1*1E6):($2*1E-3) with line lw 3 dt 2 lc rgb 'black' \
 title 'I_{P}' axes x1y2,\\\n", ipFile);
   fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 dt 2 lc rgb 'red' \
