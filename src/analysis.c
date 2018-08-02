@@ -6,6 +6,10 @@
  *
  ******************************************************************************/
 
+
+static int plotPostShotIFData(int shotNumber, int tmin, int tmax, char *saveFile);
+
+
 /******************************************************************************
  * Function: hologramAnalysis
  * Inputs: 
@@ -223,12 +227,12 @@ int plotPostAnalysis() {
   int timeCompI = 30,
     timeCompF = 60,
     timeAccelI = 0,
-    timeAccelF = 40; 
+    timeAccelF = 60; 
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
     plotPostShotModeData(shotNumber, timeCompI, timeCompF, 
-			 "\\b_p15_000_sm", "/home/fuze/Downloads/180723022_Mode.png");
+			 "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
     plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
@@ -251,6 +255,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
+    plotPostShotIFData(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -1249,5 +1254,124 @@ int invertFlatTopProfile() {
 
   return 0;
 
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotIFData
+ * Inputs: int
+ * Returns: int
+ * Description: Pass it a shot number, and it will plot data to view after
+ * each pulse.
+ ******************************************************************************/
+
+static int plotPostShotIFData(int shotNumber, int tmin, int tmax, char *saveFile) {
+
+  char *data1Node = "\\ne_1",
+    *data1Name = "NE #1",
+    *data2Node = "\\ne_2",
+    *data2Name = "NE #2",
+    *data3Node = "\\ne_3",
+    *data3Name = "NE #3",
+    *data4Node = "\\ne_4",
+    *data4Name = "NE #4";
+
+  int status;
+
+  char *gnuPlotFile = "script/tempNePost.sh",
+    *neFile = "data/nePost.txt";
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
+  initializeMagneticData(shotNumber, data4Node, data4);
+
+
+  /* Saving data */
+  save5VectorData(time, data1, data2, data3, data4, neFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set key left bottom\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'IF data for pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Voltage (V)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", neFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s',\\\n", neFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", neFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", neFile, data4Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+  remove(gnuPlotFile);
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(data3);
+  gsl_vector_free(data4);
+  gsl_vector_free(time);
+
+  return 0;
 
 }

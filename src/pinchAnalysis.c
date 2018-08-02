@@ -35,31 +35,31 @@ int pinchAnalysis() {
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    //plotModeData(shotNumber, 5, timeCompI, timeCompF, "\\b_p05_000_sm", "", 1);
+    plotModeData(shotNumber, 5, timeCompI, timeCompF, "\\b_p05_000_sm", "", 1);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    //plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "/home/webertr/Downloads/180222035Mode.png", 2);
+    plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "/home/webertr/Downloads/180222035Mode.png", 2);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    //plotModeData(shotNumber, 25, timeCompI, timeCompF, "\\b_p25_000_sm", "", 3);
+    plotModeData(shotNumber, 25, timeCompI, timeCompF, "\\b_p25_000_sm", "", 3);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 4);
+    plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 4);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 5);
+    plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 5);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
+    plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
-    //plotNeutronData(shotNumber, timeCompI, timeCompF, "", 1);
+    plotNeutronData(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
