@@ -8,7 +8,7 @@
 
 
 static int plotPostShotIFData(int shotNumber, int tmin, int tmax, char *saveFile);
-
+static int plotPostShotCompData(int shotNumber, int tmin, int tmax, char *saveFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -224,7 +224,7 @@ int plotPostAnalysis() {
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 30,
+  int timeCompI = 20,
     timeCompF = 60,
     timeAccelI = 0,
     timeAccelF = 60; 
@@ -232,10 +232,10 @@ int plotPostAnalysis() {
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
     plotPostShotModeData(shotNumber, timeCompI, timeCompF, 
-			 "\\b_p15_000_sm", "");
+			 "\\b_p15_000_sm", "/home/fuze/Downloads/mode.png");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "/home/fuze/Downloads/neutron.png");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -259,6 +259,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
 
@@ -1370,6 +1371,133 @@ title '%s'\n", neFile, data4Name);
   gsl_vector_free(data2);
   gsl_vector_free(data3);
   gsl_vector_free(data4);
+  gsl_vector_free(time);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotCompData
+ * Inputs: int
+ * Returns: int
+ * Description: Pass it a shot number, and it will plot data to view after
+ * each pulse.
+ ******************************************************************************/
+
+static int plotPostShotCompData(int shotNumber, int tmin, int tmax, char *saveFile) {
+
+  char *data1Node = "\\b_p5_180_sm",
+    *data1Name = "p5",
+    *data2Node = "\\b_p15_180_sm",
+    *data2Name = "p15",
+    *data3Node = "\\b_p25_180_sm",
+    *data3Name = "p25",
+    *data4Node = "\\b_p35_180_sm",
+    *data4Name = "p35",
+    *data5Node = "\\b_p45_180_sm",
+    *data5Name = "p45";
+
+  int status;
+
+  char *gnuPlotFile = "script/tempComp.sh",
+    *compFile = "data/comp.txt";
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *data5 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
+  initializeMagneticData(shotNumber, data4Node, data4);
+  initializeMagneticData(shotNumber, data5Node, data5);
+
+
+  /* Saving data */
+  save6VectorData(time, data1, data2, data3, data4, data5, compFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set key left top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'Compression Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", compFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s',\\\n", compFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", compFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+title '%s',\\\n", compFile, data4Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", compFile, data5Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+  remove(gnuPlotFile);
+
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(data3);
+  gsl_vector_free(data4);
+  gsl_vector_free(data5);
   gsl_vector_free(time);
 
   return 0;
