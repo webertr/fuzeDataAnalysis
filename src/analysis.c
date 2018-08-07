@@ -232,10 +232,10 @@ int plotPostAnalysis() {
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
     plotPostShotModeData(shotNumber, timeCompI, timeCompF, 
-			 "\\b_p15_000_sm", "/home/fuze/Downloads/mode.png");
+    			 "\\b_p15_000_sm", "");
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "/home/fuze/Downloads/neutron.png");
+    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
