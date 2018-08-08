@@ -11,6 +11,7 @@ static int plotModeData(int shotNumber, int zVal, int tmin, int tmax,
 static int plotAccelData(int shotNumber, int tmin, int tmax, int uniqueID);
 static int plotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID);
 static int plotIV(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID);
+static int plotAxialIz(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID);
 
 /******************************************************************************
  * Function: pinchAnalysis
@@ -22,40 +23,39 @@ static int plotIV(int shotNumber, int tmin, int tmax, char *saveFile, int unique
 int pinchAnalysis() {
 
   //int shotNumber = 180723015;
-  int shotNumber = 180222035;
-
+  //int shotNumber = 180222035;
+  int shotNumber = 180723010;
+  
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 0-16,
-    timeCompF = 40,
-    timeAccelI = 0-16,
-    timeAccelF = 100-16;
+  int timeCompI = 30,
+    timeCompF = 60;
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotModeData(shotNumber, 5, timeCompI, timeCompF, "\\b_p05_000_sm", "", 1);
+    //plotModeData(shotNumber, 5, timeCompI, timeCompF, "\\b_p05_000_sm", "", 1);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "/home/webertr/Downloads/180222035Mode.png", 2);
+    plotModeData(shotNumber, 15, timeCompI, timeCompF, "\\b_p15_000_sm", "", 2);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotModeData(shotNumber, 25, timeCompI, timeCompF, "\\b_p25_000_sm", "", 3);
+    //plotModeData(shotNumber, 25, timeCompI, timeCompF, "\\b_p25_000_sm", "", 3);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 4);
+    //plotModeData(shotNumber, 35, timeCompI, timeCompF, "\\b_p35_000_sm", "", 4);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 5);
+    //plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 5);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
+    //plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -63,7 +63,8 @@ int pinchAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotIV(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180222035IV.png", 1);
+    //plotIV(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180222035IV.png", 1);
+    plotAxialIz(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
 
@@ -596,6 +597,159 @@ title '%s'\n", ivFile, data2Name);
   gsl_vector_free(data1);
   gsl_vector_free(data2);
   gsl_vector_free(time);
+
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotAxialIz
+ * Inputs: 
+ * Returns: int
+ * Description: This will plot the m = 0 mode, or Iz for several difference
+ * axial locations
+ ******************************************************************************/
+
+static int plotAxialIz(int shotNumber, int tmin, int tmax, char *saveFile, int uniqueID) {
+
+  char *data1Node = "\\b_p05_000_sm",
+    *data1Name = "z = 5 cm",
+    *data2Node = "\\b_p15_000_sm",
+    *data2Name = "z = 15 cm",
+    *data3Node = "\\b_p25_000_sm",
+    *data3Name = "z = 25 cm",
+    *data4Node = "\\b_p35_000_sm",
+    *data4Name = "z = 35 cm",
+    *data5Node = "\\b_p45_000_sm",
+    *data5Name = "z = 45 cm";
+
+  int status;
+
+  int sizeString = snprintf(NULL, 0, "script/tempAxialIZ_%d.sh", uniqueID);
+  char *gnuPlotFile = (char *)malloc(sizeString + 1);
+  snprintf(gnuPlotFile, sizeString+1, "script/tempAxialIZ_%d.sh", uniqueID);
+
+  sizeString = snprintf(NULL, 0, "data/axialIZ_%d.txt", uniqueID);
+  char *axialIZFile = (char *)malloc(sizeString + 1);
+  snprintf(axialIZFile, sizeString+1, "data/axialIZ_%d.txt", uniqueID);
+    
+  /* Getting data. We want 0 vs. 1 col */
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+    
+  gsl_vector *iz1 = gsl_vector_alloc(sigSize),
+    *iz2 = gsl_vector_alloc(sigSize),
+    *iz3 = gsl_vector_alloc(sigSize),
+    *iz4 = gsl_vector_alloc(sigSize),
+    *iz5 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  gsl_matrix *azimuthArray1 = getAzimuthalArray(shotNumber, data1Node);
+  getAzimuthalArrayModes(azimuthArray1);
+  gsl_matrix_get_col(time, azimuthArray1, 0);
+  gsl_matrix_get_col(iz1, azimuthArray1, 1);
+  
+  gsl_matrix *azimuthArray2 = getAzimuthalArray(shotNumber, data2Node);
+  getAzimuthalArrayModes(azimuthArray2);
+  gsl_matrix_get_col(iz2, azimuthArray2, 1);
+
+  gsl_matrix *azimuthArray3 = getAzimuthalArray(shotNumber, data3Node);
+  getAzimuthalArrayModes(azimuthArray3);
+  gsl_matrix_get_col(iz3, azimuthArray3, 1);
+
+  gsl_matrix *azimuthArray4 = getAzimuthalArray(shotNumber, data4Node);
+  getAzimuthalArrayModes(azimuthArray4);
+  gsl_matrix_get_col(iz4, azimuthArray4, 1);
+
+  gsl_matrix *azimuthArray5 = getAzimuthalArray(shotNumber, data5Node);
+  getAzimuthalArrayModes(azimuthArray5);
+  gsl_matrix_get_col(iz5, azimuthArray5, 1);
+
+  /* Saving data */
+  save6VectorData(time, iz1, iz2, iz3, iz4, iz5, axialIZFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  if (strcmp(saveFile, "") != 0) {
+    fprintf(fp, "set terminal png\n");
+    fprintf(fp, "set output '%s'\n", saveFile);
+  }
+
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'I_{Z} for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'I (kA)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2/0.002) with line lw 3 lc rgb 'red' title '%s',\\\n",
+	  axialIZFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3/0.002) with line lw 3 lc rgb 'black' title '%s',\\\n",
+	  axialIZFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4/0.002) with line lw 3 lc rgb 'green' title '%s',\\\n",
+	  axialIZFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5/0.002) with line lw 3 lc rgb 'blue' title '%s',\\\n",
+	  axialIZFile, data4Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6/0.002) with line lw 3 lc rgb 'purple' title '%s'\n",
+	  axialIZFile, data5Name);
+
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+  
+  remove(gnuPlotFile);
+  remove(axialIZFile);
+
+  free(gnuPlotFile);
+  free(axialIZFile);
+  
+  /* Freeing vectors */
+  gsl_vector_free(iz1);
+  gsl_vector_free(iz2);
+  gsl_vector_free(time);
+  gsl_matrix_free(azimuthArray1);
+  gsl_matrix_free(azimuthArray2);
 
   
   return 0;

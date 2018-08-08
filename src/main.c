@@ -22,12 +22,12 @@ int main(int argc, char *argv[]) {
   /*
    * Running the pinch formation analysis
    */
-  //pinchAnalysis();
+  pinchAnalysis();
 
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
 
   /*
    * Testing DHI abel inverison code 
