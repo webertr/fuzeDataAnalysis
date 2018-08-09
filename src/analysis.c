@@ -225,7 +225,7 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   int timeCompI = 20,
-    timeCompF = 60,
+    timeCompF = 45,
     timeAccelI = 0,
     timeAccelF = 60; 
   
@@ -247,7 +247,8 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotIV(shotNumber, -100, 800, "");
+    //plotPostShotIV(shotNumber, -100, 800, "");
+    plotPostShotIV(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
