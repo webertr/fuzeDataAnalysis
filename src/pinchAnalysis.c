@@ -31,7 +31,9 @@ int pinchAnalysis() {
   int pid3 = fork();
 
   int timeCompI = 30,
-    timeCompF = 60;
+    timeCompF = 60,
+    timeAccelI = 0,
+    timeAccelF = 100;
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
@@ -51,11 +53,11 @@ int pinchAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotModeData(shotNumber, 45, timeCompI, timeCompF, "\\b_p45_000_sm", "", 5);
+    plotIV(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
+    plotAccelData(shotNumber, timeAccelI, timeAccelF, 1);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -63,7 +65,6 @@ int pinchAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotIV(shotNumber, timeCompI, timeCompF, "/home/webertr/Downloads/180222035IV.png", 1);
     plotAxialIz(shotNumber, timeCompI, timeCompF, "", 1);
     exit(0);
   }

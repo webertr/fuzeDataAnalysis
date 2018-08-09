@@ -16,5 +16,6 @@
 #include "DHI/mdsplusAccess.h"
 #include "analysis.h"
 #include "pinchAnalysis.h"
+#include "magneticModel.h"
 
 #endif
