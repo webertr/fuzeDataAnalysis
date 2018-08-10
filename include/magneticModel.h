@@ -16,6 +16,6 @@
 #include "save.h"
 
 int magneticModel();
-
+int testMagneticModel();
 
 #endif
