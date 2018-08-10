@@ -6,7 +6,7 @@
  *
  ******************************************************************************/
 
-static int getJR(gsl_matrix **jr, gsl_vector **r, gsl_vector **z, gsl_vector **theta);
+static double getJZ(double r, double z, double theta, double a, double I0, int m);
 
 /******************************************************************************
  * Function: magneticModel
@@ -18,33 +18,33 @@ static int getJR(gsl_matrix **jr, gsl_vector **r, gsl_vector **z, gsl_vector **t
 
 int magneticModel() {
 
-  gsl_matrix *jr;
-  gsl_vector *r, *z, *theta;
+  double r = 0.1,
+    z = 0,
+    theta = 0,
+    a = 1,
+    I0 = 100E3;
+
+  int m = 1,
+    ii, jj,
+    Nr = 1000,
+    Nt = 1000;
+
+  double sum = 0,
+    dr = a/((double) Nr),
+    dt = 2*M_PI/((double) Nt),
+    jz;
   
-  getJR(&jr, &r, &z, &theta);
-
-  int numRows = jr->size1,
-    numCols = jr->size2;
-
-  int ii, jj;
-
-  for (ii = 0; ii < numRows; ii++) {
-    for (jj = 0; jj < numCols; jj++) {
-      printf("JR(%d, %d): %g\n", ii, jj, gsl_matrix_get(jr, ii, jj));
+  for (ii = 0; ii < Nr; ii++) {
+    for (jj = 0; jj < Nt; jj++) {
+      r = ii*dr;
+      theta = dt*jj;
+      jz = getJZ(r, z, theta, a, I0, m);
+      sum = sum + jz*dr*r*dt;
     }
   }
 
-  for (ii = 0; ii < r->size; ii++) {
-    printf("R: %g\n", gsl_vector_get(r, ii));
-  }
-
-  for (ii = 0; ii < z->size; ii++) {
-    printf("Z: %g\n", gsl_vector_get(z, ii));
-  }
-
-  for (ii = 0; ii < theta->size; ii++) {
-    printf("Theta: %g\n", gsl_vector_get(theta, ii));
-  }
+  
+  printf("Total Current: %g\n", sum);
   
   return 0;
 
@@ -52,73 +52,38 @@ int magneticModel() {
 
 
 /******************************************************************************
- * Function: getJR
- * Inputs: void
- * Returns: int
- * Description: This will get the current in the radial direction given the
+ * Function: getJZ
+ * Inputs: double, double, double, double, double, int
+ * Returns: double
+ * Description: This will get the current in the z direction given the
  * formula, 
- * jr = 1/r x exp(-(i*k+1/row)*(r+z)) x exp(-i x m x theta)
+ * jz =  C1 x (1+exp(-i x m x theta)) for r <= a
+ * jz = 0 for r > a
+ * The total current inside radius a should be I0
  ******************************************************************************/
 
-static int getJR(gsl_matrix **jr, gsl_vector **r, gsl_vector **z, gsl_vector **theta) {
+static double getJZ(double r, double z, double theta, double a, double I0, int m) {
 
-  int ii, jj, kk,
-    m = 1,
-    Nr = 100,
-    Nz = 100,
-    Nt = 100;
-
-  double L = 50,
-    row = 1,
-    k = 1,
-    Rw = 10.0,
-    dr = 10.0/((double) Nr),
-    dz = L*2/((double) Nz),
-    dt = 2*M_PI/((double) Nt),
-    rVal, thetaVal, zVal;
-
-  gsl_complex compVal, compExp1,
-    compTerm1, compTerm2;
+  gsl_complex norm,
+    retVal;
   
-  gsl_matrix *jrTemp = gsl_matrix_alloc(Nr, Nz);
-  gsl_vector *rTemp = gsl_vector_alloc(Nr);
-  gsl_vector *zTemp = gsl_vector_alloc(Nz);
-  gsl_vector *thetaTemp = gsl_vector_alloc(Nt);
-
-  for (ii = 0; ii < Nr; ii++) {
-    gsl_vector_set(rTemp, ii, dr*ii);
+  if (r > a) {
+    return 0.0;
   }
 
-  for (jj = 0; jj < Nz; jj++) {
-    gsl_vector_set(zTemp, jj, dz*jj);
+  if ( m == 0) {
+    norm = gsl_complex_rect(I0/(M_PI*a*a*2.0), 0);
+  } else {
+    norm = gsl_complex_div(gsl_complex_rect(I0/(a*a), 0),
+			   gsl_complex_add(gsl_complex_rect(M_PI,0),
+					   gsl_complex_add(gsl_complex_rect(0,-2.0/(2.0*m)),
+							   gsl_complex_polar(1.0/(2.0*m),
+									     M_PI/2-2*M_PI*m))));
   }
 
-  for (kk = 0; kk < Nt; kk++) {
-    gsl_vector_set(thetaTemp, kk, dt*kk);
-  }
+  retVal = gsl_complex_mul(norm, gsl_complex_add(gsl_complex_rect(1,0),
+						 gsl_complex_polar(1, m*theta)));
 
-  for (ii = 0; ii < Nr; ii++) {
-    rVal = gsl_vector_get(rTemp, ii);
-    for (jj = 0; jj < Nz; jj++) {
-      zVal = gsl_vector_get(zTemp, jj);
-      for (kk = 0; kk < Nt; kk++) {
-	thetaVal = gsl_vector_get(thetaTemp, kk);
-	compExp1 = gsl_complex_mul(gsl_complex_rect(-(rVal+zVal), 0.0),
-				   gsl_complex_rect(1/row, k));
-	compTerm1 = gsl_complex_exp(compExp1);
-	compTerm2 = gsl_complex_polar(1/rVal, -m*thetaVal);
-	compVal = gsl_complex_mul(compTerm1, compTerm2);
-	gsl_matrix_set(jrTemp, ii, jj, GSL_REAL(compVal));
-      
-      }
-    }
-  }
-  
-  *jr = jrTemp;
-  *r = rTemp;
-  *z = zTemp;
-  *theta = thetaTemp;
-  
-  return 0;
+  return GSL_REAL(retVal);  
 
 }
