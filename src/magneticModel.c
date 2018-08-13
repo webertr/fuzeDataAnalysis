@@ -20,22 +20,7 @@ static double getBField(double rp, double zp, double thetap, double a, double I0
 
 int magneticModel() {
 
-  double mu_0 = 1.2566E-6;
-  
-  double r = .1,
-    z = 0,
-    theta = 0,
-    a = 0.01,
-    I0 = 100E3,
-    b,
-    b0 = mu_0*I0/(2*M_PI*r);
 
-  int m = 0;
-    
-  b = getBField(r, z, theta, a, I0, m);
-
-  printf("B field is (Should be %g): %g\n", b0, b);
-  
   return 0;
 
 }
@@ -134,11 +119,12 @@ static double getJZ(double r, double z, double theta, double a, double I0, int m
  ******************************************************************************/
 
 static int testTotalIP();
+static int testAziBField();
 
 int testMagneticModel() {
 
   testTotalIP();
-
+  testAziBField();
   return 0;
 }
 
@@ -173,6 +159,29 @@ static int testTotalIP() {
   
   printf("Total Current (Should be %g A): %g A\n", I0, sum);
 
+  return 0;
+
+}
+
+
+static int testAziBField() {
+
+  double mu_0 = 1.2566E-6;
+  
+  double r = .1,
+    z = 0,
+    theta = 0,
+    a = 0.01,
+    I0 = 100E3,
+    b,
+    b0 = mu_0*I0/(2*M_PI*r);
+
+  int m = 0;
+    
+  b = getBField(r, z, theta, a, I0, m);
+
+  printf("B field is (Should be %g): %g\n", b0, b);
+  
   return 0;
 
 }
