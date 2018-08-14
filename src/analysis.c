@@ -224,10 +224,10 @@ int plotPostAnalysis() {
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 20,
-    timeCompF = 45,
+  int timeCompI = 25,
+    timeCompF = 55,
     timeAccelI = 0,
-    timeAccelF = 60; 
+    timeAccelF = 65; 
   
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
@@ -247,12 +247,11 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotPostShotIV(shotNumber, -100, 800, "");
-    plotPostShotIV(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotIV(shotNumber, -100, 800, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotPostShotGVCurrent(shotNumber, -800, 0);
+    plotPostShotGVCurrent(shotNumber, -800, 500);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -517,10 +516,12 @@ title '%s'\n", ivFile, data2Name);
 
 int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
 
-  char *data1Node = "\\i_gv_2_valve",
-    *data1Name = "I GV2",
-    *data2Node = "\\i_gv_2_dummy_load",
-    *data2Name = "GV2 Dummy Load";
+  char *data1Node = "\\i_gv_1_valve",
+    *data1Name = "I GV1",
+    *data2Node = "\\i_gv_2_valve",
+    *data2Name = "I GV2",
+    *data3Node = "\\i_gv_2_dummy_load",
+    *data3Name = "GV2 Dummy Load";
 
   int status;
 
@@ -531,14 +532,15 @@ int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
   
   gsl_vector *data1 = gsl_vector_alloc(sigSize),
     *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
     *time = gsl_vector_alloc(sigSize);
 
   initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
   initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
 
-
-  /* Saving data */
-  save3VectorData(time, data1, data2, gvFile);
+    /* Saving data */
+  save4VectorData(time, data1, data2, data3, gvFile);
 
 
   /* Creating gnuplot file */
@@ -565,7 +567,9 @@ int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
   fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
 title '%s',\\\n", gvFile, data1Name);
   fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
-title '%s'\n", gvFile, data2Name);
+title '%s',\\\n", gvFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\n", gvFile, data3Name);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);
@@ -746,13 +750,13 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile) 
     *data1Name = "ND #1",
     *data2Node = "\\neutron_2",
     *data2Name = "ND #2",
-    *data3Node = "\\neutron_4",
+    *data3Node = "\\neutron_4_s",
     *data3Name = "ND #4",
-    *data4Node = "\\neutron_5",
+    *data4Node = "\\neutron_5_s",
     *data4Name = "ND #5",
-    *data5Node = "\\neutron_6",
+    *data5Node = "\\neutron_6_s",
     *data5Name = "ND #6",
-    *data6Node = "\\neutron_7",
+    *data6Node = "\\neutron_7_s",
     *data6Name = "ND #7";
 
   int status;

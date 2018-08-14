@@ -27,13 +27,13 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  //plotPostAnalysis();
+  plotPostAnalysis();
 
   /*
    * Modeling magnetic field from random currents
    */
   //magneticModel();
-  testMagneticModel();
+  //testMagneticModel();
   
   /*
    * Testing DHI abel inverison code 
