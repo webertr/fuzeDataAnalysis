@@ -247,7 +247,8 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotIV(shotNumber, -100, 800, "");
+    //plotPostShotIV(shotNumber, -100, 800, "");
+    plotPostShotIV(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
@@ -750,13 +751,13 @@ int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile) 
     *data1Name = "ND #1",
     *data2Node = "\\neutron_2",
     *data2Name = "ND #2",
-    *data3Node = "\\neutron_4_s",
+    *data3Node = "\\neutron_4",
     *data3Name = "ND #4",
-    *data4Node = "\\neutron_5_s",
+    *data4Node = "\\neutron_5",
     *data4Name = "ND #5",
-    *data5Node = "\\neutron_6_s",
+    *data5Node = "\\neutron_6",
     *data5Name = "ND #6",
-    *data6Node = "\\neutron_7_s",
+    *data6Node = "\\neutron_7",
     *data6Name = "ND #7";
 
   int status;
