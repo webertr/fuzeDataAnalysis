@@ -24,6 +24,7 @@ SOURCE := src/magnetic.c \
 	src/fit.c \
 	src/pinchAnalysis.c \
 	src/magneticModel.c \
+	src/regExpSub.c \
 	src/accelTrack.c
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))

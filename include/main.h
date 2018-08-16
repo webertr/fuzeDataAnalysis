@@ -17,5 +17,6 @@
 #include "analysis.h"
 #include "pinchAnalysis.h"
 #include "magneticModel.h"
+#include "regExpSub.h"
 
 #endif

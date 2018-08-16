@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
 
   /*
    * Modeling magnetic field from random currents
@@ -64,6 +64,11 @@ int main(int argc, char *argv[]) {
    * Inverting test flat top data
    */
   //testForceBalance();
+
+  /*
+   * Regex expressions
+   */
+  testRegExpSub();
   
   return 0;
 
