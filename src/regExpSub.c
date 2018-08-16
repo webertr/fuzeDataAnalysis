@@ -75,7 +75,7 @@ static char *regExpSub(char *testString, char *regExp, char *replaceString) {
   }
 
   char *newString = (char *)malloc((lengthNew+1)*sizeof(char));
-  newString[lengthNew+1] = '\0';
+  newString[lengthNew] = '\0';
   
   kk = 0;
   jj = 0;
@@ -94,7 +94,11 @@ static char *regExpSub(char *testString, char *regExp, char *replaceString) {
       kk++;
     }
   }
-  
+  for (ii = jj; ii < lengthNew; ii++) {
+    newString[ii] = testString[kk];
+    kk++;
+  }
+
   regfree(&regex);
 
   return newString;
@@ -146,96 +150,15 @@ static int regExpSubHelper(regex_t regex, char *testString, int *offset, int *en
 
 int testRegExpSub() {
 
-  char *testString = "Let's see if HE can findHE the matches HE HE",
+  char *testString = "Let's see if HE can findHE the matches HE HE comma",
     *regExp = "[Hh][Ee]",
-    *replaceString = "1234567891",
-    *result = "Corn";
+    *replaceString = "Corn",
+    *result = "Let's see if Corn can findCorn tCorn matcCorns Corn Corn comma";
 
   char *test = regExpSub(testString, regExp, replaceString);
   
   printf("%s\n", test);
-  printf("Should be:\n%s\n", result);
-  
-  /* char *testString = "Let's see if HE can findHE the matches HE HE", */
-  /*   *regExp = "[Hh][Ee]", */
-  /*   *replaceString = "Corn Dogs"; */
-
-  /* regex_t regex; */
-  /* char msgbuf[100]; */
-  /* regmatch_t regMatches[1]; */
-  /* int reti, */
-  /*   ii,jj,kk,mm, */
-  /*   lengthOld = strlen(testString), */
-  /*   lengthNew = lengthOld, */
-  /*   lengthReplace = strlen(replaceString), */
-  /*   offset, */
-  /*   end, */
-  /*   endInd = 0, */
-  /*   numMatches; */
-
-  /* int offsetArray[lengthOld], */
-  /*   endArray[lengthOld], */
-  /*   sizeArray[lengthOld]; */
-
-  /* /\* Compile regular expression *\/ */
-  /* reti = regcomp(&regex, regExp, 0); */
-  /* if (reti) { */
-  /*   fprintf(stderr, "Could not compile regex\n"); */
-  /*   exit(1); */
-  /* } */
-
-  /* ii = 0; */
-  /* while (regExpSubHelper(regex, &testString[endInd], &offset, &end) == 1) { */
-  /*   offsetArray[ii] = endInd+offset; */
-  /*   endArray[ii] = endInd + end; */
-  /*   sizeArray[ii] = end - offset; */
-  /*   endInd = endInd + end; */
-  /*   ii++; */
-  /* } */
-  /* numMatches = ii; */
-  /* offsetArray[ii] = offset; */
-  /* endArray[ii] = end; */
-
-  /* for (ii = 0; ii < numMatches; ii++ ){ */
-  /*   printf("Offset: %d\n", offsetArray[ii]); */
-  /*   printf("End: %d\n", endArray[ii]); */
-  /*   printf("Size: %d\n", sizeArray[ii]); */
-  /* } */
-
-  /* for (ii = 0; ii < numMatches; ii++) { */
-  /*   lengthNew = lengthNew + lengthReplace - sizeArray[ii]; */
-  /* } */
-  /* printf("New Length: %d\n", lengthNew); */
-  /* printf("Old Length: %d\n", lengthOld); */
-  /* printf("Number Matches: %d\n", numMatches); */
-  /* printf("Should be: %d\n", lengthReplace - sizeArray[0]); */
-
-  /* char *newString = (char *)malloc(lengthNew*sizeof(char)); */
-  /* memset(newString,'-',lengthNew); */
-
-  /* kk = 0; */
-  /* jj = 0; */
-  /* ii = 0; */
-  /* while ( offsetArray[ii] != -1) { */
-  /*   if ( offsetArray[ii] == kk ) { */
-  /*     for (mm = 0; mm < lengthReplace; mm++) { */
-  /* 	newString[jj+mm] = replaceString[mm]; */
-  /*     } */
-  /*     kk = kk + sizeArray[ii]; */
-  /*     jj = jj + lengthReplace; */
-  /*     ii++; */
-  /*     newString[jj] = testString[kk]; */
-  /*   } else { */
-  /*     newString[jj] = testString[kk]; */
-  /*     jj++; */
-  /*     kk++; */
-  /*   } */
-  /* } */
-
-  /* printf("%s\n", newString); */
-
-  /* regfree(&regex); */
-  /* free(newString); */
+  printf("Should be:\n%s\n", result);  
 
   return 0;
 
