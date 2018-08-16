@@ -74,8 +74,9 @@ static char *regExpSub(char *testString, char *regExp, char *replaceString) {
     lengthNew = lengthNew + lengthReplace - sizeArray[ii];
   }
 
-  char *newString = (char *)malloc(lengthNew*sizeof(char));
-
+  char *newString = (char *)malloc((lengthNew+1)*sizeof(char));
+  newString[lengthNew+1] = '\0';
+  
   kk = 0;
   jj = 0;
   ii = 0;
@@ -87,14 +88,13 @@ static char *regExpSub(char *testString, char *regExp, char *replaceString) {
       kk = kk + sizeArray[ii];
       jj = jj + lengthReplace;
       ii++;
-      newString[jj] = testString[kk];
     } else {
       newString[jj] = testString[kk];
       jj++;
       kk++;
     }
   }
-
+  
   regfree(&regex);
 
   return newString;
@@ -148,11 +148,11 @@ int testRegExpSub() {
 
   char *testString = "Let's see if HE can findHE the matches HE HE",
     *regExp = "[Hh][Ee]",
-    *replaceString = "C",
+    *replaceString = "1234567891",
     *result = "Corn";
 
   char *test = regExpSub(testString, regExp, replaceString);
-
+  
   printf("%s\n", test);
   printf("Should be:\n%s\n", result);
   
