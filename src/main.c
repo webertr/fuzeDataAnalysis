@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
    * Modeling magnetic field from random currents
    */
   //magneticModel();
-  //testMagneticModel();
+  testMagneticModel();
   
   /*
    * Testing DHI abel inverison code 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   /*
    * Regex expressions
    */
-  testRegExpSub();
+  //testRegExpSub();
   
   return 0;
 

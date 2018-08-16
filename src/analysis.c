@@ -224,8 +224,8 @@ int plotPostAnalysis() {
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 25,
-    timeCompF = 55,
+  int timeCompI = 0,
+    timeCompF = 65,
     timeAccelI = 0,
     timeAccelF = 65; 
   

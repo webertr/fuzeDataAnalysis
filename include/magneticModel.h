@@ -11,6 +11,7 @@
 #include <gsl/gsl_sf_exp.h>
 #include <sys/stat.h>
 #include <gsl/gsl_sf_trig.h>
+#include <gsl/gsl_fft_real.h>
 
 #include "plot.h"
 #include "save.h"
