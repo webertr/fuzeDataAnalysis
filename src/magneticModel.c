@@ -121,8 +121,10 @@ static int testAziBFieldMode();
 
 int testMagneticModel() {
 
-  //testTotalIP();
-  //testAziBField();
+  if (1) {
+    testTotalIP();
+    testAziBField();
+  }
   testAziBFieldMode();
   return 0;
 }
@@ -136,7 +138,7 @@ static int testTotalIP() {
     a = 2,
     I0 = 100E3;
 
-  int m = 0,
+  int m = 1,
     ii, jj,
     Nr = 200,
     Nt = 200;
@@ -175,7 +177,7 @@ static int testAziBField() {
     b,
     b0 = mu_0*I0/(2*M_PI*r);
 
-  int m = 0;
+  int m = 1;
     
   b = getBField(r, z, theta, a, I0, m);
 
@@ -247,11 +249,12 @@ static int testAziBFieldMode() {
   printf("m = 0: %g (Should be: %g)\n", bArray[0], b0);
   printf("m = 1: %g \n", bArray[1]);
   printf("(m = 1)/(m = 0): %g\n", bArray[1]/bArray[0]);
+  printf("Golingo's Formula (m1/m0=2*dr/RW) Delta r = %g\n", bArray[1]/bArray[0]/2.0*rw);
 
   gsl_fft_real_wavetable_free(wavetableCols);
   gsl_fft_real_workspace_free(workspaceCols);
 
-  plotImageData(bField, "");
+  plotImageData(bField, dx, dy, "");
 
   gsl_matrix_free(bField);
   

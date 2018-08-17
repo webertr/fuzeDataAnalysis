@@ -1321,7 +1321,7 @@ static int testInvertImageDHI() {
   param.centroidNum = 10;
   param.offsetIter = 10;
 
-  plotImageData(testData, "set title 'Forward Projected Data'\n");
+  plotImageData(testData, 1.0, 1.0, "set title 'Forward Projected Data'\n");
     
   gsl_matrix *invertedImage = invertImageDHI(testData, &param);
   overlayCenterLineTest(invertedImage, param.fileCentroid);
@@ -1358,7 +1358,7 @@ static int testInvertImageDHI() {
     }
   }
 
-  plotImageData(forwardProjectResult, "set title 'Forward Projected Results'\n");
+  plotImageData(forwardProjectResult, 1.0, 1.0, "set title 'Forward Projected Results'\n");
 
   gsl_matrix *diffResults = gsl_matrix_alloc(numRows, numCols);
   double diffRes;
@@ -1372,7 +1372,7 @@ static int testInvertImageDHI() {
     }
   }
 
-  plotImageData(diffResults, "set title 'Forward Projected Diff'\n");
+  plotImageData(diffResults, 1.0, 1.0, "set title 'Forward Projected Diff'\n");
 
   int colPlot = 85;
   plot2MatrixColDataFile(param.fileLeftInvert, colPlot,

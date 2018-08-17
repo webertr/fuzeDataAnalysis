@@ -185,7 +185,7 @@ int testForceBalance() {
   param.centroidNum = 10;
   param.offsetIter = 10;
 
-  //plotImageData(densityProfile, "set title 'Line integrated data'\n");
+  //plotImageData(densityProfile, 1.0, 1.0, "set title 'Line integrated data'\n");
 
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
