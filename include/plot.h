@@ -6,7 +6,7 @@
 
 #include "save.h"
 
-int plotImageData (gsl_matrix *mInput, char *plotOptions);
+int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions);
 int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, char *plotOptions);
 int plot2VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In,
 		    char *plotOptions);

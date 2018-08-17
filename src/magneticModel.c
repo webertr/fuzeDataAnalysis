@@ -95,17 +95,14 @@ static double getJZ(double r, double z, double theta, double a, double I0, int m
   }
 
   if ( m == 0) {
-    norm = gsl_complex_rect(I0/(M_PI*a*a*2.0), 0);
-  } else {
-    norm = gsl_complex_div(gsl_complex_rect(I0/(a*a), 0),
-			   gsl_complex_add(gsl_complex_rect(M_PI,0),
-					   gsl_complex_add(gsl_complex_rect(0,-2.0/(2.0*m)),
-							   gsl_complex_polar(1.0/(2.0*m),
-									     M_PI/2-2*M_PI*m))));
+    norm = gsl_complex_rect(I0/(M_PI*a*a*2), 0);
+  }
+  else {
+    norm = gsl_complex_rect(I0/(M_PI*a*a), 0);
   }
 
   retVal = gsl_complex_mul(norm, gsl_complex_add(gsl_complex_rect(1,0),
-						 gsl_complex_polar(1, m*theta)));
+						 gsl_complex_polar(1, -m*theta)));
 
   return GSL_REAL(retVal);  
 
@@ -124,8 +121,8 @@ static int testAziBFieldMode();
 
 int testMagneticModel() {
 
-  testTotalIP();
-  testAziBField();
+  //testTotalIP();
+  //testAziBField();
   testAziBFieldMode();
   return 0;
 }
@@ -139,7 +136,7 @@ static int testTotalIP() {
     a = 2,
     I0 = 100E3;
 
-  int m = 1,
+  int m = 0,
     ii, jj,
     Nr = 200,
     Nt = 200;
@@ -190,72 +187,74 @@ static int testAziBField() {
 
 
 static int testAziBFieldMode() {
+  
+  int n = 8,
+    m1 = 1,
+    ii, jj,
+    Nx = 200,
+    Ny = 200;
 
-  int numCols = 8;
-
-  double r = .1,
+  double rw = .1,
+    x, y, r, jz,
     z = 0,
     theta = 0,
-    a = 0.01,
+    a = 0.03,
     I0 = 100E3,
-    BArray[numCols];
-
-  int m = 0,
-    ii;
-    
-  for (ii = 0; ii < numCols; ii++) {
-    theta = ii*2*M_PI/((double) numCols);
-    BArray[ii] = getBField(r, z, theta, a, I0, m);
+    bArray[n],
+    mu_0 = 1.2566E-6,
+    b0 = mu_0*I0/(2*M_PI*rw),
+    dx = 2*rw/Nx,
+    dy = 2*rw/Ny,
+    norm;
+  
+  for (ii = 0; ii < n; ii++) {
+    theta = ii*2*M_PI/((double) n);
+    bArray[ii] = getBField(rw, z, theta, a, I0, m1);
   }
 
-  double *data,
-    norm,
-    val;
+  gsl_matrix *bField = gsl_matrix_alloc(Nx, Ny);
   
-  double dataTest[numCols],
-    m0 = 3.4,
-    ms1 = 1.4,
-    mc1 = 0.8,
-    ms2 = 0.65,
-    mc2 = 0.4,
-    ms3 = 1.8,
-    mc3 = 0.6,
-    m1 = sqrt(gsl_pow_2(ms1) + gsl_pow_2(mc1));
-  
-  for (ii = 0; ii < numCols; ii++) {
-
-    val = m0 +ms1*gsl_sf_sin(1*ii*2*M_PI/8)+ms2*gsl_sf_sin(2*ii*2*M_PI/8)\
-      +ms3*gsl_sf_sin(3*ii*2*M_PI/8)\
-      +mc1*gsl_sf_cos(1*ii*2*M_PI/8)+mc2*gsl_sf_cos(2*ii*2*M_PI/8)\
-      +mc3*gsl_sf_cos(3*ii*2*M_PI/8);
-    dataTest[ii] = val;
-
+  for (ii = 0; ii < Nx; ii++) {
+    for (jj = 0; jj < Ny; jj++) {
+      x = ii*dx - rw;
+      y = jj*dy - rw;
+      r = sqrt(gsl_pow_2(x)+gsl_pow_2(y));
+      theta = atan(y/x);
+      if ( (x<=0) && (y<0) ) {
+	theta = theta - M_PI;
+      }
+      if ( (x<=0) && (y>=0) ) {
+	theta = theta + M_PI;
+      }
+      jz = getJZ(r, z, theta, a, I0, m1);
+      gsl_matrix_set(bField, ii, jj, jz);
+    }
   }
-
+  
   gsl_fft_real_wavetable * wavetableCols;
   gsl_fft_real_workspace * workspaceCols;
 
-  wavetableCols = gsl_fft_real_wavetable_alloc(numCols - 1);
-  workspaceCols = gsl_fft_real_workspace_alloc(numCols - 1);
+  wavetableCols = gsl_fft_real_wavetable_alloc(n);
+  workspaceCols = gsl_fft_real_workspace_alloc(n);
 
-  //data = BArray;
-  data = dataTest;
-  gsl_fft_real_transform(data, 1, (size_t) numCols - 1, wavetableCols, workspaceCols);
-  //data = BArray;
-  data = dataTest;
-  data[0] = data[0]/8;
-  norm = 2/8.0/data[0];
-  data[1] = sqrt(gsl_pow_2(data[1]) + gsl_pow_2(data[2]))*norm;
-  data[2] = sqrt(gsl_pow_2(data[3]) + gsl_pow_2(data[4]))*norm;
-  data[3] = sqrt(gsl_pow_2(data[5]) + gsl_pow_2(data[6]))*norm;
+  gsl_fft_real_transform(bArray, 1, (size_t) n, wavetableCols, workspaceCols);
+  bArray[0] = bArray[0]/8;
+  norm = 2/8.0;
+  bArray[1] = sqrt(gsl_pow_2(bArray[1]) + gsl_pow_2(bArray[2]))*norm;
+  bArray[2] = sqrt(gsl_pow_2(bArray[3]) + gsl_pow_2(bArray[4]))*norm;
+  bArray[3] = sqrt(gsl_pow_2(bArray[5]) + gsl_pow_2(bArray[6]))*norm;
 
+  printf("m = 0: %g (Should be: %g)\n", bArray[0], b0);
+  printf("m = 1: %g \n", bArray[1]);
+  printf("(m = 1)/(m = 0): %g\n", bArray[1]/bArray[0]);
 
   gsl_fft_real_wavetable_free(wavetableCols);
   gsl_fft_real_workspace_free(workspaceCols);
 
-  printf("m = 0: %g (Should be: %g)\n", data[0], m0);
-  printf("m = 1: %g (Should be: %g)\n", data[1], m1/m0);
+  plotImageData(bField, "");
 
+  gsl_matrix_free(bField);
+  
   return 0;
 
 }

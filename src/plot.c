@@ -277,7 +277,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
  * back to the parent process, and in gnuplot, it will open this binary file.
  ******************************************************************************/
 
-int plotImageData (gsl_matrix *mInput, char *plotOptions) {
+int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions) {
 
   int numRows = mInput->size1;
   int numCols = mInput->size2;
@@ -292,12 +292,12 @@ int plotImageData (gsl_matrix *mInput, char *plotOptions) {
   /* Setting y vector values to indices*/
   for (ii = 1; ii < numRows+1; ii++) {
     gsl_matrix_float_set(temp, ii, 0,
-			 (float) ii);
+			 (float) ii*dy);
   }
   /* Setting x vector values to indices*/
   for (ii = 1; ii < numCols+1; ii++) {
     gsl_matrix_float_set(temp, 0, ii,
-			 (float) ii);
+			 (float) ii*dx);
   }
   /* Setting matrix values */
   for (ii = 1; ii < numRows+1; ii++) {
