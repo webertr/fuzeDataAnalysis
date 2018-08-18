@@ -191,7 +191,7 @@ static int testAziBField() {
 static int testAziBFieldMode() {
   
   int n = 8,
-    m1 = 1,
+    m1 = 0,
     ii, jj,
     Nx = 200,
     Ny = 200;
@@ -249,6 +249,7 @@ static int testAziBFieldMode() {
   printf("m = 0: %g (Should be: %g)\n", bArray[0], b0);
   printf("m = 1: %g \n", bArray[1]);
   printf("(m = 1)/(m = 0): %g\n", bArray[1]/bArray[0]);
+  printf("(m = 2)/(m = 0): %g\n", bArray[2]/bArray[0]);
   printf("Golingo's Formula (m1/m0=2*dr/RW) Delta r = %g\n", bArray[1]/bArray[0]/2.0*rw);
 
   gsl_fft_real_wavetable_free(wavetableCols);
