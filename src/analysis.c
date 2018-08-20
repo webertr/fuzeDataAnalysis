@@ -22,9 +22,9 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
+  plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
