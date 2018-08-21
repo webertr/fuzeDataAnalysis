@@ -11,7 +11,7 @@ c radial distance = 100 cm, axial distance = 50 cm, height = 139 cm
 c **********************************************************************
 c
 c ********************* BLOCK 1: CELLS ***********************************************************************
-101    4      -3.3E-6     -101                          IMP:N=1 IMP:P=1   $ plasma
+101    4      -3.3E-6     -101                          IMP:N=1 IMP:P=1   $ Plasma. Cell used to emit neutrons
 102    0                  (101 -102 111):
                           (-121 122 123):
                           (101 -102 -112 119 142):
@@ -151,152 +151,175 @@ c ********************* BLOCK 1: CELLS *****************************************
 99     0                  99                            IMP:N=0 IMP:P=0   $ graveyard
 
 c ********************* BLOCK 2: SURFACE CARDS ***************************************************************
-211      RCC      -50 -0.2 0 0 -5 0 2.5                                  $ scintillator
-212      RCC      -50 -5.21 0 0 -20 0 2.5                                $ PMT
-213      RCC      -50 -0.15 0 0 -25.1 0 3.03                             $ inner surface of detector case
-214      RCC      -50 0 0 0 -25.4 0 3.18                                 $ outer surface of detector case
-221      RCC      -50 0 0 0 1.12 0 3.18                                  $ hevimet shield cylinder
-222      S        -50 -6.2 0 7.32                                        $ hevimet shield spherical curve
-207      RCC      672.42 254 139 1.73 0 0 5.87                           $ vacuum vessel end window case
-208      RCC      673.46 254 139 0.64 0 0 3.81                           $ vacuum vessel end window
-209      RCC      669.7 254 139 4.45 0 0 3.42                            $ vacuum vessel end window gap
-101      RCC      565 254 139 -50 0 0 0.25                               $ plasma
-102      RCC      415 254 139 150 0 0 9.53                               $ inner surface of tungston
-103      RCC      415 254 139 150 0 0 9.6                                $ outer radius of tungston and inner radius of outer electrode
-104      RCC      415 254 139 150 0 0 10.3                               $ outer radius of outer electrode
-105      RCC      415 254 139 254.7 0 0 14.76                            $ inner radius of vacuum vessel
-106      RCC      415 254 139 254.7 0 0 15.24                            $ outer radius of vacuum vessel
-107      RCC      666.98 254 139 5.44 0 0 17.96                          $ vacuum vessel end cap
-108      RCC      577.88 254 139 5.44 0 0 17.96                          $ extension attachment
-110      K/X      516.628 254 139 0.326401 -1                            $ nose cone inner
-111      K/X      516.75 254 139 0.326401 -1                             $ nose cone outer
-112      PX       507.38                                                 $ nose cone end
-113      PX       515                                                    $ nose cone outer tip
-114      PX       514.93                                                 $ nose cone inner tip
-115      RCC      507.38 254 139 7.62 0 0 5.05                           $ nose cone cylinder outer
-116      RCC      507.38 254 139 7.62 0 0 4.98                           $ nose cone cylinder inner
-301      RCC      565 254 139 6.99 0 0 13.08                             $ graphite end cap
-302      RCC      565 254 139 6.99 0 0 8.89                              $ graphite end cap hole
-311      BOX      565 250.459 128.101                                    $ -
-                  0 -1.66298 0.68883                                     $ -
-                  0 8.7711 21.1753                                       $ -
-                  6.99 0 0                                               $ ??? What is this ???
-312      BOX      565 243.789 133.797                                    $ - 
-                  0 -0.68883 1.66298                                     $ -
-                  0 21.1753 8.7711                                       $ -
-                  6.99 0 0                                               $ ??? What is this ???
-313      BOX      565 243.101 142.541                                    $ -
-                  0 0.68883 1.66298                                      $ -
-                  0 21.1753 -8.7711                                      $ -
-                  6.99 0 0                                               $ ??? What is this ???
-314      BOX      565 248.797 149.211                                    $ -
-                  0 1.66298 0.68883                                      $ -
-                  0 8.7711 -21.1753                                      $ -
-                  6.99 0 0                                               $ ??? What is this ???
-119      RCC      415 254 139 92.38 0 0 5.05                             $ inner electrode outer tungsten surface
-120      RCC      383.2 254 139 124.18 0 0 4.98                          $ inner electrode outer surface
-121      RCC      383.9 254 139 123.48 0 0 4.35                          $ inner electrode inner surface
-501      RCC      591.24 236.22 139 0 35.56 0 3.75                       $ ext window case inner
-502      RCC      591.24 236.22 139 0 35.56 0 5.75                       $ ext window case outer
-503      RCC      608.24 236.22 139 0 35.56 0 3.75                       $ window 2 id
-504      RCC      608.24 236.22 139 0 35.56 0 5.75                       $ window 2 od
-505      RCC      625.24 236.22 139 0 35.56 0 3.75                       $ window 3 id
-506      RCC      625.24 236.22 139 0 35.56 0 5.75                       $ window 3 od
-507      RCC      642.24 236.22 139 0 35.56 0 3.75                       $ window 4 id
-508      RCC      642.24 236.22 139 0 35.56 0 5.75                       $ window 4 od
-509      RCC      657.24 236.22 139 0 35.56 0 5.2                        $ window 5 id
-510      RCC      657.24 236.22 139 0 35.56 0 7.2                        $ window 5 od
-520      RPP      587.39 664.54 237.49 270.51 133.8 144.2                $ for voiding out window gaps
-109      PX       465                                                    $ inner electrode steel/copper divider
-122      RCC      462.76 254 139 2.24 0 0 4.35                           $ stainless steel plug
-123      RCC      465 254 139 2.54 0 0 4.35                              $ copper plug
-124      RPP      510.85 568 235.58 272.42 133.285 144.715               $ vacuum vessel window case
-125      RPP      514.37 564.48 235.58 272.42 136.295 141.705            $ vacuum vessel window case hole
-126      RPP      512.105 566.745 236.22 237.49 134.365 143.635          $ vacuum vessel window1
-127      RPP      512.105 566.745 270.51 271.78 134.365 143.635          $ vacuum vessel window2
-128      RPP      510.85 568 248.285 259.715 120.58 157.42               $ vacuum vessel window case
-129      RPP      514.37 564.48 251.295 256.705 120.58 157.42            $ vacuum vessel window case hole
-130      RPP      512.105 566.745 249.365 258.635 121.22 122.49          $ vacuum vessel window3
-131      RPP      512.105 566.745 249.365 258.635 155.51 156.78          $ vacuum vessel window4
-132      RPP      519.68 560.32 251.775 256.225 128.7 149.3              $ outer electrode slot
-133      RPP      519.68 560.32 243.7 264.3 136.775 141.225              $ outer electrode slot
-141      RCC      412.79 254 139 2.21 0 0 30.48                          $ cold plate
-142      RCC      402.3 254 139 25.4 0 0 7.59                            $ insulator
-143      RCC      391.2 254 139 1.27 0 0 30.48                           $ hot plate
-144      RCC      392.47 254 139 4.45 0 0 13.815                         $ brass split ring
-401      RPP      475.96 683.84 320.04 411.48 108.52 116.14              $   R Optical Table
-402      RPP      415 622.88 71.12 162.56 103.44 111.06                  $ L Optical Table
-403      RCC      445.48 312.649 78.04 0 137.16 0 30.48                  $ Surge Tank
-404      RCC      445.48 312.649 78.04 0 139.7 0 33.02                   $ OD of surge Tank
-405      RCC      445.48 309.042 78.04 0 3.6068 0 33.02                  $ Conflat
-406      RCC      445.48 304.8 78.04 0 4.2418 0 33.02                    $ 1st Conflat
-1        RPP      865 895 224 284 0 175                                  $ human1 box
-2        RPP      865.1 895.1 120 180 0 175                              $ human2 box
-3        RPP      1035 1065 70 130 0 175                                 $ human3 box
-4        RPP      -65 -35 224 284 0 175                                  $ human4 box
-5        RPP      402.5 577.5 224 284 488 518                            $ human5 box
-33       RPP      -1.27 0 0 562.82 0 442                                 $ wall 1a
-34       RPP      -14.18 91.44 548.64 549.91 0 442                       $ wall 2a
-35       RPP      90.17 91.44 548.64 762 0 442                           $ wall 3a
-43       RPP      -10.16 -1.27 0 562.82 0 442                            $ wall 1b
-44       RPP      -14.18 91.44 549.91 558.8 0 442                        $ wall 2b
-45       RPP      81.28 90.17 548.64 762 0 442                           $ wall 3b
-53       RPP      -12.07 -10.16 0 562.82 0 442                           $ wall 1c
-54       RPP      -14.18 91.44 558.8 560.71 0 442                        $ wall 2c
-55       RPP      79.37 81.28 548.64 762 0 442                           $ wall 3c
-63       RPP      -12.27 -12.07 0 562.82 0 442                           $ wall 1d
-64       RPP      -14.18 91.44 560.71 560.91 0 442                       $ wall 2d
-65       RPP      79.17 79.37 548.64 762 0 442                           $ wall 3d
-73       RPP      -14.18 -12.27 0 562.82 0 442                           $ wall 1e
-74       RPP      -14.18 91.44 560.91 562.82 0 442                       $ wall 2e
-75       RPP      77.26 79.17 548.64 762 0 442                           $ wall 3e
-24       RPP      77.26 2133.6 762 792 0 442                             $ wall 4
-25       RPP      2133.6 2163.6 244.32 792 0 442                         $ wall 5
-26       RPP      1508.76 2133.6 244.32 274.32 0 442                     $ wall 6
-27       RPP      1508.76 1538.76 -30 244.32 0 442                       $ wall 7
-28       RPP      -14.18 1508.76 -30 0 0 442                             $ wall 8
-29       RPP      1188.72 1219.2 0 213.36 0 442                          $ wall 9
-30       RPP      792 793.91 0 531 0 312                                 $ wall 10a
-31       RPP      792 1050.18 529.09 531 0 312                           $ wall 11a
-32       RPP      1036 1037.91 516.82 762 0 312                          $ wall 12a
-40       RPP      793.91 794.11 0 531 0 312                              $ wall 10b
-41       RPP      792 1050.18 528.89 529.09 0 312                        $ wall 11b
-42       RPP      1037.91 1038.11 516.82 762 0 312                       $ wall 12b
-50       RPP      794.11 796.02 0 531 0 312                              $ wall 10c
-51       RPP      792 1050.18 526.98 528.89 0 312                        $ wall 11c
-52       RPP      1038.11 1040.02 516.82 762 0 312                       $ wall 12c
-60       RPP      796.02 804.91 0 531 0 312                              $ wall 10d
-61       RPP      792 1050.18 518.09 526.98 0 312                        $ wall 11d
-62       RPP      1040.02 1048.91 516.82 762 0 312                       $ wall 12d
-70       RPP      804.91 806.18 0 531 0 312                              $ wall 10e
-71       RPP      792 1050.18 516.82 518.09 0 312                        $ wall 11e
-72       RPP      1048.91 1050.18 516.82 762 0 312                       $ wall 12e
-80       RPP      -30 1538.76 -30 792 442 487                            $ ceiling
-81       RPP      1508.76 2163.6 244.32 792 254 299                      $ ceiling2
-82       RPP      1508.76 2163.6 244.32 792 254 442                      $ ceiling2 gap
-83       RPP      1508.76 1538.76 244.32 792 299 442                     $ ceiling2 wall
-84       RPP      -30 2163.6 -30 792 -30 0                               $ floor
-85       RPP      792 806.18 128 278 110 196                             $ window gap
-86       RPP      792 793.27 128 278 110 196                             $ window
-87       RPP      843 993 516.82 531 110 196                             $ window gap
-88       RPP      843 993 529.73 531 110 196                             $ window
-90       P        1 1 0 1323                                             $ diagonal plane for barrier
-91       P        1 1 0 1567                                             $ diagonal plane for barrier
-92       P        1 1 0 548.64                                           $ diagonal plane for barrier
-93       P        1 1 0 640.08                                           $ diagonal plane for barrier
-94       RPP      792 806.18 313 493 0 246                               $ door gap
-95       RPP      792 795.5 313 493 0 246                                $ door
-99       RPP      -500 2633.6 -500 1262 -500 942                         $ universe
+c ------------------------------------------------------------------------------------------------------------
+c RCC: Right Circular Cylinder. VX VY VZ HX HY HZ R.
+c (VX,VY,VZ) = vector to center of the base from the origin.
+c (HX,HY,HZ) = height vector defines axis and height, R = Radius of cylinder
+c
+c S: ???
+c
+c P: ???
+c
+c K/X: ???
+c
+c PX: ???
+c
+c BOX: Arbitrarily oriented box. VX VY VZ AX AY AZ BX BY BZ CX CY CZ.
+c (VX,VY,VZ) = vector to a corner of the box from the origin.
+c (AX,AY,AZ)->(CX,CY,CZ) = Length and direction of a side from the specified corner
+c
+c RPP: Rectangular parallelpiped. XMIN XMAX YMIN YMAX ZMIN ZMAX.
+c Orthonormal box that is perpendicular to the coordinate axis.
+c (XMIN,XMAX)->(ZMIN,ZMAX) = The coordinate ranges of the volume
+c ------------------------------------------------------------------------------------------------------------
+211      RCC      -50 -0.2 0 0 -5 0 2.5                                   $ scintillator
+212      RCC      -50 -5.21 0 0 -20 0 2.5                                 $ PMT
+213      RCC      -50 -0.15 0 0 -25.1 0 3.03                              $ inner surface of detector case
+214      RCC      -50 0 0 0 -25.4 0 3.18                                  $ outer surface of detector case
+221      RCC      -50 0 0 0 1.12 0 3.18                                   $ hevimet shield cylinder
+222      S        -50 -6.2 0 7.32                                         $ hevimet shield spherical curve
+207      RCC      672.42 254 139 1.73 0 0 5.87                            $ vacuum vessel end window case
+208      RCC      673.46 254 139 0.64 0 0 3.81                            $ vacuum vessel end window
+209      RCC      669.7 254 139 4.45 0 0 3.42                             $ vacuum vessel end window gap
+101      RCC      565 254 139 -50 0 0 0.25                                $ plasma
+102      RCC      415 254 139 150 0 0 9.53                                $ inner surface of tungston
+103      RCC      415 254 139 150 0 0 9.6                                 $ outer radius of tungston and inner radius of outer electrode
+104      RCC      415 254 139 150 0 0 10.3                                $ outer radius of outer electrode
+105      RCC      415 254 139 254.7 0 0 14.76                             $ inner radius of vacuum vessel
+106      RCC      415 254 139 254.7 0 0 15.24                             $ outer radius of vacuum vessel
+107      RCC      666.98 254 139 5.44 0 0 17.96                           $ vacuum vessel end cap
+108      RCC      577.88 254 139 5.44 0 0 17.96                           $ extension attachment
+110      K/X      516.628 254 139 0.326401 -1                             $ nose cone inner
+111      K/X      516.75 254 139 0.326401 -1                              $ nose cone outer
+112      PX       507.38                                                  $ nose cone end
+113      PX       515                                                     $ nose cone outer tip
+114      PX       514.93                                                  $ nose cone inner tip
+115      RCC      507.38 254 139 7.62 0 0 5.05                            $ nose cone cylinder outer
+116      RCC      507.38 254 139 7.62 0 0 4.98                            $ nose cone cylinder inner
+301      RCC      565 254 139 6.99 0 0 13.08                              $ graphite end cap
+302      RCC      565 254 139 6.99 0 0 8.89                               $ graphite end cap hole
+311      BOX      565 250.459 128.101                                     $ -
+                  0 -1.66298 0.68883                                      $ -
+                  0 8.7711 21.1753                                        $ -
+                  6.99 0 0                                                $ ??? What is this ???
+312      BOX      565 243.789 133.797                                     $ - 
+                  0 -0.68883 1.66298                                      $ -
+                  0 21.1753 8.7711                                        $ -
+                  6.99 0 0                                                $ ??? What is this ???
+313      BOX      565 243.101 142.541                                     $ -
+                  0 0.68883 1.66298                                       $ -
+                  0 21.1753 -8.7711                                       $ -
+                  6.99 0 0                                                $ ??? What is this ???
+314      BOX      565 248.797 149.211                                     $ -
+                  0 1.66298 0.68883                                       $ -
+                  0 8.7711 -21.1753                                       $ -
+                  6.99 0 0                                                $ ??? What is this ???
+119      RCC      415 254 139 92.38 0 0 5.05                              $ inner electrode outer tungsten surface
+120      RCC      383.2 254 139 124.18 0 0 4.98                           $ inner electrode outer surface
+121      RCC      383.9 254 139 123.48 0 0 4.35                           $ inner electrode inner surface
+501      RCC      591.24 236.22 139 0 35.56 0 3.75                        $ ext window case inner
+502      RCC      591.24 236.22 139 0 35.56 0 5.75                        $ ext window case outer
+503      RCC      608.24 236.22 139 0 35.56 0 3.75                        $ window 2 id
+504      RCC      608.24 236.22 139 0 35.56 0 5.75                        $ window 2 od
+505      RCC      625.24 236.22 139 0 35.56 0 3.75                        $ window 3 id
+506      RCC      625.24 236.22 139 0 35.56 0 5.75                        $ window 3 od
+507      RCC      642.24 236.22 139 0 35.56 0 3.75                        $ window 4 id
+508      RCC      642.24 236.22 139 0 35.56 0 5.75                        $ window 4 od
+509      RCC      657.24 236.22 139 0 35.56 0 5.2                         $ window 5 id
+510      RCC      657.24 236.22 139 0 35.56 0 7.2                         $ window 5 od
+520      RPP      587.39 664.54 237.49 270.51 133.8 144.2                 $ for voiding out window gaps
+109      PX       465                                                     $ inner electrode steel/copper divider
+122      RCC      462.76 254 139 2.24 0 0 4.35                            $ stainless steel plug
+123      RCC      465 254 139 2.54 0 0 4.35                               $ copper plug
+124      RPP      510.85 568 235.58 272.42 133.285 144.715                $ vacuum vessel window case
+125      RPP      514.37 564.48 235.58 272.42 136.295 141.705             $ vacuum vessel window case hole
+126      RPP      512.105 566.745 236.22 237.49 134.365 143.635           $ vacuum vessel window1
+127      RPP      512.105 566.745 270.51 271.78 134.365 143.635           $ vacuum vessel window2
+128      RPP      510.85 568 248.285 259.715 120.58 157.42                $ vacuum vessel window case
+129      RPP      514.37 564.48 251.295 256.705 120.58 157.42             $ vacuum vessel window case hole
+130      RPP      512.105 566.745 249.365 258.635 121.22 122.49           $ vacuum vessel window3
+131      RPP      512.105 566.745 249.365 258.635 155.51 156.78           $ vacuum vessel window4
+132      RPP      519.68 560.32 251.775 256.225 128.7 149.3               $ outer electrode slot
+133      RPP      519.68 560.32 243.7 264.3 136.775 141.225               $ outer electrode slot
+141      RCC      412.79 254 139 2.21 0 0 30.48                           $ cold plate
+142      RCC      402.3 254 139 25.4 0 0 7.59                             $ insulator
+143      RCC      391.2 254 139 1.27 0 0 30.48                            $ hot plate
+144      RCC      392.47 254 139 4.45 0 0 13.815                          $ brass split ring
+401      RPP      475.96 683.84 320.04 411.48 108.52 116.14               $   R Optical Table
+402      RPP      415 622.88 71.12 162.56 103.44 111.06                   $ L Optical Table
+403      RCC      445.48 312.649 78.04 0 137.16 0 30.48                   $ Surge Tank
+404      RCC      445.48 312.649 78.04 0 139.7 0 33.02                    $ OD of surge Tank
+405      RCC      445.48 309.042 78.04 0 3.6068 0 33.02                   $ Conflat
+406      RCC      445.48 304.8 78.04 0 4.2418 0 33.02                     $ 1st Conflat
+1        RPP      865 895 224 284 0 175                                   $ human1 box
+2        RPP      865.1 895.1 120 180 0 175                               $ human2 box
+3        RPP      1035 1065 70 130 0 175                                  $ human3 box
+4        RPP      -65 -35 224 284 0 175                                   $ human4 box
+5        RPP      402.5 577.5 224 284 488 518                             $ human5 box
+33       RPP      -1.27 0 0 562.82 0 442                                  $ wall 1a
+34       RPP      -14.18 91.44 548.64 549.91 0 442                        $ wall 2a
+35       RPP      90.17 91.44 548.64 762 0 442                            $ wall 3a
+43       RPP      -10.16 -1.27 0 562.82 0 442                             $ wall 1b
+44       RPP      -14.18 91.44 549.91 558.8 0 442                         $ wall 2b
+45       RPP      81.28 90.17 548.64 762 0 442                            $ wall 3b
+53       RPP      -12.07 -10.16 0 562.82 0 442                            $ wall 1c
+54       RPP      -14.18 91.44 558.8 560.71 0 442                         $ wall 2c
+55       RPP      79.37 81.28 548.64 762 0 442                            $ wall 3c
+63       RPP      -12.27 -12.07 0 562.82 0 442                            $ wall 1d
+64       RPP      -14.18 91.44 560.71 560.91 0 442                        $ wall 2d
+65       RPP      79.17 79.37 548.64 762 0 442                            $ wall 3d
+73       RPP      -14.18 -12.27 0 562.82 0 442                            $ wall 1e
+74       RPP      -14.18 91.44 560.91 562.82 0 442                        $ wall 2e
+75       RPP      77.26 79.17 548.64 762 0 442                            $ wall 3e
+24       RPP      77.26 2133.6 762 792 0 442                              $ wall 4
+25       RPP      2133.6 2163.6 244.32 792 0 442                          $ wall 5
+26       RPP      1508.76 2133.6 244.32 274.32 0 442                      $ wall 6
+27       RPP      1508.76 1538.76 -30 244.32 0 442                        $ wall 7
+28       RPP      -14.18 1508.76 -30 0 0 442                              $ wall 8
+29       RPP      1188.72 1219.2 0 213.36 0 442                           $ wall 9
+30       RPP      792 793.91 0 531 0 312                                  $ wall 10a
+31       RPP      792 1050.18 529.09 531 0 312                            $ wall 11a
+32       RPP      1036 1037.91 516.82 762 0 312                           $ wall 12a
+40       RPP      793.91 794.11 0 531 0 312                               $ wall 10b
+41       RPP      792 1050.18 528.89 529.09 0 312                         $ wall 11b
+42       RPP      1037.91 1038.11 516.82 762 0 312                        $ wall 12b
+50       RPP      794.11 796.02 0 531 0 312                               $ wall 10c
+51       RPP      792 1050.18 526.98 528.89 0 312                         $ wall 11c
+52       RPP      1038.11 1040.02 516.82 762 0 312                        $ wall 12c
+60       RPP      796.02 804.91 0 531 0 312                               $ wall 10d
+61       RPP      792 1050.18 518.09 526.98 0 312                         $ wall 11d
+62       RPP      1040.02 1048.91 516.82 762 0 312                        $ wall 12d
+70       RPP      804.91 806.18 0 531 0 312                               $ wall 10e
+71       RPP      792 1050.18 516.82 518.09 0 312                         $ wall 11e
+72       RPP      1048.91 1050.18 516.82 762 0 312                        $ wall 12e
+80       RPP      -30 1538.76 -30 792 442 487                             $ ceiling
+81       RPP      1508.76 2163.6 244.32 792 254 299                       $ ceiling2
+82       RPP      1508.76 2163.6 244.32 792 254 442                       $ ceiling2 gap
+83       RPP      1508.76 1538.76 244.32 792 299 442                      $ ceiling2 wall
+84       RPP      -30 2163.6 -30 792 -30 0                                $ floor
+85       RPP      792 806.18 128 278 110 196                              $ window gap
+86       RPP      792 793.27 128 278 110 196                              $ window
+87       RPP      843 993 516.82 531 110 196                              $ window gap
+88       RPP      843 993 529.73 531 110 196                              $ window
+90       P        1 1 0 1323                                              $ diagonal plane for barrier
+91       P        1 1 0 1567                                              $ diagonal plane for barrier
+92       P        1 1 0 548.64                                            $ diagonal plane for barrier
+93       P        1 1 0 640.08                                            $ diagonal plane for barrier
+94       RPP      792 806.18 313 493 0 246                                $ door gap
+95       RPP      792 795.5 313 493 0 246                                 $ door
+99       RPP      -500 2633.6 -500 1262 -500 942                          $ universe
 
 c ********************* BLOCK 3: DATA CARDS ******************************************************************
 c ------------------------------------------------------------------------------------------------------------
-c SOURCE: ????
+c SOURCE: "PAR=1" is for neutrons. "ERG=2.45" means 2.45 MeV neutrons. "CEL=101" means cell 101, RCC, Plasma.
+c "AXS=1" means reference vector for EXT and RAD. "POS= 540 254 139" reference point for positioning sampling
+c "RAD=d2" means ???. "EXT=d5" means ???
 c ------------------------------------------------------------------------------------------------------------
 SDEF PAR=1 ERG=2.45 CEL=101 AXS=1 0 0 POS= 540 254 139 RAD=d2 EXT=d5
 SP1 -21 1
 SI2 0 0.25
 SI5 0 30
-MODE N                                                                   $ MODE N means neutrons for source
+MODE N                                                                    $ MODE N means neutrons for source
 c ------------------------------------------------------------------------------------------------------------
 c Coordinate transformations
 c ------------------------------------------------------------------------------------------------------------
@@ -324,17 +347,17 @@ fmesh104:n geom=rec origin 515 70 190
 c ------------------------------------------------------------------------------------------------------------
 c Fluence per neutron through detector 1
 c ------------------------------------------------------------------------------------------------------------
-F4:N 221                                                                 $ Fluence per neutron through detector 1
+F4:N 221                                                                  $ Fluence per neutron through detector 1
 FC4 Detector 1 Neutron Fluence
 c ------------------------------------------------------------------------------------------------------------
 c Fluence per neutron through detector 2
 c ------------------------------------------------------------------------------------------------------------
-F14:N 231                                                                $ Fluence per neutron through detector 2
+F14:N 231                                                                 $ Fluence per neutron through detector 2
 FC14 Detector 2 Neutron Fluence
 c ------------------------------------------------------------------------------------------------------------
 c Fluence per neutron through detector 3
 c ------------------------------------------------------------------------------------------------------------
-F24:N 241                                                                $ Fluence per neutron through detector 3
+F24:N 241                                                                 $ Fluence per neutron through detector 3
 FC24 Detector 3 Neutron Fluence
 c ------------------------------------------------------------------------------------------------------------
 e0 0.025 98i 2.5
