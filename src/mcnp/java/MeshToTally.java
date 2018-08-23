@@ -81,14 +81,14 @@ public class MeshToTally {
       /* Parses through the full-geometry meshtal file looking for fluence data. */
       output.println("full-geometry fluence:");
       boolean fullSuccess = findFluences(eLowerBound, eUpperBound,
-                            xLowerBound, xUpperBound, yLowerBound, yUpperBound,
-                            zLowerBound, zUpperBound, output, fullPath);
+					 xLowerBound, xUpperBound, yLowerBound, yUpperBound,
+					 zLowerBound, zUpperBound, output, fullPath);
       
       /* Parses through the void-geometry meshtal file looking for fluence data. */
       output.println("void-geometry fluence:");
       boolean voidSuccess = findFluences(eLowerBound, eUpperBound,
-                            xLowerBound, xUpperBound, yLowerBound, yUpperBound,
-                            zLowerBound, zUpperBound, output, voidPath);
+					 xLowerBound, xUpperBound, yLowerBound, yUpperBound,
+					 zLowerBound, zUpperBound, output, voidPath);
       
       output.close();
       
@@ -112,8 +112,9 @@ public class MeshToTally {
                             + " +/- " + formatter2.format(hError));
          System.out.println("uncertainty: ~" + Math.round(100*hError/hFactor) + "%");
       } else {
-         System.out.println("data not found");
+	  System.out.println("data not found");
       }
+      
    }
 
     
@@ -132,212 +133,245 @@ public class MeshToTally {
                                       double zLowerBound, double zUpperBound,
                                       PrintWriter output, String path) throws IOException {
       
-      // These flags allow the code to keep track of where it is in the meshtal file.
+       /* These flags allow the code to keep track of where it is in the meshtal file. */
       boolean rightEnergy = false;
       boolean rightZ = false;
       boolean dataFound = false;
       
-      // This keeps track of whether data has been found and output
+      /* This keeps track of whether data has been found and output */
       boolean success = false;
       
       double[] energyBin = new double[2];
       
-      // These integers are used to keep track of the location in the meshtal file
-      // that corresponds to the x-coodinates in the specified region.
+      /* 
+       * These integers are used to keep track of the location in the meshtal file
+       * that corresponds to the x-coodinates in the specified region.
+       */
       int xMin = 0;
       int xSpan = 0;
       
       FileInputStream inputStream = null;
       Scanner sc = null;
-      try {
-         inputStream = new FileInputStream(path);
-         sc = new Scanner(inputStream, "UTF-8");
-         while (sc.hasNextLine()) {
-            String line = sc.nextLine();
-            Scanner lineScan = new Scanner(line);
-            // If the desired fluence data has been found, it is parsed
-            // and written to the output file.
-            if (dataFound) {
-               if (lineScan.hasNextDouble()) {
-                  double yCoordinate = lineScan.nextDouble();
-                  if (yCoordinate >= yLowerBound && yCoordinate <= yUpperBound) {
-                     for (int i = 0; i < xMin; i++) {
-                        lineScan.nextDouble();
-                     }
-                     // Maybe add this in later if multiple energy bins are to be considered
-                     //output.println("Energy: " + energyBin[0] + " - " + energyBin[1] + " MeV");
-                     for (int i = 0; i < xSpan; i++) {
-                        output.println(lineScan.nextDouble());
-                        success = true;
-                     }
-                  }
-               // Error data is not currently being collected.
-               } else if (line.equals("     Relative Errors")){
-                  dataFound = false;
-               }
-            // If the line that specifies the energy range in the meshtal file
-            // corresponds to the desired energy range, a flag is set.
-            } else if (line.startsWith("Energy Bin: ")) {
-               lineScan.next();
-               lineScan.next();
-               double eMin = lineScan.nextDouble();
-               lineScan.next();
-               double eMax = lineScan.nextDouble();
-               rightEnergy = (eMin == eLowerBound && eMax == eUpperBound);
-               energyBin[0] = eMin;
-               energyBin[1] = eMax;
-            // We are only considering a subset of the total energy.
-            } else if (line.equals("Total Energy Bin")) {
-               rightEnergy = false;
-            // If this code has found the region of the meshtal file that corresponds to
-            // the correct energy, and a line signals that it contains information about
-            // the z-coordinate of the following data, the z-coordinate is checked to
-            // see if it falls within the specified upper and lower z-coordinate bounds.
-            } else if (rightEnergy && line.startsWith("  Z bin: ")) {
-               lineScan.next();
-               lineScan.next();
-               double zMin = lineScan.nextDouble();
-               lineScan.next();
-               double zMax = lineScan.nextDouble();
-               rightZ = (zMin >= zLowerBound && zMax <= zUpperBound);
-            // If this code has found the region of the meshtal file that corresponds to
-            // the correct energy and correct z-coordinate, and a line signals that it
-            // contains information about the x and y coordinates of the data, the desired
-            // data has been found. The location in the meshtal file that corresponds
-            // to the desired x-coodinates is noted.
-            } else if (rightEnergy && rightZ 
-                        && line.equals("     Tally Results:  X (across) by Y (down)")) {
-               dataFound = true;
-               String nextLine = sc.nextLine();
-               Scanner nextScan = new Scanner(nextLine);
-               xMin = 0;
-               xSpan = 0;
-               boolean rightX = false;
-               while (nextScan.hasNextDouble()) {
-                  double xCoordinate = nextScan.nextDouble();
-                  if (xCoordinate >= xLowerBound && xCoordinate <= xUpperBound) {
-                     xSpan++;
-                     rightX = true;
-                  } else if (!rightX) {
-                     xMin++;
-                  }
-               }
-            } 
-         }
-         if (sc.ioException() != null) {
-            throw sc.ioException();
-         }
-      } finally {
-         if (inputStream != null) {
-            inputStream.close();
-         }
-         if (sc != null) {
-            sc.close();
-         }
+
+      inputStream = new FileInputStream(path);
+      sc = new Scanner(inputStream, "UTF-8");
+	 
+      /* Iterates through each line of the file */
+      while (sc.hasNextLine()) {
+	  String line = sc.nextLine();
+	  Scanner lineScan = new Scanner(line);
+	    
+	  /* 
+	   * If the desired fluence data has been found, it is parsed
+	   * and written to the output file.
+	   */
+	  if (dataFound) {
+	      if (lineScan.hasNextDouble()) {
+		  double yCoordinate = lineScan.nextDouble();
+		  if (yCoordinate >= yLowerBound && yCoordinate <= yUpperBound) {
+		      for (int i = 0; i < xMin; i++) {
+			  lineScan.nextDouble();
+		      }
+		      /*
+		       * Maybe add this in later if multiple energy bins are to be considered
+		       * output.println("Energy: " + energyBin[0] + " - " + energyBin[1] + " MeV");
+		       */
+		      for (int i = 0; i < xSpan; i++) {
+			  output.println(lineScan.nextDouble());
+			  success = true;
+		      }
+		  }
+		  /* Error data is not currently being collected. */
+	      } else if (line.equals("     Relative Errors")){
+		  dataFound = false;
+	      }
+	      /* 
+	       * If the line that specifies the energy range in the meshtal file
+	       * corresponds to the desired energy range, a flag is set.
+	       */
+	  } else if (line.startsWith("Energy Bin: ")) {
+		
+	      lineScan.next();
+	      lineScan.next();
+	      double eMin = lineScan.nextDouble();
+	      lineScan.next();
+	      double eMax = lineScan.nextDouble();
+	      rightEnergy = (eMin == eLowerBound && eMax == eUpperBound);
+	      energyBin[0] = eMin;
+	      energyBin[1] = eMax;
+	      /* We are only considering a subset of the total energy. */
+	  } else if (line.equals("Total Energy Bin")) {
+	      rightEnergy = false;
+	      /*
+	       * If this code has found the region of the meshtal file that corresponds to
+	       * the correct energy, and a line signals that it contains information about
+	       * the z-coordinate of the following data, the z-coordinate is checked to
+	       * see if it falls within the specified upper and lower z-coordinate bounds.
+	       */
+	  } else if (rightEnergy && line.startsWith("  Z bin: ")) {
+	      lineScan.next();
+	      lineScan.next();
+	      double zMin = lineScan.nextDouble();
+	      lineScan.next();
+	      double zMax = lineScan.nextDouble();
+	      rightZ = (zMin >= zLowerBound && zMax <= zUpperBound);
+	      /*
+	       * If this code has found the region of the meshtal file that corresponds to
+	       * the correct energy and correct z-coordinate, and a line signals that it
+	       * contains information about the x and y coordinates of the data, the desired
+	       * data has been found. The location in the meshtal file that corresponds
+	       * to the desired x-coodinates is noted.
+	       */
+	  } else if (rightEnergy && rightZ 
+		     && line.equals("     Tally Results:  X (across) by Y (down)")) {
+	      dataFound = true;
+	      String nextLine = sc.nextLine();
+	      Scanner nextScan = new Scanner(nextLine);
+	      xMin = 0;
+	      xSpan = 0;
+	      boolean rightX = false;
+	      
+	      while (nextScan.hasNextDouble()) {
+		    
+		  double xCoordinate = nextScan.nextDouble();
+		  if (xCoordinate >= xLowerBound && xCoordinate <= xUpperBound) {
+		      xSpan++;
+		      rightX = true;
+		  } else if (!rightX) {
+		      xMin++;
+		  }
+	      }
+	  } 
       }
-      // If data has been written to the output file, true is returned.
-      // Otherwise, false is returned.
+      if (sc.ioException() != null) {
+	  throw sc.ioException();
+      }
+      
+      if (inputStream != null) {
+	  inputStream.close();
+      }
+      if (sc != null) {
+	  sc.close();
+      }
+      
+      /*
+       * If data has been written to the output file, true is returned.
+       * Otherwise, false is returned.
+       */
       return success;
    }
-   
-   // Takes the name of the output file as a parameter and calculates the average
-   // fluences by scanning through the data written to the output file.
-   // Returns an array containing two doubles.
-   // The first double corresponds to the average fluence for the full geometry.
-   // The second corresponds to the average fluence for the void geometry.
+
+    
+    /******************************************************************************
+     * Method: getAverages
+     * Description: Takes the name of the output file as a parameter and 
+     * calculates the average fluences by scanning through the data written to 
+     * the output file. Returns an array containing two doubles.
+     * The first double corresponds to the average fluence for the full geometry.
+     * The second corresponds to the average fluence for the void geometry.
+     ******************************************************************************/
+    
    public static double[] getAverages(String outputFile) throws IOException {
+       
       double[] averages = new double[2];
       FileInputStream inputStream = null;
       Scanner sc = null;
-      try {
-         inputStream = new FileInputStream(outputFile);
-         sc = new Scanner(inputStream, "UTF-8");
+      
+      inputStream = new FileInputStream(outputFile);
+      sc = new Scanner(inputStream, "UTF-8");
+	 
+      sc.nextLine();
          
-         sc.nextLine();
-         
-         int fullCount = 0;
-         double fullTotal = 0;
-         while (sc.hasNextDouble()) {
-            fullTotal += sc.nextDouble();
-            fullCount++;
-         }
-         averages[0] = fullTotal/fullCount;
-         
-         sc.nextLine();
-         if (sc.hasNextLine()) {
-            sc.nextLine();
-         }
-         
-         int voidCount = 0;
-         double voidTotal = 0;
-         while (sc.hasNextDouble()) {
-            voidTotal += sc.nextDouble();
-            voidCount++;
-         }
-         averages[1] = voidTotal/voidCount;
-               
-         if (sc.ioException() != null) {
-            throw sc.ioException();
-         }
-      } finally {
-         if (inputStream != null) {
-            inputStream.close();
-         }
-         if (sc != null) {
-            sc.close();
-         }
+      int fullCount = 0;
+      double fullTotal = 0;
+      
+      while (sc.hasNextDouble()) {
+	  fullTotal += sc.nextDouble();
+	  fullCount++;
       }
+      averages[0] = fullTotal/fullCount;
+         
+      sc.nextLine();
+      if (sc.hasNextLine()) {
+	  sc.nextLine();
+      }
+         
+      int voidCount = 0;
+      double voidTotal = 0;
+      while (sc.hasNextDouble()) {
+	  voidTotal += sc.nextDouble();
+	  voidCount++;
+      }
+      averages[1] = voidTotal/voidCount;
+               
+      if (sc.ioException() != null) {
+	  throw sc.ioException();
+      }
+
+      if (inputStream != null) {
+	  inputStream.close();
+      }
+      if (sc != null) {
+	  sc.close();
+      }
+
       return averages;
    }
-   
-   // Takes the name of the output file as a parameter and calculates the standard
-   // error of the fluence data by scanning through the output file.
-   // Returns an array containing two doubles.
-   // The first double corresponds to the standard error for the full geometry.
-   // The second corresponds to the standard error for the void geometry.
-   public static double[] getErrors(String outputFile, double[] averages) throws IOException {
-      double[] stdErrors = new double[2];
-      FileInputStream inputStream = null;
-      Scanner sc = null;
-      try {
-         inputStream = new FileInputStream(outputFile);
-         sc = new Scanner(inputStream, "UTF-8");
+
+    
+    /******************************************************************************
+     * Method: getErrors
+     * Takes the name of the output file as a parameter and calculates the standard
+     * error of the fluence data by scanning through the output file.
+     * Returns an array containing two doubles.
+     * The first double corresponds to the standard error for the full geometry.
+     * The second corresponds to the standard error for the void geometry.
+     ******************************************************************************/
+
+    public static double[] getErrors(String outputFile, double[] averages) throws IOException {
+	
+	double[] stdErrors = new double[2];
+	FileInputStream inputStream = null;
+	Scanner sc = null;
+
+	inputStream = new FileInputStream(outputFile);
+	sc = new Scanner(inputStream, "UTF-8");
          
-         sc.nextLine();
+	sc.nextLine();
          
-         int fullCount = 0;
-         double fullDevs = 0;
-         while (sc.hasNextDouble()) {
-            fullDevs += Math.pow(averages[0]-sc.nextDouble(), 2);
-            fullCount++;
-         }
-         stdErrors[0] = Math.sqrt(fullDevs/((fullCount-1)*fullCount));
+	int fullCount = 0;
+	double fullDevs = 0;
+	while (sc.hasNextDouble()) {
+	    fullDevs += Math.pow(averages[0]-sc.nextDouble(), 2);
+	    fullCount++;
+	}
+	stdErrors[0] = Math.sqrt(fullDevs/((fullCount-1)*fullCount));
+        
+	sc.nextLine();
+	if (sc.hasNextLine()) {
+	    sc.nextLine();
+	}
          
-         sc.nextLine();
-         if (sc.hasNextLine()) {
-            sc.nextLine();
-         }
-         
-         int voidCount = 0;
-         double voidDevs = 0;
-         while (sc.hasNextDouble()) {
-            voidDevs += Math.pow(averages[1]-sc.nextDouble(), 2);
-            voidCount++;
-         }
-         stdErrors[1] = Math.sqrt(voidDevs/((voidCount-1)*voidCount));
-               
-         if (sc.ioException() != null) {
-            throw sc.ioException();
-         }
-      } finally {
-         if (inputStream != null) {
-            inputStream.close();
-         }
-         if (sc != null) {
-            sc.close();
-         }
-      }
-      return stdErrors;
-   }
-   
+	int voidCount = 0;
+	double voidDevs = 0;
+	while (sc.hasNextDouble()) {
+	    voidDevs += Math.pow(averages[1]-sc.nextDouble(), 2);
+	    voidCount++;
+	}
+	stdErrors[1] = Math.sqrt(voidDevs/((voidCount-1)*voidCount));
+        
+	if (sc.ioException() != null) {
+	    throw sc.ioException();
+	}
+
+	if (inputStream != null) {
+	    inputStream.close();
+	}
+	if (sc != null) {
+	    sc.close();
+	}
+
+	return stdErrors;
+    }
+    
 }
