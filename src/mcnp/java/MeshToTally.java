@@ -1,29 +1,48 @@
-// Zack Draper
-// FuZE Neutronics
-// June 2018
+/******************************************************************************
+ * This program reads two MCNP meshtal files. For each file, it calculates
+ * the average fluence across a specified region in the mesh. One meshtal
+ * file should track the neutron fluence with the full geometry of the room
+ * in place, and the other should use the same mesh, but with the geometry
+ * voided out. This program will output the ratio of the fluences.
+ * This ratio, the h-factor, is necessary for determining the neutron source
+ * rate based on detector readings. The specified region should correspond
+ * to the scintillator inside a detector.
+ *
+ * Zack Draper
+ * FuZE Neutronics
+ * June 2018
+ ******************************************************************************/
 
-// This program reads two MCNP meshtal files. For each file, it calculates
-// the average fluence across a specified region in the mesh. One meshtal
-// file should track the neutron fluence with the full geometry of the room
-// in place, and the other should use the same mesh, but with the geometry
-// voided out. This program will output the ratio of the fluences.
-// This ratio, the h-factor, is necessary for determining the neutron source
-// rate based on detector readings. The specified region should correspond
-// to the scintillator inside a detector.
 
 import java.util.*;
 import java.io.*;
 import java.math.*;
 import java.text.*;
 
+
+/******************************************************************************
+ * Class: MeshToTally
+ * Description: Compile this with "javac MeshToTally.java" in bash, then
+ * run the created file with "java MeshToTally" in bash/unix. 
+ ******************************************************************************/
+
 public class MeshToTally {
    
-   // These constants are used to define a new coordinate system
-   // with the nosecone at (0, 0, 0).
+    /* 
+     * These constants are used to define a new coordinate system,
+     * with the nosecone at (0, 0, 0). Could these be private?
+     */
    public static final double NOSECONE_X = 515;
    public static final double NOSECONE_Y = 254;
    public static final double NOSECONE_Z = 139;
-      
+
+    
+    /******************************************************************************
+     * Method: main
+     * Description: This is the main method in the MeshToTally class. It will
+     * do some things.
+     ******************************************************************************/
+    
    public static void main (String[] args) throws IOException {
       
       NumberFormat formatter = new DecimalFormat("0.00E00");
@@ -31,20 +50,21 @@ public class MeshToTally {
       
       Scanner console = new Scanner(System.in);
       
-      // The fluences are extracted from the meshtal files and written to the
-      // following file to be read later.
+      /*
+       * The fluences are extracted from the meshtal files and written to the
+       * following file to be read later.
+       */
       String outputFile = "meshToTally_output";
       PrintWriter output = new PrintWriter(new FileWriter(outputFile));
       
-      // Path of the meshtal file with the full geometry in place.
+      /* Path of the meshtal file with the full geometry in place. */
       String fullPath = "/Users/zack/Desktop/FuZE/meshtal_truss";
       
-      // Path of the meshtal file with void geometry.
+      /* Path of the meshtal file with void geometry. */
       String voidPath = "/Users/zack/Desktop/FuZE/meshtal_truss_void";
       
             
-      // neutron energy range and scintillator coordinates
-      
+      /* neutron energy range and scintillator coordinates */
       double eLowerBound = 4.00E-01;
       double eUpperBound = 2.50E+00;
       
@@ -58,13 +78,13 @@ public class MeshToTally {
       double zUpperBound = 55 + NOSECONE_Z;
       
       
-      // Parses through the full-geometry meshtal file looking for fluence data.
+      /* Parses through the full-geometry meshtal file looking for fluence data. */
       output.println("full-geometry fluence:");
       boolean fullSuccess = findFluences(eLowerBound, eUpperBound,
                             xLowerBound, xUpperBound, yLowerBound, yUpperBound,
                             zLowerBound, zUpperBound, output, fullPath);
       
-      // Parses through the void-geometry meshtal file looking for fluence data.
+      /* Parses through the void-geometry meshtal file looking for fluence data. */
       output.println("void-geometry fluence:");
       boolean voidSuccess = findFluences(eLowerBound, eUpperBound,
                             xLowerBound, xUpperBound, yLowerBound, yUpperBound,
@@ -72,8 +92,10 @@ public class MeshToTally {
       
       output.close();
       
-      // If fluence data was found for both meshtal files, the relavent data
-      // is extracted from the output file and is printed to the console. 
+      /* 
+       * If fluence data was found for both meshtal files, the relavent data
+       * is extracted from the output file and is printed to the console. 
+       */
       if (fullSuccess && voidSuccess) {
          
          double[] averages = getAverages(outputFile);
@@ -93,12 +115,17 @@ public class MeshToTally {
          System.out.println("data not found");
       }
    }
-   
-   // Parses through a meshtal file and finds the fluence in a specified region.
-   // Outputs the data using the PrintWriter taken as a parameter.
-   // Takes 8 doubles representing the upper and lower bound energy and scintillator
-   // coordinates as parameters. Also takes the path of the meshtal file as a parameter.
-   // Returns true if data was output using the PrintWriter and false otherwise.
+
+    
+    /******************************************************************************
+     * Method: findFluences
+     * Description Parses through a meshtal file and finds the fluence in a 
+     * specified region. Outputs the data using the PrintWriter taken as a parameter.
+     * Takes 8 doubles representing the upper and lower bound energy and scintillator
+     * coordinates as parameters. Also takes the path of the meshtal file as a parameter.
+     * Returns true if data was output using the PrintWriter and false otherwise.
+     ******************************************************************************/
+    
    public static boolean findFluences(double eLowerBound, double eUpperBound,
                                       double xLowerBound, double xUpperBound,
                                       double yLowerBound, double yUpperBound,
