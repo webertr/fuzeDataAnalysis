@@ -1,5 +1,6 @@
 FuZE Machine 2.1
 c *****************************************************************************
+c
 c Detector A:
 c radial distance = 100 cm, axial distance = 0 cm, height = 139 cm
 c
@@ -229,7 +230,9 @@ c 221 is a scintillator defined as the inside of an RCC. TRCL 1 means a
 c cell transformation. Cell transformation 1, which is defined below as.
 c All the TRCL coordinate transformations are just translations. TRCL 1
 c refers to TR1, defined as a coordinate transform below. The surface
-c coordinate transformation TR1 is just a translation to (565, 154, 139)
+c coordinate transformation TR1 is just a translation to (565, 154, 139).
+c TR1 contains a surface transformation that applies to all the surfaces
+c defining the cell. Can I do "TRCL=1"?
 c -----------------------------------------------------------------------------
 221    LIKE 211 BUT       TRCL 1
 c
@@ -592,13 +595,17 @@ c RCC: Right Circular Cylinder. VX VY VZ HX HY HZ R.
 c (VX,VY,VZ) = vector to center of the base from the origin.
 c (HX,HY,HZ) = height vector defines axis and height, R = Radius of cylinder
 c
-c S: ???
+c S: Sphere. XB YB ZB R
+c (X-XB)^2 + (Y-YB)^2 + (Z-ZB)^2 - R^2 = 0
 c
-c P: ???
+c P: Plane. A B C D.
+c Ax + By + Cz - D = 0
 c
-c K/X: ???
+c K/X: Cone parallel to the x axis. XB YB ZB T^2 +/-1
+c Sqrt( (Y-YB)^2 + (Z-ZB)^2) - T*(X-XB) = 0. +1 = Cone extends to inf in
+c positive direction. -1 = Cone extends to inf in negative direction
 c
-c PX: ???
+c PX: Plane normal to the x-axis
 c
 c BOX: Arbitrarily oriented box. VX VY VZ AX AY AZ BX BY BZ CX CY CZ.
 c (VX,VY,VZ) = vector to a corner of the box from the origin.
@@ -1244,7 +1251,7 @@ c -----------------------------------------------------------------------------
 c ********************* BLOCK 3: DATA CARDS ***********************************
 c -----------------------------------------------------------------------------
 c SOURCE: "PAR=1" is for neutrons. "ERG=2.45" means 2.45 MeV neutrons.
-c "CEL=101" means cell 101, RCC, Plasma. AXS=1" means reference vector for 
+c "CEL=101" means cell 101, RCC, Plasma. "AXS=1" means reference vector for 
 c EXT and RAD. "POS= 540 254 139" reference point for positioning sampling
 c "RAD=d2" means ???. "EXT=d5" means ??? "MODE N" means neutrons. It will 
 c default to this
@@ -1284,7 +1291,8 @@ fmesh104:n geom=rec origin 515 70 190
            out=ij
            emesh 0.4 2.5
 c -----------------------------------------------------------------------------
-c Fluence per neutron through detector 1
+c Fluence per neutron through detector 1. F4 is the track length in cell 221,
+c ":N" means neutrons, and 221 is the scintillator. 
 c -----------------------------------------------------------------------------
 F4:N 221
 FC4 Detector 1 Neutron Fluence
@@ -1489,7 +1497,46 @@ c -----------------------------------------------------------------------------
 m18     006000.72c 1                                      $ C
 mx18:p 6012
 c
+c -----------------------------------------------------------------------------
+c Number of particles
+c -----------------------------------------------------------------------------
 NPS 50000000                                            
+c -----------------------------------------------------------------------------
+c What does this mean?
+c -----------------------------------------------------------------------------
 Print 30                                                
-c End of data cards
-  
+c -----------------------------------------------------------------------------
+c Blank line terminator. This will stop mcnp from processing the file.
+c -----------------------------------------------------------------------------
+
+/******************************************************************************
+ *
+ * Everything below the blank line is ignored by mcnp. This will be the notes
+ * section, and to document the problem.
+ *
+ ******************************************************************************/
+
+To see geometry, "MCNP IP NAME=fuzeInpFile.inp"
+To run, "MCNP NAME=fuzeInpFile.inp"
+To see status of run, "<Cntrl-c>s"
+To invoke iteractive plots, "<Cntrl-c>m"
+To kill immediately, "<Cntrl-c>k"
+Look at print tables 10 , 110 , and 170 to check the source
+Length=cm, Energy=MeV, time=10E-8, Temperature=MeV, density=g/cm^-3
+
+Procedure to check geometry. Look for lost parcticles by:
+
+1. Add a VOID card to override some of the other specifications in the problem and make all the cells voids, turn heating tallies into flux tallies, and turn off any tally multiplication ( FM) cards.
+
+2. Add another cell and a large spherical surface to the problem such that the surface surrounds the system and the old outside world cell is split by the new surface into two cells: the space between the system and the new surface, which is the new cell, and the space outside the new surface, which is now the outside world cell. Be sure that the new cell has non-zero importance. Actually, it is best to make all non-zero importances equal. If the system is infinite in one or two dimensions, use one or more planes instead of a sphere.
+
+3. Replace the source specifications by an inward directed surface source to flood the geometry with particles. To do this, you can use the command
+SDEF
+SUR=m
+NRM=-1
+,
+where m is the number of the new spherical surface added in Step 2. If the new surface is a plane, you must specify the portion to be used by means of POS and RAD or possibly X ,Y , and Z source distributions.
+
+Because there are no collisions, a short run will generate a great many tracks through your system. If there are any geometry errors, they should cause some of the particles to get lost.
+
+When a particle first gets lost, whether in a special run with the VOID card or in a regular production run, the history is rerun to produce some special output on the OUTP file. Event-log printing is turned on during the rerun. The event log will show all surface crossings and will tell you the path the particle took to the bad spot in the geometry. When the particle again gets lost, a description of the situation at that point is printed. You can usually deduce the cause of the lost particle from this output. It is not possible to rerun lost particles in a multitasking run.
