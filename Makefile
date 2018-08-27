@@ -25,7 +25,8 @@ SOURCE := src/magnetic.c \
 	src/pinchAnalysis.c \
 	src/magneticModel.c \
 	src/regExpSub.c \
-	src/accelTrack.c
+	src/accelTrack.c \
+	src/bankCheck.c
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
 PROD = run

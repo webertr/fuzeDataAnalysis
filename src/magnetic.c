@@ -19,7 +19,7 @@
 #define RW 10.084
 
 /******************************************************************************
- * Function: status_ok
+ * Function: replaceWord
  * Inputs: int
  * Returns: int
  * Description: Returns 1 if OK, 0 otherwise. Status is OK if the LSB is set.

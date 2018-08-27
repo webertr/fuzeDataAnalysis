@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  hologramAnalysis();
+  //hologramAnalysis();
 
   /*
    * Running the pinch formation analysis
@@ -69,7 +69,12 @@ int main(int argc, char *argv[]) {
    * Regex expressions
    */
   //testRegExpSub();
-  
+
+  /*
+   * Checking bank diagnostics
+   */
+  bankCheck();
+
   return 0;
 
 }

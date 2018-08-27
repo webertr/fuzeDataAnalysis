@@ -18,5 +18,6 @@
 #include "pinchAnalysis.h"
 #include "magneticModel.h"
 #include "regExpSub.h"
+#include "bankCheck.h"
 
 #endif
