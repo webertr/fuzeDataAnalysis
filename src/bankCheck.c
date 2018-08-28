@@ -77,7 +77,7 @@ int bankCheck() {
    */
   int ii;
   for (ii = 0; ii < CAP_NODE_NUMBER; ii++) {
-    printf("Current OK for cap %d: %d\n", ii+1
+    printf("Current OK for cap %d: %d\n", ii+1,
 	   totalCurrentCapCheck(180823047 , capNodeName[ii], I_MAX));
   }
 
@@ -85,9 +85,9 @@ int bankCheck() {
    * Checking that the dI/dt through each thyristor is < 50 kA / usec
    */
   for (ii = 0; ii < CAP_NODE_NUMBER; ii++) {
-    printf("dI/dt OK for cap %d: %d\n", ii+1
+    printf("dI/dt OK for cap %d: %d\n", ii+1,
 	   totalCurrentCapCheck(180823047 , nodeNameDIDtCap[ii], DI_DT_MAX));
-    printf("dI/dt OK for cap %d: %d\n", ii+1
+    printf("dI/dt OK for cap %d: %d\n", ii+1,
 	   totalCurrentCapCheck(180823047 , nodeNameDIDtOut[ii], DI_DT_MAX));
   }
 
