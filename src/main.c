@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  //plotPostAnalysis();
+  plotPostAnalysis();
 
   /*
    * Modeling magnetic field from random currents
@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   /*
    * Checking bank diagnostics
    */
-  bankCheck();
+  //bankCheck();
 
   return 0;
 

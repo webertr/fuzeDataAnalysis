@@ -34,7 +34,6 @@ int getSignalLengthMDSplus(const char *signal, int shotNumber);
 gsl_matrix *getAzimuthalArray(int shotNumber, char *nodeName);
 int getAzimuthalArrayModes(gsl_matrix *mIn);
 int getCurrentPulseNumber();
-int plotPostShotModeData();
 double getDHITime(int shotNumber);
 gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn);
 int testMagnetic();

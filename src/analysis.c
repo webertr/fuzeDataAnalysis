@@ -9,6 +9,14 @@
 
 static int plotPostShotIFData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotCompData(int shotNumber, int tmin, int tmax, char *saveFile);
+static int plotOffAxisDisplacement(int shotNumber);
+static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
+static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
+static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
+static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
+static int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, char *saveFile);
+static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
+static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -256,7 +264,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
-    plotPostShotIFData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -264,6 +272,10 @@ int plotPostAnalysis() {
     exit(0);
   }
 
+  if (0) {
+    plotOffAxisDisplacement(shotNumber);
+    plotPostShotIFData(shotNumber, timeCompI, timeCompF, "");
+  }
 
   return 0;
 
@@ -278,7 +290,8 @@ int plotPostAnalysis() {
  * magnetic mode data
  ******************************************************************************/
 
-int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, char *saveFile) {
+static int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, 
+				char *saveFile) {
 
   int status;
 
@@ -401,7 +414,7 @@ title 'Pinch Current' axes x1y2\n", modeFile);
  * total plasma current and voltage across the hot and cold plate
  ******************************************************************************/
 
-int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile) {
+static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile) {
 
   char *data1Node = "\\v_gap",
     *data1Name = "V_{GAP}",
@@ -515,7 +528,7 @@ title '%s'\n", ivFile, data2Name);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
+static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
 
   char *data1Node = "\\i_gv_1_valve",
     *data1Name = "I GV1",
@@ -622,7 +635,7 @@ title '%s',\n", gvFile, data3Name);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotAccelData(int shotNumber, int tmin, int tmax) {
+static int plotPostShotAccelData(int shotNumber, int tmin, int tmax) {
 
   char *data1Node = "\\b_n45_180_sm",
     *data1Name = "n45",
@@ -745,7 +758,7 @@ title '%s'\n", accelFile, data5Name);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile) {
+static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile) {
 
   char *data1Node = "\\neutron_1",
     *data1Name = "ND #1",
@@ -877,7 +890,7 @@ title '%s'\n", accelFile, data6Name);
  * each pulse.
  ******************************************************************************/
 
-int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
+static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax) {
 
   char *data1Node = "\\b_n40_180_sm",
     *data1Name = "N40-180",
@@ -1004,7 +1017,7 @@ title '%s'\n", accelFile, data6Name);
  * magnetic mode data
  ******************************************************************************/
 
-int plotOffAxisDisplacement(int shotNumber) {
+static int plotOffAxisDisplacement(int shotNumber) {
 
   int status;
 
@@ -1465,6 +1478,129 @@ title '%s',\\\n", compFile, data3Name);
 title '%s',\\\n", compFile, data4Name);
   fprintf(fp, "     '%s' using ($1*1E6):($6/0.002) with line lw 3 lc rgb 'yellow' \
 title '%s'\n", compFile, data5Name);
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+  remove(gnuPlotFile);
+
+  gsl_vector_free(data1);
+  gsl_vector_free(data2);
+  gsl_vector_free(data3);
+  gsl_vector_free(data4);
+  gsl_vector_free(data5);
+  gsl_vector_free(time);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotAccelDataN95
+ * Inputs: int
+ * Returns: int
+ * Description: Pass it a shot number, and it will plot data to view after
+ * each pulse.
+ ******************************************************************************/
+
+static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax) {
+
+  char *data1Node = "\\b_n95_180_sm",
+    *data1Name = "n95",
+    *data2Node = "\\b_n85_000_sm",
+    *data2Name = "n85",
+    *data3Node = "\\b_n75_000_sm",
+    *data3Name = "n75",
+    *data4Node = "\\b_n16_000_sm",
+    *data4Name = "n65",
+    *data5Node = "\\b_n55_000_sm",
+    *data5Name = "n55";
+
+  int status;
+
+  char *gnuPlotFile = "script/tempAccel.sh",
+    *accelFile = "data/accel.txt";
+
+  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  
+  gsl_vector *data1 = gsl_vector_alloc(sigSize),
+    *data2 = gsl_vector_alloc(sigSize),
+    *data3 = gsl_vector_alloc(sigSize),
+    *data4 = gsl_vector_alloc(sigSize),
+    *data5 = gsl_vector_alloc(sigSize),
+    *time = gsl_vector_alloc(sigSize);
+
+  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
+  initializeMagneticData(shotNumber, data2Node, data2);
+  initializeMagneticData(shotNumber, data3Node, data3);
+  initializeMagneticData(shotNumber, data4Node, data4);
+  initializeMagneticData(shotNumber, data5Node, data5);
+
+
+  /* Saving data */
+  save6VectorData(time, data1, data2, data3, data4, data5, accelFile);
+
+
+  /* Creating gnuplot file */
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
+  fprintf(fp, "set key left top\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'N95 Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
+  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
+title '%s',\\\n", accelFile, data1Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
+title '%s',\\\n", accelFile, data2Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
+title '%s',\\\n", accelFile, data3Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
+title '%s',\\\n", accelFile, data4Name);
+  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
+title '%s'\n", accelFile, data5Name);
   fprintf(fp, "pause -1\n");
   
   fclose(fp);

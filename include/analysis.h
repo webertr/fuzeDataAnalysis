@@ -23,7 +23,6 @@
 #include "DHI/forceBalance.h"
 
 
-int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 int plotIPApril2018Talk(int shotNumber);
 int plotAccelApril2018Talk();
 int plotModeApril2018Talk();
@@ -35,14 +34,8 @@ int plotModeCompApril2018Talk();
 int plasmaParameters();
 int simluateAccel();
 int plotPostAnalysis();
-int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, char *saveFile);
-int plotOffAxisDisplacement(int shotNumber);
 int invertFlatTopProfile();
 int flatTopRadialForceBalance();
-int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
-int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
-int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
-int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
 
 /*
