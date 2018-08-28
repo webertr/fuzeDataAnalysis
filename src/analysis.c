@@ -1547,8 +1547,8 @@ static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax) {
 
   int status;
 
-  char *gnuPlotFile = "script/tempAccel.sh",
-    *accelFile = "data/accel.txt";
+  char *gnuPlotFile = "script/tempAccelN95.sh",
+    *accelFile = "data/accelN95.txt";
 
   int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
   
