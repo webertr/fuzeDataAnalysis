@@ -19,5 +19,6 @@
 #include "magneticModel.h"
 #include "regExpSub.h"
 #include "bankCheck.h"
+#include "DHI/neutronProduction.h"
 
 #endif

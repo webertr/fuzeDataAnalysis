@@ -18,6 +18,7 @@ SOURCE := src/magnetic.c \
 	src/DHI/readJPEG.c \
 	src/DHI/forceBalance.c \
 	src/DHI/mdsplusAccess.c \
+	src/DHI/neutronProduction.c \
 	src/plasmaParam.c \
 	src/analysis.c \
 	src/save.c \
