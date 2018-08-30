@@ -11,6 +11,7 @@
 #include <mdsshr.h>
 
 #include "plot.h"
+#include "DHI/mdsplusAccess.h"
 
 double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_vector *radius,
 			    int maxIndex, double Lp, double tauPulse);

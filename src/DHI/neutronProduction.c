@@ -40,13 +40,14 @@ double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_ve
     return -1.0;
   }
 
-  for (ii = 0; ii < maxIndex; ii++) {
+  for (ii = 1; ii < maxIndex; ii++) {
     nD = gsl_vector_get(density, ii);
     T = gsl_vector_get(temperature, ii)*1E-3;
-    r = gsl_vector_get(radius, ii);
+    r = fabs(gsl_vector_get(radius, ii));
     sigmaV = getSigmaVDDHNE(T);
+    //printf("ii: %d, nD: %g, T: %g, r: %g, sigmaV: %g\n", ii, nD, T, r, sigmaV);
     dr = gsl_vector_get(radius,ii+1)-gsl_vector_get(radius,ii);
-    neutronProduction = neutronProduction + nD*nD*sigmaV*r*dr;
+    neutronProduction = neutronProduction+nD*nD*sigmaV*r*dr;
   }
 
   return neutronProduction*tauPulse*Lp*M_PI;
@@ -140,92 +141,21 @@ static int testgetNeutronProduction() {
    * "\\T_DHI" = the temperature in eV, "\\T_DHI:R" = the radius in meters
    * "\\NE_DHI" = The density in m^-3, "\\NE_DHI:R" = The radius in meters
    */
-  
-
-  int connectionID,
-    connectionStatus,
-    signalDescriptor,
-    valueStatus;
 
   int shotNumber = 180215012;
 
-  /* Connecting to mdsplus database "fuze" */
-  connectionID = MdsConnect("10.10.10.240");
+  gsl_matrix *temperatureM = readDHIMDSplusImage(shotNumber, "\\T_DHI", "fuze", "10.10.10.240");
+  gsl_matrix *densityM = readDHIMDSplusImage(shotNumber, "\\NE_DHI", "fuze", "10.10.10.240");
+  gsl_vector *radius = readDHIMDSplusVector(shotNumber, "\\T_DHI:R", "fuze", "10.10.10.240");
 
-  /* Checking to see if Connected */
-  if (connectionID == -1) {
-    fprintf(stderr, "Connection Failed\n");
-    return -1;
-  }
+  int colNum =  60;
+  gsl_vector *temperature = gsl_vector_alloc(temperatureM->size1);
+  gsl_vector *density = gsl_vector_alloc(densityM->size1);
+  gsl_matrix_get_col(temperature, temperatureM, colNum);
+  gsl_matrix_get_col(density, densityM, colNum);
 
-  /* Opening a tree */
-  connectionStatus = MdsOpen("fuze", &shotNumber);
-
-  /* Checking to see if opened correctly */
-  if ( !( (connectionStatus & 1) == 1 ) ) {
-    fprintf(stderr,"Error opening tree for shot: %d.\n",shotNumber);
-    MdsDisconnect();
-    return -1;
-  }
-
-
-  int sizeArray,
-    null = 0,
-    dtype_long = DTYPE_LONG;
-  char *buf = "SIZE(\\T_DHI:R)";
-  int idesc = descr(&dtype_long, &sizeArray, &null);
-
-  /* use MdsValue to get the signal length */
-  valueStatus = MdsValue(buf, &idesc, &null, 0);
-
-  if ( !( (valueStatus & 1) == 1 ) ) {
-    fprintf(stderr,"Unable to get length.\n");
-    MdsDisconnect();
-    return -1;
-  }
-
-  printf("Length: %d\n", sizeArray);
-
-  gsl_vector *temperature = gsl_vector_alloc(sizeArray);
-  gsl_vector *density = gsl_vector_alloc(sizeArray);
-  gsl_vector *radius = gsl_vector_alloc(sizeArray);
-
-  int dtype_dbl = DTYPE_DOUBLE,
-    len;
-  /* create a descriptor for this signal */
-  signalDescriptor = descr(&dtype_dbl, temperature->data, &sizeArray, &null);
- 
-  /* retrieve signal */
-  valueStatus = MdsValue("\\T_DHI", &signalDescriptor, &null, &len);
-  if ( !( (valueStatus & 1) == 1 ) ) {
-    fprintf(stderr,"Unable to get temperature.\n");
-    MdsDisconnect();
-    return -1;
-  }
-
-  /* create a descriptor for this signal */
-  signalDescriptor = descr(&dtype_dbl, density->data, &sizeArray, &null);
- 
-  /* retrieve signal */
-  valueStatus = MdsValue("\\NE_DHI", &signalDescriptor, &null, &len);
-  if ( !( (valueStatus & 1) == 1 ) ) {
-    fprintf(stderr,"Unable to get temperature.\n");
-    MdsDisconnect();
-    return -1;
-  }
-
-  /* create a descriptor for this signal */
-  signalDescriptor = descr(&dtype_dbl, radius->data, &sizeArray, &null);
- 
-  /* retrieve signal */
-  valueStatus = MdsValue("\\T_DHI:R", &signalDescriptor, &null, &len);
-  if ( !( (valueStatus & 1) == 1 ) ) {
-    fprintf(stderr,"Unable to get temperature.\n");
-    MdsDisconnect();
-    return -1;
-  }
-
-
+  /* 20 % deterium */
+  gsl_vector_scale(density, 0.2);
   plotVectorData(radius, temperature, "");
   plotVectorData(radius, density, "");
 
