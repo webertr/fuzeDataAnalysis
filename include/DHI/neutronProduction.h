@@ -7,8 +7,13 @@
 #include <gsl/gsl_matrix.h>
 #include <sys/stat.h>
 #include <math.h>
+#include <mdslib.h>
+#include <mdsshr.h>
 
+#include "plot.h"
 
+double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_vector *radius,
+			    int maxIndex, double Lp, double tauPulse);
 int testNeutronProduction();
 
 #endif

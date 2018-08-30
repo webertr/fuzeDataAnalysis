@@ -14,7 +14,8 @@ static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
-static int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, char *saveFile);
+static int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, 
+				char *saveFile);
 static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
