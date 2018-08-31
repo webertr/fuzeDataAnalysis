@@ -24,7 +24,7 @@ static int testgetNeutronProduction();
  * This assumes neutrons are produced by the D-D -> N + HE reaction.
  * The maxIndex needs to be < the size of the radius vector - 2.
  * The temperature shouldbe in eV. The radius should be in meters.
- * The density should be m^-3.
+ * The density should be m^-3. T is in eV
  ******************************************************************************/
 
 double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_vector *radius,
@@ -42,11 +42,12 @@ double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_ve
 
   for (ii = 1; ii < maxIndex; ii++) {
     nD = gsl_vector_get(density, ii);
+    /* Converting to keV */
     T = gsl_vector_get(temperature, ii)*1E-3;
     r = fabs(gsl_vector_get(radius, ii));
-    sigmaV = getSigmaVDDHNE(T);
-    //printf("ii: %d, nD: %g, T: %g, r: %g, sigmaV: %g\n", ii, nD, T, r, sigmaV);
     dr = gsl_vector_get(radius,ii+1)-gsl_vector_get(radius,ii);
+    /* Converting to m^3/second */
+    sigmaV = getSigmaVDDHNE(T)*1E-6;
     neutronProduction = neutronProduction+nD*nD*sigmaV*r*dr;
   }
 
@@ -66,6 +67,7 @@ double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_ve
  * distribution gives the collision volume per second. The cross section
  * is for the D + D -> N + HE reaction. This is the reaction that will emit
  * a neutron for D-D fusion. T range is 0.2 - 100 keV. T is in keV
+ * In units of cm^3/secon
  ******************************************************************************/
 
 static double getSigmaVDDHNE(double T) {
@@ -115,10 +117,9 @@ int testNeutronProduction() {
 static int testgetSigmaVDDHNE() {
 
   /*
-   * T = 0.2, sigmaV = 4.482E-28
-   * T = 2.0, sigmaV = 3.11E-21
-   * T = 10.0, sigmaV = 6.023E-19
-   *
+   * T = 0.2 keV, sigmaV = 4.482E-28
+   * T = 2.0 keV, sigmaV = 3.11E-21
+   * T = 10.0 keV, sigmaV = 6.023E-19
    */
 
   printf("T = 0.2 keV, sigmaV = %g (Should be 4.482E-28)\n",
@@ -175,10 +176,18 @@ static int testgetNeutronProduction() {
       break;
     }
   }
+  /*
+   * Temperature in eV
+   * density in m^-3
+   * radius in m
+   * Lp in m
+   * tauPulse in seconds
+   */
   double neutrons = getNeutronProduction(density, temperature, radius, maxIndex, Lp, tauPulse);
 
-  printf("Neutron Production: %g\n", neutrons);
-
+  printf("Neutron Production: %.2g neutrons/pulse\n", neutrons);
+  printf("Lp: %.2g cm\n", Lp*1E2);
+  printf("Pulse time width: %.1g usec\n", tauPulse*1E6);
   
   return 0;
 
