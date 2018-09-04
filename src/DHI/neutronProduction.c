@@ -13,6 +13,7 @@
 static int testgetSigmaVDDHNE();
 static double getSigmaVDDHNE(double T);
 static int testgetNeutronProduction();
+static int testPlot();
 
 /******************************************************************************
  * Function: getNeutronProduction
@@ -40,7 +41,7 @@ double getNeutronProduction(gsl_vector *density, gsl_vector *temperature, gsl_ve
     return -1.0;
   }
 
-  for (ii = 1; ii < maxIndex; ii++) {
+  for (ii = 0; ii < maxIndex; ii++) {
     nD = gsl_vector_get(density, ii);
     /* Converting to keV */
     T = gsl_vector_get(temperature, ii)*1E-3;
@@ -146,20 +147,27 @@ static int testgetNeutronProduction() {
   int shotNumber = 180215012;
 
   gsl_matrix *temperatureM = readDHIMDSplusImage(shotNumber, "\\T_DHI", "fuze", "10.10.10.240");
+  gsl_matrix *temperatureMError = readDHIMDSplusImage(shotNumber, "\\T_DHI:Error",
+						      "fuze", "10.10.10.240");
   gsl_matrix *densityM = readDHIMDSplusImage(shotNumber, "\\NE_DHI", "fuze", "10.10.10.240");
+  gsl_matrix *densityMError = readDHIMDSplusImage(shotNumber, "\\NE_DHI:Error",
+						  "fuze", "10.10.10.240");
   gsl_vector *radius = readDHIMDSplusVector(shotNumber, "\\T_DHI:R", "fuze", "10.10.10.240");
 
   int colNum =  60;
   gsl_vector *temperature = gsl_vector_alloc(temperatureM->size1);
+  gsl_vector *temperatureError = gsl_vector_alloc(temperatureMError->size1);
   gsl_vector *density = gsl_vector_alloc(densityM->size1);
+  gsl_vector *densityError = gsl_vector_alloc(densityMError->size1);
   gsl_matrix_get_col(temperature, temperatureM, colNum);
+  gsl_matrix_get_col(temperatureError, temperatureMError, colNum);
   gsl_matrix_get_col(density, densityM, colNum);
+  gsl_matrix_get_col(densityError, densityMError, colNum);
 
   /* 20 % deterium */
   gsl_vector_scale(density, 0.2);
-  plotVectorData(radius, temperature, "");
-  plotVectorData(radius, density, "");
-
+  //plotVectorData(radius, temperature, "");
+  //plotVectorData(radius, density, "");
 
   double Lp = 15E-2;
   double tauPulse = 5E-6;
@@ -176,6 +184,17 @@ static int testgetNeutronProduction() {
       break;
     }
   }
+  /* Dead data point. */
+  gsl_vector_set(temperature, 0,
+		 gsl_vector_get(temperature, 1));
+  gsl_vector_set(temperatureError, 0,
+		 gsl_vector_get(temperatureError, 1));
+
+  save3VectorData(radius, temperature, temperatureError,
+		  "/home/webertr/Github/fuzeDataAnalysis/data/temperature.txt");
+  save3VectorData(radius, density, densityError,
+		  "/home/webertr/Github/fuzeDataAnalysis/data/density.txt");
+
   /*
    * Temperature in eV
    * density in m^-3
@@ -188,7 +207,125 @@ static int testgetNeutronProduction() {
   printf("Neutron Production: %.2g neutrons/pulse\n", neutrons);
   printf("Lp: %.2g cm\n", Lp*1E2);
   printf("Pulse time width: %.1g usec\n", tauPulse*1E6);
-  
+
+  double nD, T, r, dr, sigmaV, neutronProduction = 0;
+  gsl_vector *sigmaVV = gsl_vector_alloc(maxIndex+1);
+  gsl_vector *kernel = gsl_vector_alloc(maxIndex+1);
+  gsl_vector *sigmaVRadius = gsl_vector_alloc(maxIndex+1);
+  for (ii = 0; ii < maxIndex; ii++) {
+    nD = gsl_vector_get(density, ii);
+    /* Converting to keV */
+    T = gsl_vector_get(temperature, ii)*1E-3;
+    r = fabs(gsl_vector_get(radius, ii));
+    dr = gsl_vector_get(radius,ii+1)-gsl_vector_get(radius,ii);
+    /* Converting to m^3/second */
+    sigmaV = getSigmaVDDHNE(T)*1E-6;
+    gsl_vector_set(sigmaVV, ii, sigmaV);
+    gsl_vector_set(sigmaVRadius, ii, gsl_vector_get(radius, ii)-gsl_vector_get(radius, 0));
+    gsl_vector_set(kernel, ii, nD*nD*sigmaV*r*Lp*tauPulse*M_PI);
+    neutronProduction = neutronProduction+nD*nD*sigmaV*r*dr*Lp*tauPulse*M_PI;
+  }
+
+  save2VectorData(sigmaVRadius, sigmaVV,
+		  "/home/webertr/Github/fuzeDataAnalysis/data/sigmaV.txt");
+  save2VectorData(sigmaVRadius, kernel,
+		  "/home/webertr/Github/fuzeDataAnalysis/data/kernel.txt");
+
+  testPlot();
   return 0;
 
+}
+
+
+static int testPlot() {
+
+
+  char *gnuPlotFile = "data/gnuplot.sh";
+  int status;
+
+  if (remove(gnuPlotFile) != 0) {
+    printf("Unable to delete the file");
+  }
+
+  FILE *fp = fopen(gnuPlotFile, "w");
+  
+  if ( (fp == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  //fprintf(fp, "set terminal pngcairo\n");
+  //fprintf(fp, "set output 'data/Ddensity.png'\n");
+  //fprintf(fp, "set yrange[0:]\n");
+  //fprintf(fp, "set xrange[0:0.4]\n");
+  //fprintf(fp, "set grid\n");
+  //fprintf(fp, "set key right top\n");
+  //fprintf(fp, "set grid\n");
+  //fprintf(fp, "set title 'n_{D} (cm^{-3}) from fit data for #180215012' font '0,18'\n");
+  //fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'Deuterium density (cm^{-3})' font ',16' offset 0,0\n");
+  //fprintf(fp, "plot '%s' using ($1*1E2+0.685):($2*1E-6):($3*0.2*1E-6)
+  //pt 7 with errorbars title 'n_{D}'\n", "data/density.txt");
+  //fprintf(fp, "set terminal pngcairo\n");
+  //fprintf(fp, "set output 'data/kernel.png'\n");
+  //fprintf(fp, "set yrange[0:]\n");
+  //fprintf(fp, "set xrange[0:0.004]\n");
+  //fprintf(fp, "set grid\n");
+  //fprintf(fp, "set key right top\n");
+  //fprintf(fp, "set grid\n");
+  //fprintf(fp, "set title 'dR/dV for D(d,n)^{3}He data from #180215012' font '0,18'\n");
+  //fprintf(fp, "set xlabel 'radius (m)' font ',16' offset 0,0\n");
+  //fprintf(fp, "set ylabel 'dR/dV' font ',16' offset 0,0\n");
+  //fprintf(fp, "plot '%s' using ($1):($2) pt 7 title 'dR/dV'\n", "data/kernel.txt");
+  fprintf(fp, "set terminal pngcairo\n");
+  fprintf(fp, "set output 'data/yeild.png'\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set key right top\n");
+  fprintf(fp, "set title 'Neutron Yield / dr for #180215012' font '0,18'\n");
+  fprintf(fp, "set xlabel 'radius (m)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'Y / dr' font ',16' offset 0,0\n");
+  fprintf(fp, "set label 'Y = 4 x 10^{5} Neutrons' at graph 0.5,0.5 font 'Times Bold, 20'\n");
+  fprintf(fp, "set label '= area under curve' at graph 0.5,0.4 font 'Times Bold, 20'\n");
+  fprintf(fp, "set label 'Lp: 15 cm' at graph 0.75,0.70 font 'Times Bold, 20'\n");
+  fprintf(fp,
+	  "set label '{/Symbol t}: 5 {/Symbol m}sec' at graph 0.75,0.60 font 'Times Bold, 20'\n");  
+  fprintf(fp, "plot '%s' using ($1):($2) pt 7 title 'Y/dr'\n", "data/kernel.txt");
+  fprintf(fp, "pause -1\n");
+
+
+  fclose(fp);
+
+  chmod(gnuPlotFile, S_IRWXG);
+  chmod(gnuPlotFile, S_IRWXO);
+  chmod(gnuPlotFile, S_IRWXU);
+
+
+  
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(gnuPlotFile, "r");
+
+  if (!gnuplot) {
+    fprintf(stderr,"incorrect parameters or too many files.\n");
+    return EXIT_FAILURE;
+  }
+  
+  fflush(gnuplot);
+
+  /* Pausing so user can look at plot */
+  getchar();
+
+  status = pclose(gnuplot);
+
+  if (status == -1) {
+    printf("Error reported bp close");
+  }
+
+
+
+  return 1;
+  
 }
