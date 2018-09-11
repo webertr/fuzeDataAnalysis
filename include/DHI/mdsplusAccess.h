@@ -26,6 +26,7 @@
 
 gsl_matrix *readDHIMDSplusImage(int shotNumber, char *nodeName, char *treeName, char *host);
 gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName, char *host);
+gsl_vector *readDHIMDSplusVectorDim(int shotNumber, char *nodeName, char *treeName, char *host);
 int writeDHIMDSplusMatrix(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,
 			  char *treeName, char *host);
 int writeDHIMDSplusImage(gsl_matrix* image, char *nodeName, char *expression, int shotNumber,

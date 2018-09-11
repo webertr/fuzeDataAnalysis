@@ -14,8 +14,7 @@ static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
-static int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, 
-				char *saveFile);
+static int plotPostShotModeData(int shotNumber, char *tempDataFile);
 static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
@@ -227,55 +226,49 @@ int plotPostAnalysis() {
 
   getchar();
 
-  //plotOffAxisDisplacement(shotNumber);
-
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
 
-  int timeCompI = 0,
-    timeCompF = 65,
-    timeAccelI = 0,
-    timeAccelF = 65; 
-  
-
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, timeCompI, timeCompF, 
-    			 "\\b_p15_000_sm", "");
+    plotPostShotModeData(shotNumber, "data/modeData1.txt");
+    exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotModeData(shotNumber, "data/modeData2.txt");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotPostShotIV(shotNumber, -100, 800, "");
-    plotPostShotIV(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotPostShotGVCurrent(shotNumber, -800, 500);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
-    plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
     exit(0);
   }
 
   if (0) {
+    int timeCompI, timeCompF, timeAccelI, timeAccelF;
     plotOffAxisDisplacement(shotNumber);
     plotPostShotIFData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
+    plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
+    plotPostShotIV(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
+    plotPostShotGVCurrent(shotNumber, -800, 500);
+    plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotModeData(shotNumber, "data/modeData.txt");
   }
 
   return 0;
@@ -291,117 +284,40 @@ int plotPostAnalysis() {
  * magnetic mode data
  ******************************************************************************/
 
-static int plotPostShotModeData(int shotNumber, int tmin, int tmax, char *nodeName, 
-				char *saveFile) {
+static int plotPostShotModeData(int shotNumber, char *tempDataFile) {
 
-  int status;
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip, 1E-3);
+  char *ipLabel = "with line lw 3 lc rgb 'red' title 'IP at 0'";
+  gsl_vector *ipm2 = readDHIMDSplusVector(shotNumber-2, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ipm2, 1E-3);
+  char *ipm2Label = "with line lw 3 dt 2 lc rgb 'blue' title 'IP at -2'";
+  gsl_vector *ipm1 = readDHIMDSplusVector(shotNumber-1, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ipm1, 1E-3);
+  char *ipm1Label = "with line lw 3 dt 2 lc rgb 'green' title 'IP at -1'";;
+  gsl_vector *m1 = readDHIMDSplusVector(shotNumber, "\\M_1_P15", "fuze", "10.10.10.240");
+  char *m1Label = "with line lw 3 lc rgb 'blue' title 'm=1 at 0' axes x1y2";
+  gsl_vector *m1m1 = readDHIMDSplusVector(shotNumber-1, "\\M_1_P15", "fuze", "10.10.10.240");
+  char *m1m1Label = "with line lw 3 lc rgb 'black' title 'm=1 at -1' axes x1y2";
 
-  char *gnuPlotFile = "script/temp.sh",
-    *ipFile = "data/ipMode.txt",
-    *modeFile = "data/mode.txt",
-    *ipNode = "\\i_p";
+  plot5VectorData(time, ip, ipLabel, 
+		  ipm1, ipm1Label,
+		  ipm2, ipm2Label,
+		  m1, m1Label, 
+		  m1m1, m1m1Label,
+		  "set title 'Normalized Modes and I_{P}'\nset xrange[0:50]\nset y2range[0:1]\n\
+set y2label 'Normalized Modes'\nset ylabel 'Current (kA)'\nset y2tics nomirror tc lt 2\n",
+		  tempDataFile);
 
-  
-  /* Getting data */
-  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, nodeName);
-  getAzimuthalArrayModes(azimuthArray);
-  double dhiTime = getDHITime(shotNumber);
+  gsl_vector_free(time);
+  gsl_vector_free(ip);
+  gsl_vector_free(m1);
+  gsl_vector_free(ipm1);
+  gsl_vector_free(m1m1);
+  gsl_vector_free(ipm2);
 
-  int sigSize = getSignalLengthMDSplus(ipNode, shotNumber);
-  
-  gsl_vector *ip = gsl_vector_alloc(sigSize),
-    *time = gsl_vector_alloc(sigSize);
-
-  initializeMagneticDataAndTime(shotNumber, ipNode, ip, time);
-
-
-  /* Saving data */
-  saveMatrixData(azimuthArray, modeFile);
-  save2VectorData(time, ip, ipFile);
-
-  
-  /* Creating gnuplot file */
-  if (remove(gnuPlotFile) != 0) {
-    printf("Unable to delete the file");
-  }
-
-  FILE *fp = fopen(gnuPlotFile, "w");
-  
-  if ( (fp == NULL) ) {
-
-    printf("Error opening files gnuplot file!\n");
-    exit(1);
-
-  }
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-
-  if (strcmp(saveFile, "") != 0) {
-    fprintf(fp, "set terminal png\n");
-    fprintf(fp, "set output '%s'\n", saveFile);
-  }
-  fprintf(fp, "set arrow from %g,0 to %g,1 nohead dt 4 lw 3 lc rgb 'orange'\n", 
-	  dhiTime*1E6, dhiTime*1E6);
-  fprintf(fp, "set label 'DHI trigger time' at %g,0.5 rotate by 90 font 'Times Bold, 12'\n", 
-	  dhiTime*1E6+1.0);
-  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
-  fprintf(fp, "set yrange[0:1]\n");
-  fprintf(fp, "set y2range[0:]\n");
-  fprintf(fp, "set tics font 'Times Bold, 14'\n");
-  fprintf(fp, "set key right top\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Normalized modes at z = 15 cm for %d' font '0,14'\n", shotNumber);
-  fprintf(fp, "set xlabel 'Time ({/Symbol m}sec)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "set ylabel 'Normalized Modes' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "set y2tics nomirror tc lt 2\n");
-  fprintf(fp, "set y2label 'Pinch Current (kA)' font 'Times Bold,18' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'blue' \
-title 'm=1',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'green' \
-title 'm=2',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'yellow' \
-title 'm=3',\\\n", modeFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($2*1E-3) with line lw 3 dt 2 lc rgb 'black' \
-title 'I_{P}' axes x1y2,\\\n", ipFile);
-  fprintf(fp, "     '%s' using ($1*1E6):($2/0.002) with line lw 3 dt 2 lc rgb 'red' \
-title 'Pinch Current' axes x1y2\n", modeFile);
-  fprintf(fp, "pause -1\n");
-  
-  fclose(fp);
-
-  chmod(gnuPlotFile, S_IRWXG);
-  chmod(gnuPlotFile, S_IRWXO);
-  chmod(gnuPlotFile, S_IRWXU);
-
-
-  
-
-  /* Creating child process to run script */
-  FILE *gnuplot = popen(gnuPlotFile, "r");
-
-  if (!gnuplot) {
-    fprintf(stderr,"incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
-  }
-  
-  fflush(gnuplot);
- 
-  /* Pausing so user can look at plot */
-  printf("\nPress any key, then ENTER to continue> \n");
-  getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-  
-  remove(gnuPlotFile);
-
-  /* Freeing vectors */
-  gsl_matrix_free(azimuthArray);
-  
   return 0;
 
 }

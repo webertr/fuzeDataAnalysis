@@ -363,6 +363,69 @@ gsl_vector *readDHIMDSplusVector(int shotNumber, char *nodeName, char *treeName,
 }
 
 
+/******************************************************************************
+ * Function: readDHIMDSplusVectorDim
+ * Inputs: int, char *
+ * Returns: gsl_matrix*
+ * Description: 
+ ******************************************************************************/
+
+gsl_vector *readDHIMDSplusVectorDim(int shotNumber, char *nodeName, char *treeName, char *host) {
+
+  int connectionStatus,
+    connectionID,
+    size,
+    dtype_float = DTYPE_FLOAT,
+    null = 0,
+    sigDescrVector,
+    ii;
+
+  char buf[1024];
+
+  float *vectorData;
+  
+  gsl_vector *nullVec = 0;
+  
+  connectionID = MdsConnect(host);
+  if (connectionID == -1) {
+    fprintf(stderr, "Connection Failed\n");
+    return nullVec;
+  }
+  
+  connectionStatus = MdsOpen(treeName, &shotNumber);
+  if ( !statusOk(connectionStatus) ) {
+    fprintf(stderr,"\nError message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsDisconnect();
+    return nullVec;
+  }
+
+  size = getSignalLength(nodeName);
+  vectorData = (float *)malloc(size * sizeof(float));  
+  sigDescrVector = descr(&dtype_float, vectorData, &size, &null);
+  snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName);
+  connectionStatus = MdsValue(buf, &sigDescrVector, &null, 0);
+
+  if ( !statusOk(connectionStatus) ) {
+    fprintf(stderr,"\nError message: %s.\n", MdsGetMsg(connectionStatus));
+    MdsClose(treeName, &shotNumber);
+    MdsDisconnect();
+    return nullVec;
+
+  }
+
+  connectionStatus = MdsClose(treeName, &shotNumber);
+  
+  gsl_vector *vRet = gsl_vector_alloc(size);  
+  connectionStatus = MdsClose(treeName, &shotNumber);
+  for (ii = 0; ii < size; ii++) {
+    gsl_vector_set(vRet, ii, vectorData[ii]);
+  }
+  
+  return vRet;
+
+}
+
+
 
 
 

@@ -189,33 +189,41 @@ int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
  * then attach a pipe between that shell command and a stream
  ******************************************************************************/
 
-int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2In,
-		     gsl_vector *yVec3In, gsl_vector *yVec4In, gsl_vector *yVec5In,
-		     char *y1Label, char *y2Label, char *y3Label, char *y4Label,
-		     char *y5Label, char *plotOptions) {
+int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
+		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
+		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
+		     gsl_vector *yVec5In, char *y5Label, char *plotOptions,
+		     char *tempDataFile) {
 
-  int ii, status;
+  int ii, status, min;
 
-  char *tempFile = "data/temp.txt";
+  int lengths[6];
 
-
+  lengths[0] = xVecIn->size;
+  lengths[1] = yVec1In->size;
+  lengths[2] = yVec2In->size;
+  lengths[3] = yVec3In->size;
+  lengths[4] = yVec4In->size;
+  lengths[5] = yVec5In->size;
+    
+  min = lengths[0];
+  for (ii = 1; ii < 6; ii++) {
+    if (min > lengths[ii]) {
+      min = lengths[ii];
+    }
+  }
   
   /* Writing file to hold data */
-  
-  if (remove(tempFile) != 0) {
-    printf("Unable to delete the file");
-  }
+  remove(tempDataFile);
 
-  FILE *fp = fopen(tempFile, "w");
+  FILE *fp = fopen(tempDataFile, "w");
   
   if ( (fp == NULL) ) {
-
     printf("Error opening files!\n");
     exit(1);
-
   }
 
-  for (ii = 0; ii < xVecIn->size; ii++) {
+  for (ii = 0; ii < min; ii++) {
 
     fprintf(fp, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
 	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii),
@@ -226,11 +234,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
 
   fclose(fp);
 
-
-
-
-
-
+  
   /* 
    * Creating child process to then call "gnuplot" in shell, and then to pipe the standard output
    * to it.
@@ -245,17 +249,17 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, gsl_vector *yVec2I
 
   fprintf(gnuplot, "%s\n", plotOptions);
   
-  fprintf(gnuplot, "plot 'data/temp.txt' using 1:2 title '%s',\\\n", y1Label);
-  fprintf(gnuplot, "     'data/temp.txt' using 1:3 title '%s',\\\n", y2Label);
-  fprintf(gnuplot, "     'data/temp.txt' using 1:4 title '%s',\\\n", y3Label);
-  fprintf(gnuplot, "     'data/temp.txt' using 1:5 title '%s',\\\n", y4Label);
-  fprintf(gnuplot, "     'data/temp.txt' using 1:6 title '%s'\n", y5Label);
- 
+  fprintf(gnuplot, "plot '%s' using 1:2 %s,\\\n", tempDataFile, y1Label);
+  fprintf(gnuplot, "     '%s' using 1:3 %s,\\\n", tempDataFile, y2Label);
+  fprintf(gnuplot, "     '%s' using 1:4 %s,\\\n", tempDataFile, y3Label);
+  fprintf(gnuplot, "     '%s' using 1:5 %s,\\\n", tempDataFile, y4Label);
+  fprintf(gnuplot, "     '%s' using 1:6 %s\n", tempDataFile, y5Label);
   
   fflush(gnuplot);
 
   /* Pausing so user can look at plot */
-  getchar();
+  printf("\nPress Ctrl-C> \n");
+  pause();
 
   status = pclose(gnuplot);
 
