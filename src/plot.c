@@ -265,8 +265,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
   char pathBuf[100];
   char *realPath = realpath(tempScriptFile, pathBuf);
   
-  system(realPath);
-    
+  system(realPath);    
  
   /* Pausing so user can look at plot */
   printf("\nPress any key, then ENTER to continue> \n");

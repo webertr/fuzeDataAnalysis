@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
 
   /*
    * Modeling magnetic field from random currents
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing DHI abel inverison code 
    */
-  //testAbelInversionDHI();
+  testAbelInversionDHI();
   
   /*
    * Plotting plasma parameters
