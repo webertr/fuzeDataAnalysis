@@ -4,6 +4,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <sys/stat.h>
+#include <stdlib.h>
 
 #include "save.h"
 

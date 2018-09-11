@@ -195,7 +195,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec5In, char *y5Label, char *plotOptions,
 		     char *tempDataFile, char *tempScriptFile) {
 
-  int ii, status, min;
+  int ii, min;
 
   int lengths[6];
 
@@ -262,26 +262,16 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
   chmod(tempScriptFile, S_IRWXO);
   chmod(tempScriptFile, S_IRWXU);
 
-  /* Creating child process to run script */
-  FILE *gnuplot = popen(tempScriptFile, "r");
-
-  if (!gnuplot) {
-    fprintf(stderr,"incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
-  }
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
   
-  fflush(gnuplot);
+  system(realPath);
+    
  
   /* Pausing so user can look at plot */
   printf("\nPress any key, then ENTER to continue> \n");
   getchar();
 
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-  
 
   return 0;
 
