@@ -14,7 +14,7 @@ static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
-static int plotPostShotModeData(int shotNumber, char *tempDataFile);
+static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile);
 static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
 
@@ -231,11 +231,11 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, "data/modeData1.txt");
+    plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotModeData(shotNumber, "data/modeData2.txt");
+    plotPostShotModeData(shotNumber, "data/modeData2.txt", "data/modeDataScript2.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -268,7 +268,7 @@ int plotPostAnalysis() {
     plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
     plotPostShotGVCurrent(shotNumber, -800, 500);
     plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
-    plotPostShotModeData(shotNumber, "data/modeData.txt");
+    plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
   }
 
   return 0;
@@ -284,7 +284,7 @@ int plotPostAnalysis() {
  * magnetic mode data
  ******************************************************************************/
 
-static int plotPostShotModeData(int shotNumber, char *tempDataFile) {
+static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
 
   gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\I_P", "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
@@ -308,8 +308,9 @@ static int plotPostShotModeData(int shotNumber, char *tempDataFile) {
 		  m1, m1Label, 
 		  m1m1, m1m1Label,
 		  "set title 'Normalized Modes and I_{P}'\nset xrange[0:50]\nset y2range[0:1]\n\
-set y2label 'Normalized Modes'\nset ylabel 'Current (kA)'\nset y2tics nomirror tc lt 2\n",
-		  tempDataFile);
+set y2label 'Normalized Modes'\nset ylabel 'Current (kA)'\nset y2tics nomirror tc lt 2\n\
+set yrange[0:]",
+		  tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
   gsl_vector_free(ip);

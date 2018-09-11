@@ -3,7 +3,7 @@
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
-#include <unistd.h>
+#include <sys/stat.h>
 
 #include "save.h"
 
@@ -24,7 +24,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
 		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
 		     gsl_vector *yVec5In, char *y5Label, char *plotOptions,
-		     char *tempDataFile);
+		     char *tempDataFile, char *tempScriptFile);
 int plotMatrixColVColErrorDataFile (char *fileName, int colNumX, int colNumY, 
 				    int colNumError, double xScale, double yScale, 
 				    double errorScale, char *plotOptions);

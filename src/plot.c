@@ -193,7 +193,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
 		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
 		     gsl_vector *yVec5In, char *y5Label, char *plotOptions,
-		     char *tempDataFile) {
+		     char *tempDataFile, char *tempScriptFile) {
 
   int ii, status, min;
 
@@ -215,57 +215,73 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
   
   /* Writing file to hold data */
   remove(tempDataFile);
+  remove(tempScriptFile);
 
-  FILE *fp = fopen(tempDataFile, "w");
+  FILE *fpData = fopen(tempDataFile, "w");
   
-  if ( (fp == NULL) ) {
+  if ( (fpData == NULL) ) {
     printf("Error opening files!\n");
     exit(1);
   }
 
   for (ii = 0; ii < min; ii++) {
 
-    fprintf(fp, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
 	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii),
 	    gsl_vector_get(yVec3In, ii), gsl_vector_get(yVec4In, ii), 
 	    gsl_vector_get(yVec5In, ii));
 
   }
 
-  fclose(fp);
+  fclose(fpData);
 
   
-  /* 
-   * Creating child process to then call "gnuplot" in shell, and then to pipe the standard output
-   * to it.
-   */
+  FILE *fpScript = fopen(tempScriptFile, "w");
   
-  FILE *gnuplot = popen("gnuplot", "w");
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions);
+  
+  fprintf(fpScript, "plot '%s' using 1:2 %s,\\\n", tempDataFile, y1Label);
+  fprintf(fpScript, "     '%s' using 1:3 %s,\\\n", tempDataFile, y2Label);
+  fprintf(fpScript, "     '%s' using 1:4 %s,\\\n", tempDataFile, y3Label);
+  fprintf(fpScript, "     '%s' using 1:5 %s,\\\n", tempDataFile, y4Label);
+  fprintf(fpScript, "     '%s' using 1:6 %s\n", tempDataFile, y5Label);
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  /* Creating child process to run script */
+  FILE *gnuplot = popen(tempScriptFile, "r");
 
   if (!gnuplot) {
     fprintf(stderr,"incorrect parameters or too many files.\n");
     return EXIT_FAILURE;
   }
-
-  fprintf(gnuplot, "%s\n", plotOptions);
-  
-  fprintf(gnuplot, "plot '%s' using 1:2 %s,\\\n", tempDataFile, y1Label);
-  fprintf(gnuplot, "     '%s' using 1:3 %s,\\\n", tempDataFile, y2Label);
-  fprintf(gnuplot, "     '%s' using 1:4 %s,\\\n", tempDataFile, y3Label);
-  fprintf(gnuplot, "     '%s' using 1:5 %s,\\\n", tempDataFile, y4Label);
-  fprintf(gnuplot, "     '%s' using 1:6 %s\n", tempDataFile, y5Label);
   
   fflush(gnuplot);
-
+ 
   /* Pausing so user can look at plot */
-  printf("\nPress Ctrl-C> \n");
-  pause();
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
 
   status = pclose(gnuplot);
 
   if (status == -1) {
     printf("Error reported bp close");
   }
+  
 
   return 0;
 
