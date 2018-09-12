@@ -440,15 +440,14 @@ gsl_matrix *readMatrixTextFile(char *fileName) {
   gsl_matrix *mInput = gsl_matrix_alloc(numRows,numCols);
 
   for (ii = 0; ii < numRows; ii++) {
-    for (jj = 0; jj < numCols; jj++) {
+    for (jj = 0; jj < (numCols-1); jj++) {
 
-      if (!fscanf(fp, "%lf", &val))
-	break;
-
+      fscanf(fp, "%lf\t", &val);
       gsl_matrix_set(mInput, ii, jj, val);
 
     }
-    fscanf(fp, "\n");
+    fscanf(fp, "%lf\n", &val);
+    gsl_matrix_set(mInput, ii, jj, val);
   }
 
 
@@ -510,15 +509,14 @@ gsl_matrix *readMatrixCsvFile(char *fileName) {
   gsl_matrix *mInput = gsl_matrix_alloc(numRows,numCols);
 
   for (ii = 0; ii < numRows; ii++) {
-    for (jj = 0; jj < numCols; jj++) {
+    for (jj = 0; jj < (numCols-1); jj++) {
 
-      if (!fscanf(fp, "%lf,", &val))
-	break;
-
+      fscanf(fp, "%lf,", &val);
       gsl_matrix_set(mInput, ii, jj, val);
 
     }
-    fscanf(fp, "\n");
+    fscanf(fp, "%lf\n", &val);
+    gsl_matrix_set(mInput, ii, jj, val);
   }
 
 
@@ -715,3 +713,68 @@ int saveVectorBinary(gsl_vector *vecIn, char *fileName) {
   return 0;
 
 }
+
+
+
+
+/******************************************************************************
+ *
+ * TESTING SECTION
+ *
+ ******************************************************************************/
+
+
+static int testReadWriteMatrix();
+
+
+/******************************************************************************
+ * Function: testSave
+ * Inputs: 
+ * Returns: 
+ * Description: Testing the save.c functions
+ ******************************************************************************/
+
+int testSave() {
+
+  testReadWriteMatrix();
+  
+  return 0;
+}
+
+
+static int testReadWriteMatrix() {
+
+  int ii, jj,
+    numRows = 10,
+    numCols = 20;
+
+  gsl_matrix *M = gsl_matrix_alloc(10,20);
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      gsl_matrix_set(M, ii, jj, ii+2*jj);
+    }
+  }
+  
+  saveMatrixData(M, "data/temp.txt");
+
+  gsl_matrix *M1 = readMatrixTextFile("data/temp.txt");
+
+  printf("Size 1: %d\n", M1->size1);
+  printf("Size 2: %d\n", M1->size2);
+  printf("Size 1: %d\n", M->size1);
+  printf("Size 2: %d\n", M->size2);
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+
+      if ( gsl_matrix_get(M, ii, jj) !=gsl_matrix_get(M1, ii, jj) ) {
+	printf("Mistake\n");
+      }
+    }
+  }
+
+  return 0;
+
+    
+}
+  
