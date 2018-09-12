@@ -302,15 +302,16 @@ static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempSc
   gsl_vector *m1m1 = readDHIMDSplusVector(shotNumber-1, "\\M_1_P15", "fuze", "10.10.10.240");
   char *m1m1Label = "with line lw 3 lc rgb 'black' title 'm=1 at -1' axes x1y2";
 
-  plot5VectorData(time, ip, ipLabel, 
-		  ipm1, ipm1Label,
-		  ipm2, ipm2Label,
-		  m1, m1Label, 
-		  m1m1, m1m1Label,
-		  "set title 'Normalized Modes and I_{P}'\nset xrange[0:50]\nset y2range[0:1]\n\
-set y2label 'Normalized Modes'\nset ylabel 'Current (kA)'\nset y2tics nomirror tc lt 2\n\
-set yrange[0:]",
-		  tempDataFile, tempScriptFile);
+  char *keyWords = "set title 'Normalized Modes and I_{P}'\n"
+    "set xrange[0:50]\n"
+    "set y2range[0:1]\n"
+    "set y2label 'Normalized Modes'\n"
+    "set ylabel 'Current (kA)'\n"
+    "set y2tics nomirror tc lt 2\n"
+    "set yrange[0:]";
+  
+  plot5VectorData(time, ip, ipLabel, ipm1, ipm1Label, ipm2, ipm2Label, m1, m1Label, 
+		  m1m1, m1m1Label, keyWords, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
   gsl_vector_free(ip);

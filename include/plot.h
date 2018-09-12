@@ -35,5 +35,7 @@ int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int col
 					  char *fileName2, int colNumX2, int colNumY2, 
 					  int colNumError2, double xScale2, double yScale2, 
 					  double errorScale2, char *label2, char *plotOptions);
+int plotVectorDataWithError(gsl_vector *xIn, gsl_vector *yIn, char *yLabel, gsl_vector *yError,
+			    char *plotOptions, char *tempDataFile, char *tempScriptFile);
 
 #endif

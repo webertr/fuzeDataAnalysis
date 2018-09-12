@@ -1669,37 +1669,19 @@ static int dataForUri2() {
     }
   }
   
-  char *neData = "data/neTemp.txt";
+  char *neDataFile = "data/neTemp.txt";
   char *neScriptFile = "data/neTempScript.sh";
 
   double drL = gsl_vector_get(rL, 1) - gsl_vector_get(rL, 0);
+
+  char *keyWords = "set terminal png\n"
+    "set output 'data/ne.png'\nset xrange[:]\nset yrange[0:]\nset grid\n"
+    "set title 'n{e} vs. r' font '0,18'\nset xlabel 'r (cm)' font ',16' offset 0,0\n"
+    "set ylabel 'n_{e} (cm^{-3})' font ',16' offset 0,0\nset title 'n{e} vs. r(cm)'\n";
   
-  save3VectorData(rL, neL, neStdL, neData);
-  FILE *fp = fopen(neScriptFile, "w");
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output 'data/ne.png'\n");
-  fprintf(fp, "set xrange[:]\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'n{e} vs. r' font '0,18'\n");
-  fprintf(fp, "set xlabel 'r (cm)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'n_{e} (cm^{-3})' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E2):($2*1E-6):($3*1E-6) with yerrorbars title 'n_{e}'\n\
-set title 'n{e} vs. r(cm)'\n", neData);
-
-  fprintf(fp, "pause -1\n");
+  plotVectorDataWithError(rL, neL, "title 'n_{e} corn'", neStdL, keyWords,
+			  neDataFile, neScriptFile);
   
-  fclose(fp);
-
-  chmod(neScriptFile, S_IRWXG);
-  chmod(neScriptFile, S_IRWXO);
-  chmod(neScriptFile, S_IRWXU);
-
-  char pathBuf[100];
-  char *realPath = realpath(neScriptFile, pathBuf);
-  system(realPath);
-
   gsl_vector *bTheta = gsl_vector_alloc(N);
   gsl_vector *bThetaError = gsl_vector_alloc(N);
   gsl_vector *temperature = gsl_vector_alloc(N);
@@ -1712,35 +1694,18 @@ set title 'n{e} vs. r(cm)'\n", neData);
   azimuthBFieldForceBalance(nePlusStdL, bThetaError, IP, drL, edge);
   gsl_vector_sub(bThetaError, bTheta);
   
-  char *bData = "data/bTemp.txt";
+  char *bDataFile = "data/bTemp.txt";
   char *bScriptFile = "data/bTempScript.sh";
 
-  save3VectorData(rL, bTheta, bThetaError, bData);
+  keyWords = "set terminal png\n"
+    "set output 'data/b.png'\nset xrange[:]\nset yrange[0:]\nset grid\n"
+    "set title 'B_{{/Symbol q}} (Tesla) vs. r' font '0,18'\n"
+    "set xlabel 'r (cm)' font ',16' offset 0,0\n"
+    "set ylabel 'B_{{/Symbol q}} (Tesla)' font ',16' offset 0,0\n"
+    "set title 'B_{{/Symbol q}} vs. r(cm)'\n";
 
-  fp = fopen(bScriptFile, "w");
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output 'data/b.png'\n");
-  fprintf(fp, "set xrange[:]\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'B_{{/Symbol q}} (Tesla) vs. r' font '0,18'\n");
-  fprintf(fp, "set xlabel 'r (cm)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'B_{{/Symbol q}} (Tesla)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E2):($2):($3) with yerrorbars title 'B_{{/Symbol q}}'\n\
-set title 'B_{{/Symbol q}} vs. r(cm)'\n", bData);
-
-  fprintf(fp, "pause -1\n");
-  
-  fclose(fp);
-
-  chmod(bScriptFile, S_IRWXG);
-  chmod(bScriptFile, S_IRWXO);
-  chmod(bScriptFile, S_IRWXU);
-  
-  realPath = realpath(bScriptFile, pathBuf);
-  system(realPath);
-
+  plotVectorDataWithError(rL, bTheta, "title 'B_{{/Symbol q}}'", bThetaError, keyWords,
+			  bDataFile, bScriptFile);
   
   temperatureForceBalance(neL, bTheta, temperature, IP, drL, edge);
   gsl_vector_add(bThetaError, bTheta);
@@ -1750,38 +1715,22 @@ set title 'B_{{/Symbol q}} vs. r(cm)'\n", bData);
   gsl_vector_scale(temperature, 8.618E-5);
   gsl_vector_scale(temperatureError, 8.618E-5);
 
-  char *tData = "data/tTemp.txt";
+  char *tDataFile = "data/tTemp.txt";
   char *tScriptFile = "data/tTempScript.sh";
 
-  save3VectorData(rL, temperature, temperatureError, tData);
-
-  fp = fopen(tScriptFile, "w");
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set terminal png\n");
-  fprintf(fp, "set output 'data/t.png'\n");
-  fprintf(fp, "set xrange[:]\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'T (eV) vs. r (cm)' font '0,18'\n");
-  fprintf(fp, "set xlabel 'r (cm)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'T (eV)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E2):($2):($3) with yerrorbars title 'T'\n\
-set title 'T (eV) vs. r(cm)'\n", tData);
-
-  fprintf(fp, "pause -1\n");
+  keyWords = "set terminal png\n"
+    "set output 'data/t.png'\nset xrange[:]\nset yrange[0:]\nset grid\n"
+    "set title 'T (eV) vs. r (cm)' font '0,18'\nset xlabel 'r (cm)' font ',16' offset 0,0\n"
+    "set ylabel 'T (eV)' font ',16' offset 0,0\n";
   
-  fclose(fp);
-
-  chmod(tScriptFile, S_IRWXG);
-  chmod(tScriptFile, S_IRWXO);
-  chmod(tScriptFile, S_IRWXU);
+  plotVectorDataWithError(rL, temperature, "title 'T'",
+			  temperatureError, keyWords,
+			  tDataFile, tScriptFile);
   
-  realPath = realpath(tScriptFile, pathBuf);
-  system(realPath);
 
   char *resultsFile = "data/results.csv";
   remove(resultsFile);
-  fp = fopen(resultsFile, "w");
+  FILE *fp = fopen(resultsFile, "w");
 
   for (ii = 0; ii < N; ii++) {
 
@@ -1797,12 +1746,6 @@ set title 'T (eV) vs. r(cm)'\n", tData);
 
   fclose(fp);
   
-  //gsl_vector_set(bTheta, 0, 0.0);
-
-  //plot2VectorData(r, ne, neStd, "");
-  //plot2VectorData(r, bTheta, bThetaError, "");
-  //plot2VectorData(rL, temperature, temperatureError, "");
-
   return 0;
 
 }

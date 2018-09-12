@@ -195,7 +195,8 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec5In, char *y5Label, char *plotOptions,
 		     char *tempDataFile, char *tempScriptFile) {
 
-  int ii, min;
+  int ii,
+    len = xVecIn->size;
 
   int lengths[6];
 
@@ -206,10 +207,10 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
   lengths[4] = yVec4In->size;
   lengths[5] = yVec5In->size;
     
-  min = lengths[0];
-  for (ii = 1; ii < 6; ii++) {
-    if (min > lengths[ii]) {
-      min = lengths[ii];
+  for (ii = 0; ii < 5; ii++) {
+    if (lengths[ii] != lengths[ii+1]) {
+      printf("Vectors not all the same length");
+      return -1;
     }
   }
   
@@ -224,7 +225,7 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
     exit(1);
   }
 
-  for (ii = 0; ii < min; ii++) {
+  for (ii = 0; ii < len; ii++) {
 
     fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
 	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii),
@@ -632,6 +633,90 @@ int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int col
     printf("Error reported bp close");
   }
 
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotVectorDataWithError
+ * Inputs: gsl_vector*
+ * Returns: int
+ * Description: This will created a data file, a script file, then run the
+ * script.
+ ******************************************************************************/
+
+int plotVectorDataWithError(gsl_vector *xIn, gsl_vector *yIn, char *yLabel, gsl_vector *yError,
+			    char *plotOptions, char *tempDataFile, char *tempScriptFile) {
+
+  int ii,
+    len = xIn->size;
+
+  int lengths[6];
+
+  lengths[0] = xIn->size;
+  lengths[1] = yIn->size;
+  lengths[2] = yError->size;
+
+  for (ii = 0; ii < 2; ii++) {
+    if (lengths[ii] != lengths[ii+1]) {
+      printf("Vectors not all the same length");
+      return -1;
+    }
+  }
+  
+  /* Writing file to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
+
+  FILE *fpData = fopen(tempDataFile, "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  for (ii = 0; ii < len; ii++) {
+
+    fprintf(fpData, "%g\t%g\t%g\n", gsl_vector_get(xIn, ii), 
+	    gsl_vector_get(yIn, ii), gsl_vector_get(yError, ii));
+
+  }
+
+  fclose(fpData);
+
+  
+  FILE *fpScript = fopen(tempScriptFile, "w");
+  
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions);
+  
+  fprintf(fpScript, "plot '%s' using 1:2:3 with yerrorbars %s\n", tempDataFile, yLabel);
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+  
   return 0;
 
 }
