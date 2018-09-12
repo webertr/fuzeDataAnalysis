@@ -555,7 +555,7 @@ int main(int argc, char *argv[])
 
 			<< "c beginning of data cards\n"
 			
-			<< "SDEF PAR=1 ERG=2.45 CEL=101 AXS=1 0 0 POS= " << X+length/2-plasmaL << " " << Y << " " << Z << " RAD=d2 EXT=d5\n"
+			<< "SDEF PAR=1 ERG=2.45 CEL=101 AXS=1 0 0 POS= " << X << " " << Y << " " << Z << " RAD=d2 EXT=d5\n"
 			<< "SP1 -21 1\n"
 			<< "SI2 0 " << plasmaR << "\n"
 			//<< "SI5 14 16\n"
