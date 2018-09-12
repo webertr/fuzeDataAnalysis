@@ -461,6 +461,76 @@ gsl_matrix *readMatrixTextFile(char *fileName) {
 
 
 /******************************************************************************
+ * Function: readMatrixCsvFile
+ * Inputs: char *
+ * Returns: gsl_matrix *
+ * Description: Reads a matrix saved as a text file and returns it as a
+ * gsl matrix
+ ******************************************************************************/
+
+gsl_matrix *readMatrixCsvFile(char *fileName) {
+
+  int numRows,
+    numCols,
+    ii, jj;
+  const int bufMax = 10000;
+
+  FILE *fp;
+  fp = fopen(fileName, "r");
+
+  if (fp == NULL) {
+    printf("Error\n");
+  }
+  double val;
+
+  char *result = NULL;
+  char row[bufMax];
+  int rowCount = 0,
+    colCount = 0;
+
+  fgets(row, bufMax, fp);
+  
+  result = strtok(row, ",");
+  while( result != NULL ) {
+    colCount++;
+    result = strtok(NULL, ",");
+  }
+
+  
+  while( !feof(fp) ) {
+    rowCount++;
+    fgets(row, bufMax, fp);
+  }
+  
+  numRows = rowCount;
+  numCols = colCount;
+
+  rewind(fp);
+
+  gsl_matrix *mInput = gsl_matrix_alloc(numRows,numCols);
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+
+      if (!fscanf(fp, "%lf,", &val))
+	break;
+
+      gsl_matrix_set(mInput, ii, jj, val);
+
+    }
+    fscanf(fp, "\n");
+  }
+
+
+  fclose(fp);
+  
+
+  return mInput;
+
+}
+
+
+/******************************************************************************
  * Function: readVectorTextFile
  * Inputs: char *
  * Returns: gsl_vector *

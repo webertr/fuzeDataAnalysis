@@ -27,6 +27,7 @@ int save7VectorData(gsl_vector *vec1In, gsl_vector *vec2In, gsl_vector *vec3In,
 		    gsl_vector *vec4In, gsl_vector *vec5In, gsl_vector *vec6In, 
 		    gsl_vector *vec7In, char *fileName);
 gsl_matrix *readMatrixTextFile(char *fileName);
+gsl_matrix *readMatrixCsvFile(char *fileName);
 gsl_vector *readVectorTextFile(char *fileName);
 
 #endif

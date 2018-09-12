@@ -1185,6 +1185,7 @@ static gsl_vector *matrixMultDHI(gsl_matrix *mInput, gsl_vector *vInput);
 static int overlayCenterLineTest(gsl_matrix *mInput, char *fileCentroid);
 static int testInvertImageDHI();
 static int dataForUri();
+static int dataForUri2();
 
 /* 1 is using meters, 100 if using CM */
 #define CM_ADJUST 100
@@ -1246,8 +1247,10 @@ int testAbelInversionDHI() {
 
   if (0) {
     testInvertImageDHI();
+    dataForUri();
   }
-  dataForUri();
+  
+  dataForUri2();
   
   return 0;
 
@@ -1576,6 +1579,172 @@ set title 'B_{{/Symbol q}} vs. r(cm)'\n", bData);
   temperatureForceBalance(neL, bTheta, temperature, IP, drL, N-1);
   gsl_vector_add(bThetaError, bTheta);
   temperatureForceBalance(nePlusStdL, bTheta, temperatureError, IP, drL, N-1);
+  gsl_vector_sub(temperatureError, temperature);
+  
+  gsl_vector_scale(temperature, 8.618E-5);
+  gsl_vector_scale(temperatureError, 8.618E-5);
+
+  char *tData = "data/tTemp.txt";
+  char *tScriptFile = "data/tTempScript.sh";
+
+  save3VectorData(rL, temperature, temperatureError, tData);
+
+  fp = fopen(tScriptFile, "w");
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set output 'data/t.png'\n");
+  fprintf(fp, "set xrange[:]\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'T (eV) vs. r (cm)' font '0,18'\n");
+  fprintf(fp, "set xlabel 'r (cm)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'T (eV)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E2):($2):($3) with yerrorbars title 'T'\n\
+set title 'T (eV) vs. r(cm)'\n", tData);
+
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(tScriptFile, S_IRWXG);
+  chmod(tScriptFile, S_IRWXO);
+  chmod(tScriptFile, S_IRWXU);
+  
+  realPath = realpath(tScriptFile, pathBuf);
+  system(realPath);
+
+  char *resultsFile = "data/results.csv";
+  remove(resultsFile);
+  fp = fopen(resultsFile, "w");
+
+  for (ii = 0; ii < N; ii++) {
+
+    fprintf(fp, "%g,%g,%g,%g,%g,%g,%g\n", gsl_vector_get(rL,ii),
+	    gsl_vector_get(neL,ii),
+	    gsl_vector_get(neStdL,ii),
+	    gsl_vector_get(bTheta,ii),
+	    gsl_vector_get(bThetaError,ii),
+	    gsl_vector_get(temperature,ii),
+	    gsl_vector_get(temperatureError,ii));
+
+  }
+
+  fclose(fp);
+  
+  //gsl_vector_set(bTheta, 0, 0.0);
+
+  //plot2VectorData(r, ne, neStd, "");
+  //plot2VectorData(r, bTheta, bThetaError, "");
+  //plot2VectorData(rL, temperature, temperatureError, "");
+
+  return 0;
+
+}
+  
+
+static int dataForUri2() {
+
+  gsl_matrix *M1 = readMatrixCsvFile("data/2.txt");  
+
+  int numRows = M1->size1;
+  int N = numRows,
+    ii, edge;
+  
+  gsl_vector *rL = gsl_vector_alloc(numRows);
+  gsl_vector *neL = gsl_vector_alloc(numRows);
+  gsl_vector *neStdL = gsl_vector_alloc(numRows);
+  gsl_vector *nePlusStdL = gsl_vector_alloc(numRows);
+
+  gsl_matrix_get_col(rL, M1, 0);
+  gsl_matrix_get_col(neL, M1, 1);
+  gsl_matrix_get_col(neStdL, M1, 2);
+  gsl_matrix_get_col(nePlusStdL, M1, 2);
+  gsl_vector_add(nePlusStdL, neL);
+
+  edge = 0;
+  for (ii = 0; ii < numRows; ii++) {
+    if (gsl_vector_get(rL, ii) > 0.3E-2) {
+      edge = ii;
+      break;
+    }
+  }
+  
+  char *neData = "data/neTemp.txt";
+  char *neScriptFile = "data/neTempScript.sh";
+
+  double drL = gsl_vector_get(rL, 1) - gsl_vector_get(rL, 0);
+  
+  save3VectorData(rL, neL, neStdL, neData);
+  FILE *fp = fopen(neScriptFile, "w");
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set output 'data/ne.png'\n");
+  fprintf(fp, "set xrange[:]\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'n{e} vs. r' font '0,18'\n");
+  fprintf(fp, "set xlabel 'r (cm)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'n_{e} (cm^{-3})' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E2):($2*1E-6):($3*1E-6) with yerrorbars title 'n_{e}'\n\
+set title 'n{e} vs. r(cm)'\n", neData);
+
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(neScriptFile, S_IRWXG);
+  chmod(neScriptFile, S_IRWXO);
+  chmod(neScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(neScriptFile, pathBuf);
+  system(realPath);
+
+  gsl_vector *bTheta = gsl_vector_alloc(N);
+  gsl_vector *bThetaError = gsl_vector_alloc(N);
+  gsl_vector *temperature = gsl_vector_alloc(N);
+  gsl_vector *temperatureError = gsl_vector_alloc(N);
+  
+  double IP = 132E3;
+  
+  azimuthBFieldForceBalance(neL, bTheta, IP, drL, edge);
+
+  azimuthBFieldForceBalance(nePlusStdL, bThetaError, IP, drL, edge);
+  gsl_vector_sub(bThetaError, bTheta);
+  
+  char *bData = "data/bTemp.txt";
+  char *bScriptFile = "data/bTempScript.sh";
+
+  save3VectorData(rL, bTheta, bThetaError, bData);
+
+  fp = fopen(bScriptFile, "w");
+
+  fprintf(fp, "#!/usr/bin/env gnuplot\n");
+  fprintf(fp, "set terminal png\n");
+  fprintf(fp, "set output 'data/b.png'\n");
+  fprintf(fp, "set xrange[:]\n");
+  fprintf(fp, "set grid\n");
+  fprintf(fp, "set title 'B_{{/Symbol q}} (Tesla) vs. r' font '0,18'\n");
+  fprintf(fp, "set xlabel 'r (cm)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'B_{{/Symbol q}} (Tesla)' font ',16' offset 0,0\n");
+  fprintf(fp, "plot '%s' using ($1*1E2):($2):($3) with yerrorbars title 'B_{{/Symbol q}}'\n\
+set title 'B_{{/Symbol q}} vs. r(cm)'\n", bData);
+
+  fprintf(fp, "pause -1\n");
+  
+  fclose(fp);
+
+  chmod(bScriptFile, S_IRWXG);
+  chmod(bScriptFile, S_IRWXO);
+  chmod(bScriptFile, S_IRWXU);
+  
+  realPath = realpath(bScriptFile, pathBuf);
+  system(realPath);
+
+  
+  temperatureForceBalance(neL, bTheta, temperature, IP, drL, edge);
+  gsl_vector_add(bThetaError, bTheta);
+  temperatureForceBalance(nePlusStdL, bTheta, temperatureError, IP, drL, edge);
   gsl_vector_sub(temperatureError, temperature);
   
   gsl_vector_scale(temperature, 8.618E-5);
