@@ -1518,7 +1518,7 @@ c -----------------------------------------------------------------------------
  * Everything below the blank line is ignored by mcnp. This will be the notes
  * section, and to document the problem.
  *
- ******************************************************************************/
+ *****************************************************************************/
 
 To see geometry, "MCNP IP NAME=fuzeInpFile.inp"
 To run, "MCNP NAME=fuzeInpFile.inp"
@@ -1530,17 +1530,80 @@ Length=cm, Energy=MeV, time=10E-8, Temperature=MeV, density=g/cm^-3
 
 Procedure to check geometry. Look for lost parcticles by:
 
-1. Add a VOID card to override some of the other specifications in the problem and make all the cells voids, turn heating tallies into flux tallies, and turn off any tally multiplication ( FM) cards.
+1. Add a VOID card to override some of the other specifications in the problem
+and make all the cells voids, turn heating tallies into flux tallies, and turn
+off any tally multiplication ( FM) cards.
 
-2. Add another cell and a large spherical surface to the problem such that the surface surrounds the system and the old outside world cell is split by the new surface into two cells: the space between the system and the new surface, which is the new cell, and the space outside the new surface, which is now the outside world cell. Be sure that the new cell has non-zero importance. Actually, it is best to make all non-zero importances equal. If the system is infinite in one or two dimensions, use one or more planes instead of a sphere.
+2. Add another cell and a large spherical surface to the problem such that the
+surface surrounds the system and the old outside world cell is split by the new
+surface into two cells: the space between the system and the new surface, which
+is the new cell, and the space outside the new surface, which is now the
+outside world cell. Be sure that the new cell has non-zero importance.
+Actually, it is best to make all non-zero importances equal. If the system is
+infinite in one or two dimensions, use one or more planes instead of a sphere.
 
-3. Replace the source specifications by an inward directed surface source to flood the geometry with particles. To do this, you can use the command
+3. Replace the source specifications by an inward directed surface source to
+flood the geometry with particles. To do this, you can use the command
 SDEF
 SUR=m
 NRM=-1
 ,
-where m is the number of the new spherical surface added in Step 2. If the new surface is a plane, you must specify the portion to be used by means of POS and RAD or possibly X ,Y , and Z source distributions.
+where m is the number of the new spherical surface added in Step 2. If the
+new surface is a plane, you must specify the portion to be used by means of
+POS and RAD or possibly X ,Y , and Z source distributions.
 
-Because there are no collisions, a short run will generate a great many tracks through your system. If there are any geometry errors, they should cause some of the particles to get lost.
+Because there are no collisions, a short run will generate a great many tracks
+through your system. If there are any geometry errors, they should cause some
+of the particles to get lost.
 
-When a particle first gets lost, whether in a special run with the VOID card or in a regular production run, the history is rerun to produce some special output on the OUTP file. Event-log printing is turned on during the rerun. The event log will show all surface crossings and will tell you the path the particle took to the bad spot in the geometry. When the particle again gets lost, a description of the situation at that point is printed. You can usually deduce the cause of the lost particle from this output. It is not possible to rerun lost particles in a multitasking run.
+When a particle first gets lost, whether in a special run with the VOID card
+or in a regular production run, the history is rerun to produce some special
+output on the OUTP file. Event-log printing is turned on during the rerun.
+The event log will show all surface crossings and will tell you the path the
+particle took to the bad spot in the geometry. When the particle again gets
+lost, a description of the situation at that point is printed. You can
+usually deduce the cause of the lost particle from this output. It is not
+possible to rerun lost particles in a multitasking run.
+
+
+Zack mentioned some things today. First, the "void card" is likely just
+inserting an "0" in for the material, and leaving the density blank
+to make the cell void.
+
+"print 30" means a threshold of 30 lost particles. If this is exceeded,
+then it will exit and output the first 30 lost particles. A particle will
+be lost if it enters a region with no cells, or a region that has two
+cells overlapping.
+
+The sphere technique where you surround the entire geometry in a sphere
+and have it be an inward pointing source. Then, see if this shows any
+lost particles. Zack says this may not be necessary. We simulate so
+many particles that must geometry geomtry errors show up.
+
+For the gui, you type...
+
+If you click on "plot>" in the GUI, you get a plot terminal in
+the command line. Then, type "origin # # #" and it will take you to
+that cartesian coordinate location. You have to type this,
+"interact" to return to the GUI. Then, you can click "XY" to get the
+XY-plane. This will be a cross section. "Redraw" will re-draw the
+display. After you click zoom, you need to click on some location on
+the image to show where to zoom in around. You can also use the cursor
+to zoom. "cell" tells you what cell you are in. "den" tells you the
+density that you click on. "imp" tells you the importance where you
+click.
+
+Zack's java program will extract the neutron F4 tally. This is like
+the 3D fluence which is basically the track length / the volume.
+So the 2D fluence will be particles / cm^2, and this has the same
+units but it is not exactly that. If a particles passes perpendicular
+to the face of a 1 cm cubed box, it will have a 3D fluence of 1 cm^-2.
+His program will tell you the average 3D fluence over a x,y, and z
+range. If your range is outside the F4 tally values, it will throw
+an error.
+
+For the aperture calculations, Zack has to find how many of the
+line of sight neutrons we want, vs. how many of the scattered. He
+does this by running two simluations. One with the full geomtry
+and one with an aperture hole plugged. This should effectively
+kill all the neutrons we want. 
