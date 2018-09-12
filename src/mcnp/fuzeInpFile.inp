@@ -1256,7 +1256,7 @@ c EXT and RAD. "POS= 540 254 139" reference point for positioning sampling
 c "RAD=d2" means ???. "EXT=d5" means ??? "MODE N" means neutrons. It will 
 c default to this
 c -----------------------------------------------------------------------------
-SDEF PAR=1 ERG=2.45 CEL=101 AXS=1 0 0 POS= 540 254 139 RAD=d2 EXT=d5
+SDEF PAR=1 ERG=2.45 CEL=101 AXS=1 0 0 POS=515 254 139 RAD=d2 EXT=d5
 SP1 -21 1
 SI2 0 0.25
 SI5 0 30
