@@ -1502,7 +1502,11 @@ c Number of particles
 c -----------------------------------------------------------------------------
 NPS 50000000                                            
 c -----------------------------------------------------------------------------
-c What does this mean?
+c A threshold of 30 lost particles will stop the simulations and
+c print information on the 30 particles to an output file. This will
+c tell you if you have any geometry problems such as overlapping cells,
+c or regions of space with no cells. Both will lose particles. This might
+c make an inward pointing sphere not necessary
 c -----------------------------------------------------------------------------
 Print 30                                                
 c -----------------------------------------------------------------------------
