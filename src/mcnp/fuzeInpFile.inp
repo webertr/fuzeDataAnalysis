@@ -14,7 +14,14 @@ c
 c ********************* BLOCK 1: CELLS ****************************************
 c
 c -----------------------------------------------------------------------------
-c Plasma. Cell used to emit neutrons
+c Plasma. Cell used to emit neutrons. IMP:N=1 gives neutrons an importance
+c of 1. IMP:P=1 gives protons an importance of 1. Importance of 1 is relative
+c to neighboring importance. If a particles enters from a neighboring cell
+c of an difference importance, the particle will be killed or split according
+c to the ratio. So going from IMP:N=1 to IMP:N=2, each neutron will be split
+c into 2 neutrons, with 50% probability attached to each neutrons. If going
+c from 2 to 1, 50% of the neutrons will be killed, and the 50% that aren't
+c killed will count as double.
 c -----------------------------------------------------------------------------
 101    4      -3.3E-6     -101                          IMP:N=1 IMP:P=1
 c
@@ -585,7 +592,9 @@ c -----------------------------------------------------------------------------
                                                         IMP:N=1 IMP:P=1
 c
 c -----------------------------------------------------------------------------
-c Graveyard
+c Graveyard. IMP:N=0 and IMP:P=0 gives neutrons and protons an importance of
+c 0. That means that any photons or neutrons enter this cell are killed.
+c This cell is a big rectangular box around the whole problem.
 c -----------------------------------------------------------------------------
 99     0                  99                            IMP:N=0 IMP:P=0
 
@@ -1244,7 +1253,8 @@ c -----------------------------------------------------------------------------
 95       RPP      792 795.5 313 493 0 246
 c
 c -----------------------------------------------------------------------------
-c universe
+c universe. RPP = rectangular parallel piped.
+c RPP xmin xmax ymin ymax zmin zmax
 c -----------------------------------------------------------------------------
 99       RPP      -500 2633.6 -500 1262 -500 942
 
@@ -1606,4 +1616,29 @@ For the aperture calculations, Zack has to find how many of the
 line of sight neutrons we want, vs. how many of the scattered. He
 does this by running two simluations. One with the full geomtry
 and one with an aperture hole plugged. This should effectively
-kill all the neutrons we want. 
+kill all the neutrons we want.
+
+VOID Card: The VOID card removes all materials and cross sections in.
+a problem and sets all non-zero importances to unity.
+
+"0" for a material means "void". That just means empty space, or
+vacuum, I believe. You don't put anythin for the density in that
+case.
+
+IMP:P=1 gives protons an importance of 1. Importance of 1 is relative
+to neighboring importance. If a particles enters from a neighboring
+cell of an difference importance, the particle will be killed or split
+according to the ratio. So going from IMP:N=1 to IMP:N=2, each neutron
+will be split into 2 neutrons, with 50% probability attached to each
+neutrons. If going from 2 to 1, 50% of the neutrons will be killed,
+and the 50% that aren't killed will count as double.
+A cell's importance is used (1) to terminate the particle’s history
+when a particle enters a cell with importance zero, (2) for playing
+geometry splitting and Russian roulette as a means to control the
+particle population upon entering a cell, and (3) for scaling the
+cutoffs in the weight cutoff game.
+
+Basically, importance is used to focus the computing power of the
+problem. There might be a certain region where you want a lot of
+time spent on the particles tracks, so assigning a higher
+importance is a way to do this.
