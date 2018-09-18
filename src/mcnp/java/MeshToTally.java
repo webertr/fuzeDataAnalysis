@@ -58,10 +58,10 @@ public class MeshToTally {
       PrintWriter output = new PrintWriter(new FileWriter(outputFile));
       
       /* Path of the meshtal file with the full geometry in place. */
-      String fullPath = "/Users/zack/Desktop/FuZE/meshtal_truss";
+      String fullPath = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
       
       /* Path of the meshtal file with void geometry. */
-      String voidPath = "/Users/zack/Desktop/FuZE/meshtal_truss_void";
+      String voidPath = "/home/webertr/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
       
             
       /* neutron energy range and scintillator coordinates */

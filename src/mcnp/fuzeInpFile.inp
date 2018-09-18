@@ -572,7 +572,7 @@ c -----------------------------------------------------------------------------
 95     6      -0.58       -95                           IMP:N=1 IMP:P=1
 c
 c -----------------------------------------------------------------------------
-c Void
+c Void. This is the air in the room. Everything that isn't an object.
 c -----------------------------------------------------------------------------
 98     0                  (1 2 3 4 5 106 107 108 207 
                           120 124 128 502 503 504 505 
@@ -1531,7 +1531,17 @@ c -----------------------------------------------------------------------------
  *****************************************************************************/
 
 To see geometry, "MCNP IP NAME=fuzeInpFile.inp"
+"mcnp6 ip NAME=inputFiles/fuzeInpFile.inp OUTP=outputFiles/outputFile.txt 
+MCTAL=outputFiles/meshResults.txt MESHTAL=outputFiles/fmeshResults.txt"
 To run, "MCNP NAME=fuzeInpFile.inp"
+"mcnp6 NAME=fuzeInpFile.inp"
+"mcnp6 MCTAL=meshResults.txt"
+MCTAL is Tally results file
+"mcnp6 MESHTAL=fmeshResults.txt"
+MESHTAL is FMESH tally output file (ASCII).
+"mcnp6 OUTP=outputFile.txt"
+OUTP is File name to which results are written. This file may be viewed
+and/or printed. Created by MCNP6 during problem execution.
 To see status of run, "<Cntrl-c>s"
 To invoke iteractive plots, "<Cntrl-c>m"
 To kill immediately, "<Cntrl-c>k"
@@ -1642,3 +1652,13 @@ Basically, importance is used to focus the computing power of the
 problem. There might be a certain region where you want a lot of
 time spent on the particles tracks, so assigning a higher
 importance is a way to do this.
+
+Run this,
+
+mcnp6 INP=inputFileName OUTP=outputFileName RUNTPE=binFile \
+MESHTAL=meshTallyFile
+
+INP is the input file name. Can be changed.
+OUTP is the output file name. Can be changed.
+RUNTPE is the binary start/restart data. Created by mcnp.
+MESHTAL is the FMESH tally output file
