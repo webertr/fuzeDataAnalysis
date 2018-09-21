@@ -21,7 +21,7 @@ c of an difference importance, the particle will be killed or split according
 c to the ratio. So going from IMP:N=1 to IMP:N=2, each neutron will be split
 c into 2 neutrons, with 50% probability attached to each neutrons. If going
 c from 2 to 1, 50% of the neutrons will be killed, and the 50% that aren't
-c killed will count as double.
+c killed will count as double. This will be the source.
 c -----------------------------------------------------------------------------
 101    4      -3.3E-6     -101                          IMP:N=1 IMP:P=1
 c
@@ -64,7 +64,7 @@ c -----------------------------------------------------------------------------
                           (106 -107 209)                IMP:N=1 IMP:P=1
 c
 c -----------------------------------------------------------------------------
-c Nose cone
+c Nose cone. Nose cone tip = 515 254 139
 c -----------------------------------------------------------------------------
 110    18     -1.78       -110 112 -114 -116            IMP:N=1 IMP:P=1
 c
@@ -671,7 +671,7 @@ c -----------------------------------------------------------------------------
 209      RCC      669.7 254 139 4.45 0 0 3.42
 c
 c -----------------------------------------------------------------------------
-c Plasma
+c Plasma. This will be the source.
 c -----------------------------------------------------------------------------
 101      RCC      565 254 139 -50 0 0 0.25
 c
@@ -1266,16 +1266,20 @@ c EXT and RAD. "POS= 540 254 139" reference point for positioning sampling
 c "RAD=d2" means ???. "EXT=d5" means ??? "MODE N" means neutrons. It will 
 c default to this. RAD=d2 refers to SI2, I think. EXT=d5 refers to SI5?
 c "d1" = distribution number 1. "SI" = source information card
-c "SP" source probability card. "EXT=d5" = distance from POS along AXS is in
-c SI5 or source information 5. "SI2 0 0.25" is source information 2 using
-c an integer of 0. "RAD" is the radial distance of the position from
-c POS or AXS. "SP1 -21 1" I think means weighted sampling with r^1
-c "RAD=d2" and "SI2 0 0.25" is radial sampling 0 to 0.25.
+c "SP" source probability card. "SP -21 a" = power law, p(x)=c*|x|^a
+c "RAD=d2" and "SI2 0 0.25" is the inner and outer radius. The default sampling
+c between these radius values is a power law with a=1, giving a sampling
+c uniform in volume.
+c "EXT=d5" and "SI 0 30" are the distance of the ends of the cylinder from
+c POS. The default sampling between the two ends of EXT is uniform. 
 c The axis of this cylinder passes through POS in the direction of AXS.
 c The position of the particles is sampled uniformly on circle whose radius
 c is the sampled value of RAD, centered on the axis of the cylinder. THe
 c circle lies in a perpendicular plane to AXS, at a distance from POS which
-c is the sampled value of EXT.
+c is the sampled value of EXT. AXS=1 0 0 means AXS is the x-direction which
+c in this geometry is the z-direction of the pinch, or down stream.
+c I think "SP1 -21 1" is not necessary. There is no "d1" or distribution 1.
+c This power law is defaulted to for d2.
 c -----------------------------------------------------------------------------
 SDEF PAR=1 ERG=2.45 CEL=101 AXS=1 0 0 POS=515 254 139 RAD=d2 EXT=d5
 SP1 -21 1
@@ -1678,3 +1682,6 @@ If you run it with
 mcnp6 ip inp=inputFileName
 
 you get the geometry viewer.
+
+In this cartesian, x,y,z geometry, z is up, x is downstream
+and y is towards the thyristor bank.
