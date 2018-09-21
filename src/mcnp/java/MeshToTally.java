@@ -65,7 +65,7 @@ public class MeshToTally {
       
             
       /* neutron energy range and scintillator coordinates */
-      double eLowerBound = 4.00E-01;
+      double eLowerBound = 5.00E-01;
       double eUpperBound = 2.50E+00;
       
       double xLowerBound = 15 + NOSECONE_X;
