@@ -27,6 +27,7 @@ SOURCE := src/magnetic.c \
 	src/magneticModel.c \
 	src/regExpSub.c \
 	src/accelTrack.c \
+	src/mcnp/readMeshTally.c \
 	src/bankCheck.c
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))

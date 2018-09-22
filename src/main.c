@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   /*
    * Testing DHI abel inverison code 
    */
-  testAbelInversionDHI();
+  //testAbelInversionDHI();
   
   /*
    * Plotting plasma parameters
@@ -82,6 +82,9 @@ int main(int argc, char *argv[]) {
 
   /* Testing save.c file */
   //testSave();
+
+  /* Testing read mesh tally */
+  testReadMeshTally();
   
   return 0;
 
