@@ -14,9 +14,10 @@ static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
-static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile);
-static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile);
+static int plotPostShotIPData(int shotNumber, char *tempDataFile, char *tempScriptFile);
+static int plotPostShotIV(int shotNumber, char *tempDataFile, char *tempScriptFile);
 static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
+static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -95,7 +96,7 @@ int hologramAnalysis() {
   /*
    * Plotting the azimuthal magnetic field
    */
-  if (0) {
+  if (1) {
 
     char *bThetaKeywords = "set size ratio 1\n"
       "set terminal png\n"
@@ -231,14 +232,15 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
+    plotPostShotIPData(shotNumber, "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotModeData(shotNumber, "data/modeData2.txt", "data/modeDataScript2.sh");
+    plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
+    plotPostShotIV(shotNumber, "data/ivData.txt", "data/ivDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
@@ -264,12 +266,53 @@ int plotPostAnalysis() {
     plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
     plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
     plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
-    plotPostShotIV(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotIV(shotNumber, "data/ivData.txt", "data/ivDataScript.sh");
     plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
     plotPostShotGVCurrent(shotNumber, -800, 500);
     plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotIPData(shotNumber, "data/ipData.txt", "data/ipDataScript.sh");
     plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
   }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotIPData
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * magnetic mode data
+ ******************************************************************************/
+
+static int plotPostShotIPData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip, 1E-3);
+  char *ipLabel = "with line lw 3 lc rgb 'black' title 'IP at 0'";
+  gsl_vector *ipm1 = readDHIMDSplusVector(shotNumber-1, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ipm1, 1E-3);
+  char *ipm1Label = "with line lw 3 lc rgb 'red' title 'IP at -1'";
+  gsl_vector *ipm2 = readDHIMDSplusVector(shotNumber-2, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ipm2, 1E-3);
+  char *ipm2Label = "with line lw 3 lc rgb 'blue' title 'IP at -2'";
+
+  char *keyWords = "set title 'I_{P}'\n"
+    "set xrange[0:100]\n"
+    "set ylabel 'Current (kA)'\n"
+    "set yrange[0:]";
+  
+  plot3VectorData(time, ip, ipLabel, ipm1, ipm1Label, ipm2, ipm2Label, 
+		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(ip);
+  gsl_vector_free(ipm1);
+  gsl_vector_free(ipm2);
 
   return 0;
 
@@ -286,38 +329,30 @@ int plotPostAnalysis() {
 
 static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\M_1_P15", "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
-  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\M_1_P15", "fuze", "10.10.10.240");
   gsl_vector_scale(ip, 1E-3);
-  char *ipLabel = "with line lw 3 lc rgb 'red' title 'IP at 0'";
-  gsl_vector *ipm2 = readDHIMDSplusVector(shotNumber-2, "\\I_P", "fuze", "10.10.10.240");
-  gsl_vector_scale(ipm2, 1E-3);
-  char *ipm2Label = "with line lw 3 dt 2 lc rgb 'blue' title 'IP at -2'";
-  gsl_vector *ipm1 = readDHIMDSplusVector(shotNumber-1, "\\I_P", "fuze", "10.10.10.240");
+  char *ipLabel = "with line lw 3 lc rgb 'black' title 'IP at 0'";
+  gsl_vector *ipm1 = readDHIMDSplusVector(shotNumber-1, "\\M_1_P15", "fuze", "10.10.10.240");
   gsl_vector_scale(ipm1, 1E-3);
-  char *ipm1Label = "with line lw 3 dt 2 lc rgb 'green' title 'IP at -1'";;
-  gsl_vector *m1 = readDHIMDSplusVector(shotNumber, "\\M_1_P15", "fuze", "10.10.10.240");
-  char *m1Label = "with line lw 3 lc rgb 'blue' title 'm=1 at 0' axes x1y2";
-  gsl_vector *m1m1 = readDHIMDSplusVector(shotNumber-1, "\\M_1_P15", "fuze", "10.10.10.240");
-  char *m1m1Label = "with line lw 3 lc rgb 'black' title 'm=1 at -1' axes x1y2";
+  char *ipm1Label = "with line lw 3 lc rgb 'red' title 'IP at -1'";
+  gsl_vector *ipm2 = readDHIMDSplusVector(shotNumber-2, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector_scale(ipm2, 1E-3);
+  char *ipm2Label = "with line lw 3 lc rgb 'blue' title 'IP at -2'";
 
-  char *keyWords = "set title 'Normalized Modes and I_{P}'\n"
-    "set xrange[0:50]\n"
-    "set y2range[0:1]\n"
-    "set y2label 'Normalized Modes'\n"
-    "set ylabel 'Current (kA)'\n"
-    "set y2tics nomirror tc lt 2\n"
+  char *keyWords = "set title 'Normalized m=1 data'\n"
+    "set xrange[0:100]\n"
+    "set ylabel 'Normalized Mode Amplitude'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:]";
   
-  plot5VectorData(time, ip, ipLabel, ipm1, ipm1Label, ipm2, ipm2Label, m1, m1Label, 
-		  m1m1, m1m1Label, keyWords, tempDataFile, tempScriptFile);
+  plot3VectorData(time, ip, ipLabel, ipm1, ipm1Label, ipm2, ipm2Label, 
+		  keyWords, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
   gsl_vector_free(ip);
-  gsl_vector_free(m1);
   gsl_vector_free(ipm1);
-  gsl_vector_free(m1m1);
   gsl_vector_free(ipm2);
 
   return 0;
@@ -333,106 +368,30 @@ static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempSc
  * total plasma current and voltage across the hot and cold plate
  ******************************************************************************/
 
-static int plotPostShotIV(int shotNumber, int tmin, int tmax, char *saveFile) {
+static int plotPostShotIV(int shotNumber, char *tempDataFile, char *tempScriptFile) {
 
-  char *data1Node = "\\v_gap",
-    *data1Name = "V_{GAP}",
-    *data2Node = "\\i_p",
-    *data2Name = "I_{P}";
 
-  int status;
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+  gsl_vector *vgap = readDHIMDSplusVector(shotNumber, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(vgap, 1E-3);
+  char *vgapLabel = "with line lw 3 lc rgb 'red' title 'V_{Gap}' axes x1y2";
+  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\i_p", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip, 1E-3);
+  char *ipLabel = "with line lw 3 lc rgb 'black' title 'IP'";
 
-  char *gnuPlotFile = "script/tempIV.sh",
-    *ivFile = "data/iv.txt";
-
+  char *keyWords = "set title 'V_{Gap} and I_{P}'\n"
+    "set xrange[-10:500]\n"
+    "set y2label 'Current (kA)'\n"
+    "set ylabel 'Voltage (kV)'\n"
+    "set y2tics nomirror tc lt 2";
   
-  /* Getting data */
-  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
-  
-  gsl_vector *data1 = gsl_vector_alloc(sigSize),
-    *data2 = gsl_vector_alloc(sigSize),
-    *time = gsl_vector_alloc(sigSize);
+  plot2VectorData(time, vgap, vgapLabel, ip, ipLabel,
+		  keyWords, tempDataFile, tempScriptFile);
 
-  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
-  initializeMagneticData(shotNumber, data2Node, data2);
-  
-
-  /* Saving data */
-  save3VectorData(time, data1, data2, ivFile);
-
-
-  
-  /* Creating gnuplot file */
-  if (remove(gnuPlotFile) != 0) {
-    printf("Unable to delete the file");
-  }
-
-  FILE *fp = fopen(gnuPlotFile, "w");
-  
-  if ( (fp == NULL) ) {
-
-    printf("Error opening files gnuplot file!\n");
-    exit(1);
-
-  }
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  if (strcmp(saveFile, "") != 0) {
-    fprintf(fp, "set terminal png\n");
-    fprintf(fp, "set output '%s'\n", saveFile);
-  }
-
-  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'I_{P} and V_{GAP} for Pulse #%d' font '0,18'\n", shotNumber);
-  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'I_{P} (kA)' font ',16' offset 0,0\n");
-  fprintf(fp, "set y2label 'V_{GAP} (kV)' font 'Times Bold,16' offset 0,0\n");
-  fprintf(fp, "set y2tics nomirror tc lt 2\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($2*1E-3) with line lw 3 lc rgb 'red' \
-title '%s' axes x1y2,\\\n", ivFile, data1Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($3*1E-3) with line lw 3 lc rgb 'black' \
-title '%s'\n", ivFile, data2Name);
-
-  fprintf(fp, "pause -1\n");
-  
-  fclose(fp);
-
-  chmod(gnuPlotFile, S_IRWXG);
-  chmod(gnuPlotFile, S_IRWXO);
-  chmod(gnuPlotFile, S_IRWXU);
-
-
-  
-
-  /* Creating child process to run script */
-  FILE *gnuplot = popen(gnuPlotFile, "r");
-
-  if (!gnuplot) {
-    fprintf(stderr,"incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
-  }
-  
-  fflush(gnuplot);
- 
-  /* Pausing so user can look at plot */
-  printf("\nPress any key, then ENTER to continue> \n");
-  getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-  
-  remove(gnuPlotFile);
-
-  /* Freeing vectors */
-  gsl_vector_free(data1);
-  gsl_vector_free(data2);
   gsl_vector_free(time);
-
+  gsl_vector_free(vgap);
+  gsl_vector_free(ip);
   
   return 0;
 
