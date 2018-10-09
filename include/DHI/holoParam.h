@@ -70,6 +70,7 @@ struct holographyparameters {
   char mdsPlusTree[100];        // The MDSplus tree name
   char mdsPlusHost[100];        // The MDSplus host name
   int unwrap;                   // If 1, unwrap the phase of the raw hologram
+  int overlayCenterline;        // If 1, overlay a center line.
 };
 
 typedef struct holographyparameters holographyParameters;

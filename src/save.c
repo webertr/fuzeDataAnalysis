@@ -760,10 +760,10 @@ static int testReadWriteMatrix() {
 
   gsl_matrix *M1 = readMatrixTextFile("data/temp.txt");
 
-  printf("Size 1: %d\n", M1->size1);
-  printf("Size 2: %d\n", M1->size2);
-  printf("Size 1: %d\n", M->size1);
-  printf("Size 2: %d\n", M->size2);
+  printf("Size 1: %d\n", (int) M1->size1);
+  printf("Size 2: %d\n", (int) M1->size2);
+  printf("Size 1: %d\n", (int) M->size1);
+  printf("Size 2: %d\n", (int) M->size2);
   for (ii = 0; ii < numRows; ii++) {
     for (jj = 0; jj < numCols; jj++) {
 

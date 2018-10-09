@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /*
    * Running the pinch formation analysis
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   //testSave();
 
   /* Testing read mesh tally */
-  testReadMeshTally();
+  //testReadMeshTally();
   
   return 0;
 

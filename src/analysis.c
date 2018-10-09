@@ -30,9 +30,9 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
-  plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
   //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
@@ -54,16 +54,16 @@ int hologramAnalysis() {
   /* 
    * Fancy plot of the hologram
    */
-  if (0) {
+  if (1) {
 
     char *keywords = "set size ratio -1\n"
-      //"set terminal png\n"
-      //"set output '/home/fuze/Downloads/180710008_Line_Integrated.png'\n"
-      "set title 'Pulse 180723022\n"
-      "set xrange [13.5475:14.4675]\n"
-      "set yrange [-0.85:0.85]\n"
-      "set xlabel 'z (cm)'\n"
-      "set ylabel 'b (cm)'\n"
+      "set terminal png\n"
+      "set output '/home/fuze/Downloads/180710008_Line_Integrated.png'\n"
+      "set title 'Pulse 180723022' font 'Times Bold,14'\n"
+      "set xrange [13.624:14.3763]\n"
+      "set yrange [-0.69125:0.682125]\n"
+      "set xlabel 'z (cm)' font 'Times Bold,14' offset 0,0\n"
+      "set ylabel 'b (cm)' font 'Times Bold,14' offset 1,0\n"
       "set xtics 13.5, 0.25, 14.5\n"
       "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
       "rotate by 90 font 'Times Bold, 14'\n";
@@ -74,7 +74,7 @@ int hologramAnalysis() {
   /*
    * Fancy plot for the abel inversion with error bars 
    */
-  if (1) {
+  if (0) {
 
     char *errorKeywords = "set size ratio 1\n"
       "set term png\n"
@@ -95,7 +95,7 @@ int hologramAnalysis() {
   /*
    * Plotting the azimuthal magnetic field
    */
-  if (1) {
+  if (0) {
 
     char *bThetaKeywords = "set size ratio 1\n"
       "set terminal png\n"
@@ -116,7 +116,7 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature 
    */
-  if (1) {
+  if (0) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"

@@ -1103,10 +1103,14 @@ int hologramMain(holographyParameters* param) {
   if (param->invertImage == 1) {
 
     gsl_matrix *invertedImage = invertImageDHI(twinImageUnwrap, param);
-    overlayCenterLine(invertedImage, param->fileCentroid);
+    
+    if (param->overlayCenterline == 1) {
+      overlayCenterLine(invertedImage, param->fileCentroid);
+      overlayCenterLine(twinImageUnwrap, param->fileCentroid);
+    }
+
     saveImageDataWithPosition(invertedImage, xPhase, yPhase, param->fileFullInvertPos);
     saveImageData(invertedImage, param->fileFullInvert);
-    overlayCenterLine(twinImageUnwrap, param->fileCentroid);
     saveImageDataWithPosition(twinImageUnwrap, xPhase, yPhase, param->fileLineIntPos);
     saveImageData(twinImageUnwrap, param->fileLineInt);
     
