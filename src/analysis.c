@@ -14,10 +14,13 @@ static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
 static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
-static int plotPostShotIPData(int shotNumber, char *tempDataFile, char *tempScriptFile);
-static int plotPostShotIV(int shotNumber, char *tempDataFile, char *tempScriptFile);
+static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3, 
+			      char *tempDataFile, char *tempScriptFile);
+static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3, 
+			  char *tempDataFile, char *tempScriptFile);
 static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
-static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile);
+static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber3, 
+				char *tempDataFile, char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -232,15 +235,18 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotIPData(shotNumber, "data/ipData.txt", "data/ipDataScript.sh");
+    plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
+		       "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
+    plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
+			 "data/modeData.txt", "data/modeDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotPostShotIV(shotNumber, "data/ivData.txt", "data/ivDataScript.sh");
+    plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
+		   "data/ivData.txt", "data/ivDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
@@ -266,12 +272,15 @@ int plotPostAnalysis() {
     plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
     plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
     plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
-    plotPostShotIV(shotNumber, "data/ivData.txt", "data/ivDataScript.sh");
+    plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
+		   "data/ivData.txt", "data/ivDataScript.sh");
     plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
     plotPostShotGVCurrent(shotNumber, -800, 500);
     plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
-    plotPostShotIPData(shotNumber, "data/ipData.txt", "data/ipDataScript.sh");
-    plotPostShotModeData(shotNumber, "data/modeData.txt", "data/modeDataScript.sh");
+    plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
+		       "data/ipData.txt", "data/ipDataScript.sh");
+    plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
+			 "data/modeData.txt", "data/modeDataScript.sh");
   }
 
   return 0;
@@ -287,32 +296,52 @@ int plotPostAnalysis() {
  * magnetic mode data
  ******************************************************************************/
 
-static int plotPostShotIPData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
+static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3, 
+			      char *tempDataFile, char *tempScriptFile) {
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  size_t sizeBuf;
+  char *tempString;
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\I_P", "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
-  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\I_P", "fuze", "10.10.10.240");
-  gsl_vector_scale(ip, 1E-3);
-  char *ipLabel = "with line lw 3 lc rgb 'black' title 'IP at 0'";
-  gsl_vector *ipm1 = readDHIMDSplusVector(shotNumber-1, "\\I_P", "fuze", "10.10.10.240");
-  gsl_vector_scale(ipm1, 1E-3);
-  char *ipm1Label = "with line lw 3 lc rgb 'red' title 'IP at -1'";
-  gsl_vector *ipm2 = readDHIMDSplusVector(shotNumber-2, "\\I_P", "fuze", "10.10.10.240");
-  gsl_vector_scale(ipm2, 1E-3);
-  char *ipm2Label = "with line lw 3 lc rgb 'blue' title 'IP at -2'";
+
+  gsl_vector *ip1 = readDHIMDSplusVector(shotNumber1, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  char *ip1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip1Label, sizeBuf+1, tempString, shotNumber1);
+
+  gsl_vector *ip2 = readDHIMDSplusVector(shotNumber2, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  char *ip2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip2Label, sizeBuf+1, tempString, shotNumber2);
+
+  gsl_vector *ip3 = readDHIMDSplusVector(shotNumber3, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
+  char *ip3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'I_{P}'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:400]\n"
     "set ylabel 'Current (kA)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:]";
   
-  plot3VectorData(time, ip, ipLabel, ipm1, ipm1Label, ipm2, ipm2Label, 
+  plot3VectorData(time, ip1, ip1Label, ip2, ip2Label, ip3, ip3Label, 
 		  keyWords, tempDataFile, tempScriptFile);
 
+  free(ip1Label);
+  free(ip2Label);
+  free(ip3Label);
   gsl_vector_free(time);
-  gsl_vector_free(ip);
-  gsl_vector_free(ipm1);
-  gsl_vector_free(ipm2);
+  gsl_vector_free(ip1);
+  gsl_vector_free(ip2);
+  gsl_vector_free(ip3);
 
   return 0;
 
@@ -327,19 +356,35 @@ static int plotPostShotIPData(int shotNumber, char *tempDataFile, char *tempScri
  * magnetic mode data
  ******************************************************************************/
 
-static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
+static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber3, 
+				char *tempDataFile, char *tempScriptFile) {
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\M_1_P15", "fuze", "10.10.10.240");
+  size_t sizeBuf;
+  char *tempString;
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\M_1_P15", "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
-  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\M_1_P15", "fuze", "10.10.10.240");
-  gsl_vector_scale(ip, 1E-3);
-  char *ipLabel = "with line lw 3 lc rgb 'black' title 'IP at 0'";
-  gsl_vector *ipm1 = readDHIMDSplusVector(shotNumber-1, "\\M_1_P15", "fuze", "10.10.10.240");
-  gsl_vector_scale(ipm1, 1E-3);
-  char *ipm1Label = "with line lw 3 lc rgb 'red' title 'IP at -1'";
-  gsl_vector *ipm2 = readDHIMDSplusVector(shotNumber-2, "\\M_1_P15", "fuze", "10.10.10.240");
-  gsl_vector_scale(ipm2, 1E-3);
-  char *ipm2Label = "with line lw 3 lc rgb 'blue' title 'IP at -2'";
+
+  gsl_vector *mode1 = readDHIMDSplusVector(shotNumber1, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector_scale(mode1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  char *mode1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(mode1Label, sizeBuf+1, tempString, shotNumber1);
+
+  gsl_vector *mode2 = readDHIMDSplusVector(shotNumber2, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector_scale(mode2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  char *mode2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(mode2Label, sizeBuf+1, tempString, shotNumber2);
+
+  gsl_vector *mode3 = readDHIMDSplusVector(shotNumber3, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector_scale(mode3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
+  char *mode3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(mode3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'Normalized m=1 data'\n"
     "set xrange[0:100]\n"
@@ -347,13 +392,16 @@ static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempSc
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:]";
   
-  plot3VectorData(time, ip, ipLabel, ipm1, ipm1Label, ipm2, ipm2Label, 
+  plot3VectorData(time, mode1, mode1Label, mode2, mode2Label, mode3, mode3Label, 
 		  keyWords, tempDataFile, tempScriptFile);
 
+  free(mode1Label);
+  free(mode2Label);
+  free(mode3Label);
   gsl_vector_free(time);
-  gsl_vector_free(ip);
-  gsl_vector_free(ipm1);
-  gsl_vector_free(ipm2);
+  gsl_vector_free(mode1);
+  gsl_vector_free(mode2);
+  gsl_vector_free(mode3);
 
   return 0;
 
@@ -361,37 +409,58 @@ static int plotPostShotModeData(int shotNumber, char *tempDataFile, char *tempSc
 
 
 /******************************************************************************
- * Function: plotPostShotIV
+ * Function: plotPostShotVGap
  * Inputs: int, int, int
  * Returns: int
  * Description: This will prompt the user for a pulse number, and output the
  * total plasma current and voltage across the hot and cold plate
  ******************************************************************************/
 
-static int plotPostShotIV(int shotNumber, char *tempDataFile, char *tempScriptFile) {
+static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3, 
+			  char *tempDataFile, char *tempScriptFile) {
 
+  size_t sizeBuf;
+  char *tempString;
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\v_gap", "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
-  gsl_vector *vgap = readDHIMDSplusVector(shotNumber, "\\v_gap", "fuze", "10.10.10.240");
-  gsl_vector_scale(vgap, 1E-3);
-  char *vgapLabel = "with line lw 3 lc rgb 'red' title 'V_{Gap}' axes x1y2";
-  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\i_p", "fuze", "10.10.10.240");
-  gsl_vector_scale(ip, 1E-3);
-  char *ipLabel = "with line lw 3 lc rgb 'black' title 'IP'";
+
+  gsl_vector *vgap1 = readDHIMDSplusVector(shotNumber1, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(vgap1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'V_{Gap} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  char *vgap1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(vgap1Label, sizeBuf+1, tempString, shotNumber1);
+
+  gsl_vector *vgap2 = readDHIMDSplusVector(shotNumber2, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(vgap2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'V_{Gap} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  char *vgap2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(vgap2Label, sizeBuf+1, tempString, shotNumber2);
+
+  gsl_vector *vgap3 = readDHIMDSplusVector(shotNumber3, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(vgap3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'V_{Gap} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
+  char *vgap3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(vgap3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'V_{Gap} and I_{P}'\n"
     "set xrange[-10:500]\n"
-    "set y2label 'Current (kA)'\n"
     "set ylabel 'Voltage (kV)'\n"
-    "set y2tics nomirror tc lt 2";
-  
-  plot2VectorData(time, vgap, vgapLabel, ip, ipLabel,
-		  keyWords, tempDataFile, tempScriptFile);
+    "set yrange [:]";
 
+  plot3VectorData(time, vgap1, vgap1Label, vgap2, vgap2Label, vgap3, vgap3Label, 
+		  keyWords, tempDataFile, tempScriptFile);
+  
+  free(vgap1Label);
+  free(vgap2Label);
+  free(vgap3Label);
   gsl_vector_free(time);
-  gsl_vector_free(vgap);
-  gsl_vector_free(ip);
+  gsl_vector_free(vgap1);
+  gsl_vector_free(vgap2);
+  gsl_vector_free(vgap3);
   
   return 0;
 
