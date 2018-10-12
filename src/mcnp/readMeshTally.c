@@ -15,7 +15,8 @@ static double *getMeshTallyData(char *fileName, int xSize, int ySize, int zSize)
  * Function: getMeshTallyXVectorDataYZPoint
  * Inputs: char *fileName, int, int, int, gsl_vector, int, int
  * Returns: gsl_vector *
- * Description: Gets the x values for the 3D array of the mesh tally file
+ * Description: Gets the data. ii = x iindex, jj = y-index, kk = z-index
+ * data(ii + jj*xSize + kk*xSize*ySize)
  ******************************************************************************/
 
 static double *getMeshTallyData(char *fileName, int xSize, int ySize, int zSize) {
@@ -27,48 +28,51 @@ static double *getMeshTallyData(char *fileName, int xSize, int ySize, int zSize)
   char charBuf[BUF_SIZE];
 
   /* data(ii + jj*xSize + kk*xSize*ySize) */
-  double *data = malloc(sizeof(double)*xSize*ySize);
-
-  /* Reading a x,y array for a given z */
-  double zMin, zMax;
+  double *data = malloc(sizeof(double)*xSize*ySize*zSize);
+  double zMin, zMax, xValue, yValue, value;
+  int ii, jj, kk;
   int resTest = 0;
-  while ( resTest != 2 ) {
-    fscanf(fp, "%[^\n]\n", charBuf);
-    resTest = sscanf(charBuf, "Z bin: %lf - %lf", &zMin, &zMax);
-  }
+
+  /* Iterating through Z-values */
+  for (kk = 0; kk < (zSize-1); kk++) {
     
-  resTest = 0;
-  fscanf(fp, "%[^\n]\n", charBuf);
-  while ( strcmp(charBuf, "Tally Results:  X (across) by Y (down)") != 0 ) {
+    resTest = 0;
+    while ( resTest != 2 ) {
+      fscanf(fp, "%[^\n]\n", charBuf);
+      resTest = sscanf(charBuf, "Z bin: %lf - %lf", &zMin, &zMax);
+    }
+
+    resTest = 0;
     fscanf(fp, "%[^\n]\n", charBuf);
+    while ( strcmp(charBuf, "Tally Results:  X (across) by Y (down)") != 0 ) {
+      fscanf(fp, "%[^\n]\n", charBuf);
+    }
+
+    /* Geting x values */
+    for (ii = 0; ii < (xSize-1); ii++) {
+      fscanf(fp, "%lf", &xValue);
+    }
+
+    /* Iterating through y-values */
+    for (jj = 0; jj < (ySize-1); jj++) {
+
+      /* Getting y value */
+      fscanf(fp, "%lf", &yValue);
+
+      /* Getting data value */
+      for (ii = 0; ii < (xSize-1); ii++) {
+	fscanf(fp, "%lf", &value);
+	data[ii + jj*xSize + kk*xSize*ySize] = value;
+      }
+    }
+
+    /* Dumping the Relative Errors */
+    fgets(charBuf, BUF_SIZE, fp);
+    fgets(charBuf, BUF_SIZE, fp);
+    for (jj = 0; jj < (ySize - 1); jj++) {
+      fgets(charBuf, BUF_SIZE, fp);
+    }
   }
-
-  double xValue;
-  int ii;
-  for (ii = 0; ii < (xSize-1); ii++) {
-    fscanf(fp, "%lf", &xValue);
-    printf("X-value: %g\n", xValue);
-  }
-
-  double yValue;
-  fscanf(fp, "%lf", &yValue);
-  printf("Y-value: %g\n", yValue);
-
-  double value;  
-  for (ii = 0; ii < (xSize-1); ii++) {
-    fscanf(fp, "%lf", &value);
-    printf("Value: %g\n", value);
-  }
-
-  fscanf(fp, "%lf", &yValue);
-  printf("Y-value: %g\n", yValue);
-
-  for (ii = 0; ii < (xSize-1); ii++) {
-    fscanf(fp, "%lf", &value);
-    printf("Value: %g\n", value);
-  }
-
-  exit(0);
   
   return data;
 
