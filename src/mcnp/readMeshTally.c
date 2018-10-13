@@ -11,7 +11,10 @@ static gsl_vector *getMeshTallyYVector(char *fileName);
 static gsl_vector *getMeshTallyZVector(char *fileName);
 static double *getMeshTallyData(char *fileName, int xSize, int ySize, int zSize);
 static double ***getMeshTally3DData(char *fileName);
-static int save3DData(double ***data3D, int xSize, int ySize, int zSize, char *fileName);
+static int save3DData(double ***data3D, gsl_vector *xVec, gsl_vector *yVec, gsl_vector *zVec,
+		      char *fileName);
+static double ***read3DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yVecIn,
+			    gsl_vector **zVecIn);
 
 
 /******************************************************************************
@@ -21,20 +24,125 @@ static int save3DData(double ***data3D, int xSize, int ySize, int zSize, char *f
  * Description: Gets the data in a 3D arrray
  ******************************************************************************/
 
-static int save3DData(double ***data3D, int xSize, int ySize, int zSize, char *fileName) {
+static int save3DData(double ***data3D, gsl_vector *xVec, gsl_vector *yVec, gsl_vector *zVec,
+		      char *fileName) {
+
+  int xSize = xVec->size,
+    ySize = yVec->size,
+    zSize = zVec->size;
 
   FILE *fp;
 
-  fp = fopen(fileName, "wb");
+  double *data = malloc(sizeof(double)*xSize*ySize*zSize);
   
-  fwrite(data3D, sizeof(double), xSize*ySize*zSize, fp);
+  int ii, jj, kk;
+  for (ii = 0; ii < xSize; ii++) {
+    for (jj = 0; jj < ySize; jj++) {
+      for (kk = 0; kk < zSize; kk++) {
+	data[ii+jj*xSize+kk*xSize*ySize] = data3D[ii][jj][kk];
+      }
+    }
+  }
+
+  fp = fopen(fileName, "wb");
+
+  fwrite(&xSize, sizeof(int), 1, fp);
+  fwrite(&ySize, sizeof(int), 1, fp);
+  fwrite(&zSize, sizeof(int), 1, fp);
+
+  fwrite(xVec->data, sizeof(double), xSize, fp);
+  fwrite(yVec->data, sizeof(double), ySize, fp);
+  fwrite(zVec->data, sizeof(double), zSize, fp);
+  
+  fwrite(data, sizeof(double), xSize*ySize*zSize, fp);
 
   fclose(fp);
 
+  free(data);
+  
   return 0;
   
 }
+
+/******************************************************************************
+ * Function: read3DData
+ * Inputs: int, int, int char *
+ * Returns: double ***
+ * Description: Gets the data in a 3D arrray
+ ******************************************************************************/
+
+static double ***read3DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yVecIn,
+			    gsl_vector **zVecIn) {
+
+  int ii, jj, kk;
   
+  FILE *fp;
+
+  fp = fopen(fileName, "rb");
+
+  int *xSizeRead = (int *) malloc(sizeof(int));
+  int *ySizeRead = (int *) malloc(sizeof(int));
+  int *zSizeRead = (int *) malloc(sizeof(int));
+
+  fread(xSizeRead, sizeof(int), 1, fp);
+  fread(ySizeRead, sizeof(int), 1, fp);
+  fread(zSizeRead, sizeof(int), 1, fp);
+
+  int xSize = *xSizeRead;
+  int ySize = *ySizeRead;
+  int zSize = *zSizeRead;
+
+  double *dataX = (double *) malloc(sizeof(double)*xSize);
+  fread(dataX, sizeof(double), xSize, fp);
+  double *dataY = (double *) malloc(sizeof(double)*ySize);
+  fread(dataY, sizeof(double), ySize, fp);
+  double *dataZ = (double *) malloc(sizeof(double)*zSize);
+  fread(dataZ, sizeof(double), zSize, fp);
+
+  gsl_vector *xVec = gsl_vector_alloc(xSize);
+  for (ii = 0; ii < xSize; ii++) {
+    gsl_vector_set(xVec, ii, dataX[ii]);
+  }
+  gsl_vector *yVec = gsl_vector_alloc(ySize);
+  for (ii = 0; ii < ySize; ii++) {
+    gsl_vector_set(yVec, ii, dataY[ii]);
+  }
+  gsl_vector *zVec = gsl_vector_alloc(zSize);
+  for (ii = 0; ii < zSize; ii++) {
+    gsl_vector_set(zVec, ii, dataZ[ii]);
+  }
+  
+  double *data = (double *) malloc(sizeof(double)*xSize*ySize*zSize);
+  
+  fread(data, sizeof(double), xSize*ySize*zSize, fp);
+
+  fclose(fp);
+
+  double ***data3D = (double ***) malloc(sizeof(double **)*xSize);
+
+  for (ii = 0; ii < xSize; ii++) {
+    data3D[ii] = (double **) malloc(sizeof(double *)*ySize);
+    for (jj = 0; jj < ySize; jj++) {
+      data3D[ii][jj] = (double *) malloc(sizeof(double)*zSize);
+      for (kk = 0; kk < zSize; kk++) {
+	data3D[ii][jj][kk] = data[ii+jj*xSize+kk*xSize*ySize];
+      }
+    }
+  }
+
+  free(data);
+  free(dataX);
+  free(dataY);
+  free(dataZ);
+
+  *xVecIn = xVec;
+  *yVecIn = yVec;
+  *zVecIn = zVec;
+  
+  return data3D;
+  
+}
+
 /******************************************************************************
  * Function: getMeshTally3DData
  * Inputs: char *fileName, int, int, int, gsl_vector, int, t
@@ -307,59 +415,69 @@ static gsl_vector *getMeshTallyZVector(char *fileName) {
  ******************************************************************************/
 
 int testReadMeshTally() {
-
+      
   char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  int ii, jj, kk;
+  ii = 2;
+  jj = 1;
+  kk = 1;
+
   gsl_vector *xVec = getMeshTallyXVector(fileName);
   gsl_vector *yVec = getMeshTallyYVector(fileName);
   gsl_vector *zVec = getMeshTallyZVector(fileName);
 
-  int xSize = xVec->size;
-  int ySize = yVec->size;
-  int zSize = zVec->size;
+  double ***dataTest = getMeshTally3DData(fileName);
+  save3DData(dataTest, xVec, yVec, zVec, "/home/webertr/Github/fuzeDataAnalysis/data/temp.dat");
   
-  double *data = getMeshTallyData(fileName, xSize, ySize, zSize);
+  printf("data(1.30282E-06): %g\n", dataTest[ii][jj][kk]);
+  printf("X-Vector(30): %g\n", gsl_vector_get(xVec, 10));
+  printf("X-Vector Size (265): %d\n", (int) xVec->size);
+  printf("Y-Vector(30): %g\n", gsl_vector_get(yVec, 10));
+  printf("Y-Vector Size (256): %d\n", (int) yVec->size);
+  printf("Z-Vector(30): %g\n", gsl_vector_get(zVec, 10));
+  printf("Z-Vector Size (149): %d\n", (int) zVec->size);
 
-  int ii;
-  for (ii = 0; ii < (xVec->size); ii++) {
-    printf("X-Vec(%d): %g\n", ii, gsl_vector_get(xVec, ii));
-  }
-  for (ii = 0; ii < (yVec->size); ii++) {
-    printf("Y-Vec(%d): %g\n", ii, gsl_vector_get(yVec, ii));
-  }
-  for (ii = 0; ii < (zVec->size); ii++) {
-    printf("Z-Vec(%d): %g\n", ii, gsl_vector_get(zVec, ii));
-  }
+  gsl_vector *xVecRead;
+  gsl_vector *yVecRead;
+  gsl_vector *zVecRead;
 
+  double ***dataTestRead =
+    read3DData("/home/webertr/Github/fuzeDataAnalysis/data/temp.dat",&xVecRead,&yVecRead,&zVecRead);
 
-  double ***data3D = (double ***) malloc(sizeof(double **)*xSize);
+  printf("data[0](1.30282E-06): %g\n", dataTestRead[ii][jj][kk]);
+  printf("X-Vector(30): %g\n", gsl_vector_get(xVecRead, 10));
+  printf("X-Vector Size (265): %d\n", (int) xVecRead->size);
+  printf("Y-Vector(30): %g\n", gsl_vector_get(yVecRead, 10));
+  printf("Y-Vector Size (256): %d\n", (int) yVecRead->size);
+  printf("Z-Vector(30): %g\n", gsl_vector_get(zVecRead, 10));
+  printf("Z-Vector Size (149): %d\n", (int) zVecRead->size);  
 
-  int jj, kk;
-  for (ii = 0; ii < xSize; ii++) {
-    data3D[ii] = (double **) malloc(sizeof(double *)*ySize);
-    for (jj = 0; jj < ySize; jj++) {
-      data3D[ii][jj] = (double *) malloc(sizeof(double)*zSize);
-      for (kk = 0; kk < zSize; kk++) {
-	data3D[ii][jj][kk] = data[ii+jj*xSize+kk*xSize*ySize];
-      }
-    }
-  }
-
-  ii = 2;
-  jj = 1;
-  kk = 1;
-  
-  printf("data[0](1.30282E-06): %g\n", data[ii+jj*xSize+kk*xSize*ySize]);
-  printf("data[0](1.30282E-06): %g\n", data3D[ii][jj][kk]);
-
-  free(data3D);
-  free(data);
+  free(dataTestRead);
+  free(dataTest);
   gsl_vector_free(xVec);
   gsl_vector_free(yVec);
   gsl_vector_free(zVec);
+  gsl_vector_free(xVecRead);
+  gsl_vector_free(yVecRead);
+  gsl_vector_free(zVecRead);
 
+  char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
+  
+  double ***dataFull = getMeshTally3DData(fileNameFull);
+  double ***dataVoid = getMeshTally3DData(fileNameVoid);
 
-  double ***dataTest = getMeshTally3DData(fileName);
-  printf("data[0](1.30282E-06): %g\n", dataTest[ii][jj][kk]);
+  ii = 200;
+  jj = 150;
+  kk = 75;
+  printf("Full: %g\n", dataFull[ii][jj][kk]);
+  printf("Void: %g\n", dataVoid[ii][jj][kk]);
+  double hfactor = dataFull[ii][jj][kk]/dataVoid[ii][jj][kk];
+
+  printf("H-factor: %g\n", hfactor);
+  
+  free(dataFull);
+  free(dataVoid);
   
   return 0;
 
