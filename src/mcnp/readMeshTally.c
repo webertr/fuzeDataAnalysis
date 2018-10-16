@@ -10,12 +10,12 @@ static gsl_vector *getMeshTallyXVector(char *fileName);
 static gsl_vector *getMeshTallyYVector(char *fileName);
 static gsl_vector *getMeshTallyZVector(char *fileName);
 static double *getMeshTallyData(char *fileName, int xSize, int ySize, int zSize);
-static double ***getMeshTally3DData(char *fileName);
+static double ***getMeshTally3DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yVecIn,
+				    gsl_vector **zVecIn);
 static int save3DData(double ***data3D, gsl_vector *xVec, gsl_vector *yVec, gsl_vector *zVec,
 		      char *fileName);
 static double ***read3DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yVecIn,
 			    gsl_vector **zVecIn);
-
 
 /******************************************************************************
  * Function: save3DData
@@ -145,27 +145,24 @@ static double ***read3DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yV
 
 /******************************************************************************
  * Function: getMeshTally3DData
- * Inputs: char *fileName, int, int, int, gsl_vector, int, t
+ * Inputs: char *fileName, gsl_vector**,gsl_vector**,gsl_vector**
  * Returns: double ***
  * Description: Gets the data in a 3D arrray
  ******************************************************************************/
 
-static double ***getMeshTally3DData(char *fileName) {
+static double ***getMeshTally3DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yVecIn,
+				    gsl_vector **zVecIn) {
 
-  gsl_vector *xVec =
-    getMeshTallyXVector("/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht");
-  gsl_vector *yVec =
-    getMeshTallyYVector("/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht");
-  gsl_vector *zVec =
-    getMeshTallyZVector("/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht");
+  gsl_vector *xVec = getMeshTallyXVector(fileName);
+  gsl_vector *yVec = getMeshTallyYVector(fileName);
+  gsl_vector *zVec = getMeshTallyZVector(fileName);
 
   int xSize = xVec->size;
   int ySize = yVec->size;
   int zSize = zVec->size;
   
   double *data = 
-    getMeshTallyData("/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht",
-		     xSize, ySize, zSize);
+    getMeshTallyData(fileName, xSize, ySize, zSize);
 
   double ***data3D = (double ***) malloc(sizeof(double **)*xSize);
 
@@ -181,9 +178,10 @@ static double ***getMeshTally3DData(char *fileName) {
   }
 
   free(data);
-  gsl_vector_free(xVec);
-  gsl_vector_free(yVec);
-  gsl_vector_free(zVec);
+
+  *xVecIn = xVec;
+  *yVecIn = yVec;
+  *zVecIn = zVec;
 
   return data3D;
   
@@ -415,20 +413,22 @@ static gsl_vector *getMeshTallyZVector(char *fileName) {
  ******************************************************************************/
 
 int testReadMeshTally() {
-      
-  char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+
+  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
   int ii, jj, kk;
+
   ii = 2;
   jj = 1;
   kk = 1;
 
-  gsl_vector *xVec = getMeshTallyXVector(fileName);
-  gsl_vector *yVec = getMeshTallyYVector(fileName);
-  gsl_vector *zVec = getMeshTallyZVector(fileName);
+  gsl_vector *xVec;
+  gsl_vector *yVec;
+  gsl_vector *zVec;
 
-  double ***dataTest = getMeshTally3DData(fileName);
-  save3DData(dataTest, xVec, yVec, zVec, "/home/webertr/Github/fuzeDataAnalysis/data/temp.dat");
-  
+  char *fileNameTest = "/home/fuze/Github/fuzeDataAnalysis/data/temp.dat";
+  double ***dataTest = getMeshTally3DData(fileName, &xVec, &yVec, &zVec);
+  save3DData(dataTest, xVec, yVec, zVec, fileNameTest);
+
   printf("data(1.30282E-06): %g\n", dataTest[ii][jj][kk]);
   printf("X-Vector(30): %g\n", gsl_vector_get(xVec, 10));
   printf("X-Vector Size (265): %d\n", (int) xVec->size);
@@ -441,8 +441,7 @@ int testReadMeshTally() {
   gsl_vector *yVecRead;
   gsl_vector *zVecRead;
 
-  double ***dataTestRead =
-    read3DData("/home/webertr/Github/fuzeDataAnalysis/data/temp.dat",&xVecRead,&yVecRead,&zVecRead);
+  double ***dataTestRead = read3DData(fileNameTest,&xVecRead,&yVecRead,&zVecRead);
 
   printf("data[0](1.30282E-06): %g\n", dataTestRead[ii][jj][kk]);
   printf("X-Vector(30): %g\n", gsl_vector_get(xVecRead, 10));
@@ -461,11 +460,11 @@ int testReadMeshTally() {
   gsl_vector_free(yVecRead);
   gsl_vector_free(zVecRead);
 
-  char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
-  char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
-  
-  double ***dataFull = getMeshTally3DData(fileNameFull);
-  double ***dataVoid = getMeshTally3DData(fileNameVoid);
+  char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
+
+  double ***dataFull = getMeshTally3DData(fileNameFull, &xVec, &yVec, &zVec);
+  double ***dataVoid = getMeshTally3DData(fileNameVoid, &xVec, &yVec, &zVec);
 
   ii = 200;
   jj = 150;
