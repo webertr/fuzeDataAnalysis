@@ -6,12 +6,14 @@
  *
  ******************************************************************************/
 
-
 static int plotPostShotIFData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotPostShotCompData(int shotNumber, int tmin, int tmax, char *saveFile);
 static int plotOffAxisDisplacement(int shotNumber);
 static int plotPostShotSymmetryCheck(int shotNumber, int tmin, int tmax);
-static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile);
+static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3,
+			      char *tempDataFile, char *tempScriptFile);
+static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNumber3,
+				   int detectorNum, char *tempDataFile, char *tempScriptFile);
 static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
 static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3, 
@@ -250,6 +252,8 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
+			    "data/neutronData.txt", "data/neutronDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -269,7 +273,8 @@ int plotPostAnalysis() {
     int timeCompI, timeCompF, timeAccelI, timeAccelF;
     plotOffAxisDisplacement(shotNumber);
     plotPostShotIFData(shotNumber, timeCompI, timeCompF, "");
-    plotPostShotNeutronData(shotNumber, timeCompI, timeCompF, "");
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
+			    "data/neutronData.txt", "data/neutronDataScript.sh");
     plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
     plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
     plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
@@ -409,7 +414,7 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
 
 
 /******************************************************************************
- * Function: plotPostShotVGap
+ * Function: plotPostShotIV
  * Inputs: int, int, int
  * Returns: int
  * Description: This will prompt the user for a pulse number, and output the
@@ -446,9 +451,10 @@ static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3,
   char *vgap3Label = (char *)malloc(sizeBuf + 1);
   snprintf(vgap3Label, sizeBuf+1, tempString, shotNumber3);
 
-  char *keyWords = "set title 'V_{Gap} and I_{P}'\n"
+  char *keyWords = "set title 'V_{Gap}'\n"
     "set xrange[-10:500]\n"
     "set ylabel 'Voltage (kV)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
 
   plot3VectorData(time, vgap1, vgap1Label, vgap2, vgap2Label, vgap3, vgap3Label, 
@@ -461,6 +467,77 @@ static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3,
   gsl_vector_free(vgap1);
   gsl_vector_free(vgap2);
   gsl_vector_free(vgap3);
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotNeutronData
+ * Inputs: int, int, int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * total plasma current and voltage across the hot and cold plate
+ ******************************************************************************/
+
+static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNumber3, 
+				   int detectorNum, char *tempDataFile, char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempString;
+  
+  tempString = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
+  char *neutronNode = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode, sizeBuf+1, tempString, detectorNum);
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, neutronNode, "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+
+  gsl_vector *neutron1 = readDHIMDSplusVector(shotNumber1, neutronNode, "fuze", "10.10.10.240");
+  gsl_vector_scale(neutron1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'N_{D%d} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber1);
+  char *neutron1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron1Label, sizeBuf+1, tempString, detectorNum, shotNumber1);
+
+  gsl_vector *neutron2 = readDHIMDSplusVector(shotNumber2, neutronNode, "fuze", "10.10.10.240");
+  gsl_vector_scale(neutron2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'N_{D%d} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber2);
+  char *neutron2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron2Label, sizeBuf+1, tempString, detectorNum, shotNumber2);
+
+  gsl_vector *neutron3 = readDHIMDSplusVector(shotNumber3, neutronNode, "fuze", "10.10.10.240");
+  gsl_vector_scale(neutron3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'N_{D%d} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber3);
+  char *neutron3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron3Label, sizeBuf+1, tempString, detectorNum, shotNumber3);
+
+  tempString = "set title 'N_{D%d}'\n"
+    "set xrange[-10:500]\n"
+    "set ylabel 'Voltage (kV)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange [:]";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
+  char *keyWords = (char *)malloc(sizeBuf + 1);
+  snprintf(keyWords, sizeBuf+1, tempString, detectorNum);
+
+
+  plot3VectorData(time, neutron1, neutron1Label, neutron2, neutron2Label, neutron3, neutron3Label, 
+		  keyWords, tempDataFile, tempScriptFile);
+  
+  free(neutron1Label);
+  free(neutron2Label);
+  free(neutron3Label);
+  free(neutronNode);
+  free(keyWords);
+  gsl_vector_free(time);
+  gsl_vector_free(neutron1);
+  gsl_vector_free(neutron2);
+  gsl_vector_free(neutron3);
   
   return 0;
 
@@ -685,138 +762,6 @@ title '%s'\n", accelFile, data5Name);
 
   remove(gnuPlotFile);
 
-  gsl_vector_free(data1);
-  gsl_vector_free(data2);
-  gsl_vector_free(data3);
-  gsl_vector_free(data4);
-  gsl_vector_free(data5);
-  gsl_vector_free(time);
-
-  return 0;
-
-}
-
-
-/******************************************************************************
- * Function: plotPostShotNeutronData
- * Inputs: int
- * Returns: int
- * Description: Pass it a shot number, and it will plot data to view after
- * each pulse.
- ******************************************************************************/
-
-static int plotPostShotNeutronData(int shotNumber, int tmin, int tmax, char *saveFile) {
-
-  char *data1Node = "\\neutron_1",
-    *data1Name = "ND #1",
-    *data2Node = "\\neutron_2",
-    *data2Name = "ND #2",
-    *data3Node = "\\neutron_4",
-    *data3Name = "ND #4",
-    *data4Node = "\\neutron_5",
-    *data4Name = "ND #5",
-    *data5Node = "\\neutron_6",
-    *data5Name = "ND #6",
-    *data6Node = "\\neutron_7",
-    *data6Name = "ND #7";
-
-  int status;
-
-  char *gnuPlotFile = "script/tempNeutron.sh",
-    *accelFile = "data/neutron.txt";
-
-  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
-  
-  gsl_vector *data1 = gsl_vector_alloc(sigSize),
-    *data2 = gsl_vector_alloc(sigSize),
-    *data3 = gsl_vector_alloc(sigSize),
-    *data4 = gsl_vector_alloc(sigSize),
-    *data5 = gsl_vector_alloc(sigSize),
-    *data6 = gsl_vector_alloc(sigSize),
-    *time = gsl_vector_alloc(sigSize);
-
-  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
-  initializeMagneticData(shotNumber, data2Node, data2);
-  initializeMagneticData(shotNumber, data3Node, data3);
-  initializeMagneticData(shotNumber, data4Node, data4);
-  initializeMagneticData(shotNumber, data5Node, data5);
-  initializeMagneticData(shotNumber, data6Node, data6);
-
-
-  /* Saving data */
-  save7VectorData(time, data1, data2, data3, data4, data5, data6, accelFile);
-
-
-  /* Creating gnuplot file */
-  if (remove(gnuPlotFile) != 0) {
-    printf("Unable to delete the file");
-  }
-
-  FILE *fp = fopen(gnuPlotFile, "w");
-  
-  if ( (fp == NULL) ) {
-
-    printf("Error opening files gnuplot file!\n");
-    exit(1);
-
-  }
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  if (strcmp(saveFile, "") != 0) {
-    fprintf(fp, "set terminal png\n");
-    fprintf(fp, "set output '%s'\n", saveFile);
-  }
-  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
-  fprintf(fp, "set key left bottom\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Neutron Diagnostics for Pulse #%d' font '0,18'\n", shotNumber);
-  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'Voltage (V)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
-title '%s',\\\n", accelFile, data1Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
-title '%s',\\\n", accelFile, data2Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
-title '%s',\\\n", accelFile, data3Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
-title '%s',\\\n", accelFile, data4Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'orange' \
-title '%s',\\\n", accelFile, data5Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($7) with line lw 3 lc rgb 'yellow' \
-title '%s'\n", accelFile, data6Name);
-  fprintf(fp, "pause -1\n");
-  
-  fclose(fp);
-
-  chmod(gnuPlotFile, S_IRWXG);
-  chmod(gnuPlotFile, S_IRWXO);
-  chmod(gnuPlotFile, S_IRWXU);
-
-
-  
-
-  /* Creating child process to run script */
-  FILE *gnuplot = popen(gnuPlotFile, "r");
-
-  if (!gnuplot) {
-    fprintf(stderr,"incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
-  }
-  
-  fflush(gnuplot);
-
-  /* Pausing so user can look at plot */
-  printf("\nPress any key, then ENTER to continue> \n");
-  getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-
-  remove(gnuPlotFile);
   gsl_vector_free(data1);
   gsl_vector_free(data2);
   gsl_vector_free(data3);
