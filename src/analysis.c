@@ -20,7 +20,8 @@ static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3,
 			      char *tempDataFile, char *tempScriptFile);
 static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3, 
 			  char *tempDataFile, char *tempScriptFile);
-static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax);
+static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumber3,
+				 char *tempDataFile, char *tempScriptFile);
 static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber3, 
 				char *tempDataFile, char *tempScriptFile);
 
@@ -252,20 +253,28 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
-			    "data/neutronData.txt", "data/neutronDataScript.sh");
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 7,
+			    "data/neutron7Data.txt", "data/neutron7DataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 6,
+			    "data/neutron6Data.txt", "data/neutron6DataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 2,
+    			    "data/neutron2Data.txt", "data/neutron2DataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 4,
+			    "data/neutron4Data.txt", "data/neutron4DataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
+			    "data/neutron5Data.txt", "data/neutron5DataScript.sh");
     exit(0);
   }
 
@@ -280,7 +289,8 @@ int plotPostAnalysis() {
     plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
 		   "data/ivData.txt", "data/ivDataScript.sh");
     plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
-    plotPostShotGVCurrent(shotNumber, -800, 500);
+    plotPostShotGVCurrent(shotNumber, shotNumber -1, shotNumber -2,
+			  "data/igvData.txt", "data/igvDataScript.sh");
     plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
     plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
 		       "data/ipData.txt", "data/ipDataScript.sh");
@@ -371,21 +381,18 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
   gsl_vector_scale(time, 1E6);
 
   gsl_vector *mode1 = readDHIMDSplusVector(shotNumber1, "\\M_1_P15", "fuze", "10.10.10.240");
-  gsl_vector_scale(mode1, 1E-3);
   tempString = "with line lw 3 lc rgb 'black' title 'IP for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
   char *mode1Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode1Label, sizeBuf+1, tempString, shotNumber1);
 
   gsl_vector *mode2 = readDHIMDSplusVector(shotNumber2, "\\M_1_P15", "fuze", "10.10.10.240");
-  gsl_vector_scale(mode2, 1E-3);
   tempString = "with line lw 3 lc rgb 'red' title 'IP for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
   char *mode2Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode2Label, sizeBuf+1, tempString, shotNumber2);
 
   gsl_vector *mode3 = readDHIMDSplusVector(shotNumber3, "\\M_1_P15", "fuze", "10.10.10.240");
-  gsl_vector_scale(mode3, 1E-3);
   tempString = "with line lw 3 lc rgb 'blue' title 'IP for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
   char *mode3Label = (char *)malloc(sizeBuf + 1);
@@ -496,29 +503,26 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
   gsl_vector_scale(time, 1E6);
 
   gsl_vector *neutron1 = readDHIMDSplusVector(shotNumber1, neutronNode, "fuze", "10.10.10.240");
-  gsl_vector_scale(neutron1, 1E-3);
   tempString = "with line lw 3 lc rgb 'black' title 'N_{D%d} for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber1);
   char *neutron1Label = (char *)malloc(sizeBuf + 1);
   snprintf(neutron1Label, sizeBuf+1, tempString, detectorNum, shotNumber1);
 
   gsl_vector *neutron2 = readDHIMDSplusVector(shotNumber2, neutronNode, "fuze", "10.10.10.240");
-  gsl_vector_scale(neutron2, 1E-3);
   tempString = "with line lw 3 lc rgb 'red' title 'N_{D%d} for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber2);
   char *neutron2Label = (char *)malloc(sizeBuf + 1);
   snprintf(neutron2Label, sizeBuf+1, tempString, detectorNum, shotNumber2);
 
   gsl_vector *neutron3 = readDHIMDSplusVector(shotNumber3, neutronNode, "fuze", "10.10.10.240");
-  gsl_vector_scale(neutron3, 1E-3);
   tempString = "with line lw 3 lc rgb 'blue' title 'N_{D%d} for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber3);
   char *neutron3Label = (char *)malloc(sizeBuf + 1);
   snprintf(neutron3Label, sizeBuf+1, tempString, detectorNum, shotNumber3);
 
   tempString = "set title 'N_{D%d}'\n"
-    "set xrange[-10:500]\n"
-    "set ylabel 'Voltage (kV)'\n"
+    "set xrange[0:100]\n"
+    "set ylabel 'Voltage (V)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
   sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
@@ -552,99 +556,55 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
  * each pulse.
  ******************************************************************************/
 
-static int plotPostShotGVCurrent(int shotNumber, int tmin, int tmax) {
+static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumber3,
+				 char *tempDataFile, char *tempScriptFile) {
 
-  char *data1Node = "\\i_gv_1_valve",
-    *data1Name = "I GV1",
-    *data2Node = "\\i_gv_2_valve",
-    *data2Name = "I GV2",
-    *data3Node = "\\i_gv_2_dummy_load",
-    *data3Name = "GV2 Dummy Load";
+  size_t sizeBuf;
+  char *tempString;
 
-  int status;
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\i_gv_1_valve", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
 
-  char *gnuPlotFile = "script/tempGVCurrent.sh",
-    *gvFile = "data/gvCurrent.txt";
+  gsl_vector *igv1 = readDHIMDSplusVector(shotNumber1, "\\i_gv_1_valve", "fuze", "10.10.10.240");
+  gsl_vector_scale(igv1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'I_{GV1} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  char *igv1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(igv1Label, sizeBuf+1, tempString, shotNumber1);
 
-  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
+  gsl_vector *igv2 = readDHIMDSplusVector(shotNumber2, "\\i_gv_2_valve", "fuze", "10.10.10.240");
+  gsl_vector_scale(igv2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'I_{GV2} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  char *igv2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(igv2Label, sizeBuf+1, tempString, shotNumber2);
+
+  gsl_vector *igv2Dummy = readDHIMDSplusVector(shotNumber3, "\\i_gv_2_dummy_load", 
+					       "fuze", "10.10.10.240");
+  gsl_vector_scale(igv2Dummy, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'I_{GV2Dummy} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
+  char *igv2DummyLabel = (char *)malloc(sizeBuf + 1);
+  snprintf(igv2DummyLabel, sizeBuf+1, tempString, shotNumber3);
+
+
+  char *keyWords = "set title 'I_{GV}'\n"
+    "set xrange[-800:0]\n"
+    "set ylabel 'Voltage (kV)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange [:]";
+
+  plot3VectorData(time, igv1, igv1Label, igv2, igv2Label, igv2Dummy, igv2DummyLabel, 
+		  keyWords, tempDataFile, tempScriptFile);
   
-  gsl_vector *data1 = gsl_vector_alloc(sigSize),
-    *data2 = gsl_vector_alloc(sigSize),
-    *data3 = gsl_vector_alloc(sigSize),
-    *time = gsl_vector_alloc(sigSize);
-
-  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
-  initializeMagneticData(shotNumber, data2Node, data2);
-  initializeMagneticData(shotNumber, data3Node, data3);
-
-    /* Saving data */
-  save4VectorData(time, data1, data2, data3, gvFile);
-
-
-  /* Creating gnuplot file */
-  if (remove(gnuPlotFile) != 0) {
-    printf("Unable to delete the file");
-  }
-
-  FILE *fp = fopen(gnuPlotFile, "w");
-  
-  if ( (fp == NULL) ) {
-
-    printf("Error opening files gnuplot file!\n");
-    exit(1);
-
-  }
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
-  fprintf(fp, "set key left top\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Gas Valve Current for Pulse #%d' font '0,18'\n", shotNumber);
-  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'I (Amps)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
-title '%s',\\\n", gvFile, data1Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
-title '%s',\\\n", gvFile, data2Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
-title '%s',\n", gvFile, data3Name);
-  fprintf(fp, "pause -1\n");
-  
-  fclose(fp);
-
-  chmod(gnuPlotFile, S_IRWXG);
-  chmod(gnuPlotFile, S_IRWXO);
-  chmod(gnuPlotFile, S_IRWXU);
-
-
-  
-
-  /* Creating child process to run script */
-  FILE *gnuplot = popen(gnuPlotFile, "r");
-
-  if (!gnuplot) {
-    fprintf(stderr,"incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
-  }
-  
-  fflush(gnuplot);
-
-  /* Pausing so user can look at plot */
-  printf("\nPress any key, then ENTER to continue> \n");
-  getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-
-  remove(gnuPlotFile);
-
-  gsl_vector_free(data1);
-  gsl_vector_free(data2);
+  free(igv1Label);
+  free(igv2Label);
+  free(igv2DummyLabel);
   gsl_vector_free(time);
+  gsl_vector_free(igv1);
+  gsl_vector_free(igv2);
+  gsl_vector_free(igv2Dummy);
+
 
   return 0;
 
