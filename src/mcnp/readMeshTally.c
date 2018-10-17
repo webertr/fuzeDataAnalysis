@@ -15,6 +15,40 @@ static int save4DData(double ****data4D, gsl_vector *xVec, gsl_vector *yVec, gsl
 		      gsl_vector *eVec, char *fileName);
 static double ****read4DData(char *fileName, gsl_vector **xVecIn, gsl_vector **yVecIn,
 			     gsl_vector **zVecIn, gsl_vector **eVecIn);
+static double ****getHFactor(double ****dataFull, double ****dataVoid,
+			     int eSize, int xSize, int ySize, int zSize);
+
+/******************************************************************************
+ * Function: getHFactor
+ * Inputs: double ****,double ****
+ * Returns: double ****
+ * Description: Gets the data in a 4D arrray
+ ******************************************************************************/
+
+static double ****getHFactor(double ****dataFull, double ****dataVoid,
+			     int eSize, int xSize, int ySize, int zSize) {
+
+  int ii, jj, kk, ll;
+
+  double ****dataHFactor = (double ****) malloc(sizeof(double ***)*eSize);
+
+  for (ll = 0; ll < eSize; ll++) {
+    dataHFactor[ll] = (double ***) malloc(sizeof(double **)*xSize);
+    for (ii = 0; ii < xSize; ii++) {
+      dataHFactor[ll][ii] = (double **) malloc(sizeof(double *)*ySize);
+      for (jj = 0; jj < ySize; jj++) {
+	dataHFactor[ll][ii][jj] = (double *) malloc(sizeof(double)*ySize);
+	for (kk = 0; kk < zSize; kk++) {
+	  dataHFactor[ll][ii][jj][kk] = dataFull[ll][ii][jj][kk]/dataVoid[ll][ii][jj][kk];
+	}
+      }
+    }
+  }
+
+  return dataHFactor;
+
+}
+
 
 /******************************************************************************
  * Function: save4DData
@@ -538,14 +572,31 @@ static gsl_vector *getMeshTallyZVector(char *fileName) {
  *
  ******************************************************************************/
 
+static int testMeshTally1();
+static int testMeshTally2();
+static int testGetHFactorGrid();
+
 int testReadMeshTally() {
+
+  testGetHFactorGrid();
+
+  if (0) {
+    testMeshTally1();
+    testMeshTally2();
+  }
+
+  return 0;
+
+}
+
+static int testMeshTally1() {
 
   int ii, jj, kk, ll;
   gsl_vector *xVec;
   gsl_vector *yVec;
   gsl_vector *zVec;
   gsl_vector *eVec;
-  char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
 
   double ****data = getMeshTallyData(fileName, &xVec, &yVec, &zVec, &eVec);
 
@@ -565,7 +616,7 @@ int testReadMeshTally() {
   printf("E-Vector(0.25): %g\n", gsl_vector_get(eVec, 0));
   printf("E-Vector Size (2): %d\n", (int) eVec->size);
 
-  char *fileNameTest = "/home/webertr/Github/fuzeDataAnalysis/data/temp.dat";
+  char *fileNameTest = "/home/fuze/Github/fuzeDataAnalysis/data/temp.dat";
   save4DData(data, xVec, yVec, zVec, eVec, fileNameTest);
 
   printf("data(1.30282E-06): %g\n", data[ll][ii][jj][kk]);
@@ -608,88 +659,63 @@ int testReadMeshTally() {
   gsl_vector_free(yVecRead);
   gsl_vector_free(zVecRead);
   gsl_vector_free(eVecRead);
-  
-  exit(0);
 
-  if (0) {
+  return 0;
 
-    char *fileNameTemp = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
-    getMeshTallyXVector(fileNameTemp);
-    getMeshTallyYVector(fileNameTemp);
-    getMeshTallyZVector(fileNameTemp);
-    
-  }
-    
-  /*
-  if (0) {
-    
-    char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+}
 
-    ii = 2;
-    jj = 1;
-    kk = 1;
+ 
+static int testMeshTally2() {
+
+  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+
+  gsl_vector *xVec;
+  gsl_vector *yVec;
+  gsl_vector *zVec;
+
+  xVec = getMeshTallyXVector(fileName);
+  yVec = getMeshTallyYVector(fileName);
+  zVec = getMeshTallyZVector(fileName);
+
+  gsl_vector_free(xVec);
+  gsl_vector_free(yVec);
+  gsl_vector_free(zVec);
+
+  return 0;
+
+}
 
 
-    char *fileNameTest = "/home/fuze/Github/fuzeDataAnalysis/data/temp.dat";
-    double ***dataTest = getMeshTally3DData(fileName, &xVec, &yVec, &zVec);
-    save3DData(dataTest, xVec, yVec, zVec, fileNameTest);
+static int testGetHFactorGrid() {
 
-    printf("data(1.30282E-06): %g\n", dataTest[ii][jj][kk]);
-    printf("X-Vector(30): %g\n", gsl_vector_get(xVec, 10));
-    printf("X-Vector Size (265): %d\n", (int) xVec->size);
-    printf("Y-Vector(30): %g\n", gsl_vector_get(yVec, 10));
-    printf("Y-Vector Size (256): %d\n", (int) yVec->size);
-    printf("Z-Vector(30): %g\n", gsl_vector_get(zVec, 10));
-    printf("Z-Vector Size (149): %d\n", (int) zVec->size);
+  int ii, jj, kk, ll;
 
-    gsl_vector *xVecRead;
-    gsl_vector *yVecRead;
-    gsl_vector *zVecRead;
-
-    double ***dataTestRead = read3DData(fileNameTest,&xVecRead,&yVecRead,&zVecRead);
-
-    printf("data[0](1.30282E-06): %g\n", dataTestRead[ii][jj][kk]);
-    printf("X-Vector(30): %g\n", gsl_vector_get(xVecRead, 10));
-    printf("X-Vector Size (265): %d\n", (int) xVecRead->size);
-    printf("Y-Vector(30): %g\n", gsl_vector_get(yVecRead, 10));
-    printf("Y-Vector Size (256): %d\n", (int) yVecRead->size);
-    printf("Z-Vector(30): %g\n", gsl_vector_get(zVecRead, 10));
-    printf("Z-Vector Size (149): %d\n", (int) zVecRead->size);  
-
-    free(dataTestRead);
-    free(dataTest);
-    gsl_vector_free(xVec);
-    gsl_vector_free(yVec);
-    gsl_vector_free(zVec);
-    gsl_vector_free(xVecRead);
-    gsl_vector_free(yVecRead);
-    gsl_vector_free(zVecRead);
-
-  }
-  */
-  /*
-  //char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/brianFull/meshTalFull";
-  //char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/brianVoid/meshTalVoid";
-
+  gsl_vector *xVec;
+  gsl_vector *yVec;
+  gsl_vector *zVec;
+  gsl_vector *eVec;
   char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+
+  double ****dataFull = getMeshTallyData(fileNameFull, &xVec, &yVec, &zVec, &eVec);
+
+  gsl_vector_free(xVec);
+  gsl_vector_free(yVec);
+  gsl_vector_free(zVec);
+  gsl_vector_free(eVec);
+
   char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
-  
-  double ***dataFull = getMeshTally3DData(fileNameFull, &xVec, &yVec, &zVec);
-  double ***dataVoid = getMeshTally3DData(fileNameVoid, &xVec, &yVec, &zVec);
+  double ****dataVoid = getMeshTallyData(fileNameVoid, &xVec, &yVec, &zVec, &eVec);
 
-  ii = 200;
-  jj = 150;
-  kk = 75;
-  printf("Full: %g\n", dataFull[ii][jj][kk]);
-  printf("Void: %g\n", dataVoid[ii][jj][kk]);
-  double hfactor = dataFull[ii][jj][kk]/dataVoid[ii][jj][kk];
+  double ****dataHFactor = getHFactor(dataFull, dataVoid, eVec->size, xVec->size, yVec->size, 
+				      zVec->size);
 
-  printf("H-factor: %g\n", hfactor);
-  
-  free(dataFull);
-  free(dataVoid);
-  */
-  
+  ii = 2;
+  jj = 1;
+  kk = 1;
+  ll = 1;
+
+  printf("H-Factor(1.30282E-06): %g\n", dataHFactor[ll][ii][jj][kk]);
+
   return 0;
 
 }
