@@ -734,7 +734,7 @@ static int testGetHFactorGrid() {
 
   if (0) {
 
-    char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+    char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/brianFull/meshTalFull";
     double ****dataFull = getMeshTallyData(fileNameFull, &xVec, &yVec, &zVec, &eVec);
 
     gsl_vector_free(xVec);
@@ -742,7 +742,7 @@ static int testGetHFactorGrid() {
     gsl_vector_free(zVec);
     gsl_vector_free(eVec);
 
-    char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
+    char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/brianVoid/meshTalVoid";
     double ****dataVoid = getMeshTallyData(fileNameVoid, &xVec, &yVec, &zVec, &eVec);
     
     dataHFactor = getHFactor(dataFull, dataVoid, eVec->size, xVec->size, yVec->size, 
@@ -788,10 +788,6 @@ static int testGetHFactorGrid() {
    * x = 490 to 815, y = 254, z = 89 to 189.
    * ii = 163 to 263, jj = 84, kk = 29 to 129
    */
-
-  for (ii = 0; ii < xVec->size; ii++) {
-    printf("xVec(%d): %g\n", ii, gsl_vector_get(xVec, ii));
-  }
   int iiMin = 163,
     iiMax = 263;
 
