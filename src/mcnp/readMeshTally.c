@@ -630,7 +630,7 @@ static int testMeshTally1() {
   gsl_vector *yVec;
   gsl_vector *zVec;
   gsl_vector *eVec;
-  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
 
   double ****data = getMeshTallyData(fileName, &xVec, &yVec, &zVec, &eVec);
 
@@ -650,7 +650,7 @@ static int testMeshTally1() {
   printf("E-Vector(0.25): %g\n", gsl_vector_get(eVec, 0));
   printf("E-Vector Size (2): %d\n", (int) eVec->size);
 
-  char *fileNameTest = "/home/fuze/Github/fuzeDataAnalysis/data/temp.dat";
+  char *fileNameTest = "/home/webertr/Github/fuzeDataAnalysis/data/temp.dat";
   save4DData(data, xVec, yVec, zVec, eVec, fileNameTest);
 
   printf("data(1.30282E-06): %g\n", data[ll][ii][jj][kk]);
@@ -701,7 +701,7 @@ static int testMeshTally1() {
  
 static int testMeshTally2() {
 
-  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
 
   gsl_vector *xVec;
   gsl_vector *yVec;
@@ -734,7 +734,7 @@ static int testGetHFactorGrid() {
 
   if (0) {
 
-    char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+    char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
     double ****dataFull = getMeshTallyData(fileNameFull, &xVec, &yVec, &zVec, &eVec);
 
     gsl_vector_free(xVec);
@@ -742,13 +742,13 @@ static int testGetHFactorGrid() {
     gsl_vector_free(zVec);
     gsl_vector_free(eVec);
 
-    char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
+    char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/9_16_Void/inpFullMeshVoidmsht";
     double ****dataVoid = getMeshTallyData(fileNameVoid, &xVec, &yVec, &zVec, &eVec);
     
     dataHFactor = getHFactor(dataFull, dataVoid, eVec->size, xVec->size, yVec->size, 
 					zVec->size);
     
-    fileNameHFactor = "/home/fuze/Github/fuzeDataAnalysis/data/hFactor.dat";
+    fileNameHFactor = "/home/webertr/Github/fuzeDataAnalysis/data/hFactor.dat";
     
     save4DData(dataHFactor, xVec, yVec, zVec, eVec, fileNameHFactor);
 
@@ -769,7 +769,7 @@ static int testGetHFactorGrid() {
 
   }
   
-  fileNameHFactor = "/home/fuze/Github/fuzeDataAnalysis/data/hFactor.dat";
+  fileNameHFactor = "/home/webertr/Github/fuzeDataAnalysis/data/hFactor.dat";
 
   dataHFactor = read4DData(fileNameHFactor, &xVec, &yVec, &zVec, &eVec);
 
@@ -782,37 +782,47 @@ static int testGetHFactorGrid() {
 
   /*
    * Want to get a grid that is z-y plane. That is jj, kk. The values are
-   * -50 to 250 cm in z and -50 to 50 cm in y. The x = 0. The nose cone is at:
+   * -25 to 300 cm in x and -50 to 50 cm in z. The y = 0. The nose cone is at:
    * x = 515 y = 254 z = 139
    * So we want,
-   * x = 515, y = 204 to 304, z = 89 to 389.
-   * ii = 171, jj = 68 to 101, kk = 29 to 129
+   * x = 490 to 815, y = 254, z = 89 to 189.
+   * ii = 163 to 263, jj = 84, kk = 29 to 129
    */
 
-  ll = 1;
-  ii = 171;
+  for (ii = 0; ii < xVec->size; ii++) {
+    printf("xVec(%d): %g\n", ii, gsl_vector_get(xVec, ii));
+  }
+  int iiMin = 163,
+    iiMax = 263;
 
-  gsl_vector *imageX = gsl_vector_alloc(129-29+1),
-    *imageY = gsl_vector_alloc(101-68+1);
+  int jjValue = 84;
+
+  int kkMin = 29,
+    kkMax = 63;
+  
+  gsl_vector *imageX = gsl_vector_alloc(iiMax-iiMin+1),
+    *imageY = gsl_vector_alloc(kkMax-kkMin+1);
 
   int xImageSize = imageX->size,
     yImageSize = imageY->size;
 
-  gsl_matrix *image = gsl_matrix_alloc(xImageSize, yImageSize);
+  gsl_matrix *image = gsl_matrix_alloc(yImageSize, xImageSize);
 
-  int i, j;
+  ll = 1;
 
-  for (i = 0; i < xImageSize; i++) {
-    gsl_vector_set(imageX, i, gsl_vector_get(zVec, i+29));
-    for (j = 0; j < yImageSize; j++) {
-      gsl_vector_set(imageY, j, gsl_vector_get(yVec, j+68));
-      gsl_matrix_set(image, i, j, dataHFactor[ll][ii][j+68][i+29]);
+  for (ii = 0; ii < xImageSize; ii++) {
+    gsl_vector_set(imageX, ii, gsl_vector_get(xVec, ii+iiMin));
+  }
+  for (kk = 0; kk < yImageSize; kk++) {
+    gsl_vector_set(imageY, kk, gsl_vector_get(zVec, kk+kkMin));
+  }
+  for (ii = 0; ii < xImageSize; ii++) {
+    for (kk = 0; kk < yImageSize; kk++) {
+      gsl_matrix_set(image, kk, ii, dataHFactor[ll][ii+iiMin][jjValue][kk+kkMin]);
     }
   }
-  
-  double dx = gsl_vector_get(imageX, 1) - gsl_vector_get(imageX, 0);
-  double dy = gsl_vector_get(imageY, 1) - gsl_vector_get(imageY, 0);
-  plotImageData(image, dx, dy, "");
+
+  plotImageDimensions(image, imageY, imageX, "");
 
   free4DArray(dataHFactor, xVec, yVec, zVec, eVec);
   free(xVec);
