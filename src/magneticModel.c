@@ -255,7 +255,7 @@ static int testAziBFieldMode() {
   gsl_fft_real_wavetable_free(wavetableCols);
   gsl_fft_real_workspace_free(workspaceCols);
 
-  plotImageData(bField, dx, dy, "");
+  plotImageData(bField, dx, dy, "", "data/magModel.dat", "data/magModelScript.sh");
 
   gsl_matrix_free(bField);
   

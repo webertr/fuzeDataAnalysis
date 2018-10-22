@@ -743,8 +743,10 @@ static int testOffAxis() {
 		   gsl_matrix_get(disp, ii, 2)*1E-2);
   }
 
-  plot2VectorData(dataVec, xDataVec1, xDataVec2, "set xrange [50E-6:60E-6]\n");
-  plot2VectorData(dataVec, yDataVec1, yDataVec2, "set xrange [50E-6:60E-6]\n");
+  plot2VectorData(dataVec, xDataVec1, "1", xDataVec2, "2", "set xrange [50E-6:60E-6]\n",
+		  "data/offAxisTestData1.dat", "data/offAxisTestScript1.sh");
+  plot2VectorData(dataVec, yDataVec1, "1", yDataVec2, "2", "set xrange [50E-6:60E-6]\n",
+		  "data/offAxisTestData2.dat", "data/offAxisTestScript2.sh");
 
   return 0;
 

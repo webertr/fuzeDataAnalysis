@@ -388,7 +388,12 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
  * back to the parent process, and in gnuplot, it will open this binary file.
  ******************************************************************************/
 
-int plotImageDimensions(gsl_matrix *mInput, gsl_vector *yVec, gsl_vector *xVec, char *plotOptions) {
+int plotImageDimensions(gsl_matrix *mInput, gsl_vector *yVec, gsl_vector *xVec, char *plotOptions,
+			char *tempDataFile, char *tempScriptFile) {
+
+  /* Removing files to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
 
   int numRows = mInput->size1;
   int numCols = mInput->size2;
@@ -421,39 +426,43 @@ int plotImageDimensions(gsl_matrix *mInput, gsl_vector *yVec, gsl_vector *xVec, 
 
   /* Writting temp matrix to a file */
   FILE *fp2;
-  fp2 = fopen("data/temp.dat", "wb");
+  fp2 = fopen(tempDataFile, "wb");
   gsl_matrix_float_fwrite (fp2, temp);
   fclose(fp2);
 
   gsl_matrix_float_free(temp);
 
-  int status;
+  FILE *fpScript = fopen(tempScriptFile, "w");
   
-  FILE *gnuplot = popen("gnuplot", "w");
+  if ( (fpScript == NULL) ) {
 
-  if (!gnuplot) {
-    fprintf (stderr,
-	     "incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
   }
 
-  fprintf(gnuplot, "%s\n", plotOptions);
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
 
-  fprintf(gnuplot, "set palette rgb 33,13,10\n");
-  fprintf(gnuplot, "plot 'data/temp.dat' binary matrix with image title ''\n");
+  fprintf(fpScript, "%s\n", plotOptions);
 
-  fflush(gnuplot);
+  fprintf(fpScript, "set palette rgb 33,13,10\n");
+  fprintf(fpScript, "plot '%s' binary matrix with image title ''\n", tempDataFile);
+  fprintf(fpScript, "pause -1\n");
 
-  /* Pausing before kill process that has gnuplot */
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
   getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-  remove("data/temp.dat");
 
   return 0;
 
@@ -469,7 +478,12 @@ int plotImageDimensions(gsl_matrix *mInput, gsl_vector *yVec, gsl_vector *xVec, 
  * back to the parent process, and in gnuplot, it will open this binary file.
  ******************************************************************************/
 
-int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions) {
+int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions,
+		   char *tempDataFile, char *tempScriptFile) {
+
+  /* Removing files to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
 
   int numRows = mInput->size1;
   int numCols = mInput->size2;
@@ -503,39 +517,43 @@ int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions) 
 
   /* Writting temp matrix to a file */
   FILE *fp2;
-  fp2 = fopen("data/temp.dat", "wb");
+  fp2 = fopen(tempDataFile, "wb");
   gsl_matrix_float_fwrite (fp2, temp);
   fclose(fp2);
 
   gsl_matrix_float_free(temp);
 
-  int status;
+  FILE *fpScript = fopen(tempScriptFile, "w");
   
-  FILE *gnuplot = popen("gnuplot", "w");
+  if ( (fpScript == NULL) ) {
 
-  if (!gnuplot) {
-    fprintf (stderr,
-	     "incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
   }
 
-  fprintf(gnuplot, "%s\n", plotOptions);
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
 
-  fprintf(gnuplot, "set palette rgb 33,13,10\n");
-  fprintf(gnuplot, "plot 'data/temp.dat' binary matrix with image title ''\n");
+  fprintf(fpScript, "%s\n", plotOptions);
 
-  fflush(gnuplot);
+  fprintf(fpScript, "set palette rgb 33,13,10\n");
+  fprintf(fpScript, "plot '%s' binary matrix with image title ''\n", tempDataFile);
+  fprintf(fpScript, "pause -1\n");
 
-  /* Pausing before kill process that has gnuplot */
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
   getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-  remove("data/temp.dat");
 
   return 0;
 
@@ -552,44 +570,51 @@ int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions) 
  ******************************************************************************/
 
 int plotImageDataFile(char *fileName, double xScale, double yScale, double zScale,
-		      char *plotOptions) {
+		      char *plotOptions, char *tempScriptFile) {
 
-  int status,
-    useScale = 1;
+  /* Removing files to hold data */
+  remove(tempScriptFile);
+
+  int useScale = 1;
 
   if ( (xScale == 1) && (yScale == 1) && (zScale == 1) )
     useScale = 0;
 
-  FILE *gnuplot = popen("gnuplot", "w");
-
-  if (!gnuplot) {
-    fprintf (stderr,
-	     "incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
+  FILE *fpScript = fopen(tempScriptFile, "w");
+  
+  if ( (fpScript == NULL) ) {
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
   }
 
-  fprintf(gnuplot, "set palette rgb 33,13,10\n");
-  fprintf(gnuplot, "%s\n", plotOptions);
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "set palette rgb 33,13,10\n");
+  fprintf(fpScript, "%s\n", plotOptions);
   
   if (useScale) {
-    fprintf(gnuplot, "plot '%s' binary matrix using ($1*%g):($2*%g):($3*%g) with image title ''\n", 
+    fprintf(fpScript, "plot '%s' binary matrix using ($1*%g):($2*%g):($3*%g) with image title ''\n", 
 	    fileName, xScale, yScale, zScale);
   } else {
-    fprintf(gnuplot, "plot '%s' binary matrix with image title ''\n", fileName);
+    fprintf(fpScript, "plot '%s' binary matrix with image title ''\n", fileName);
   }
 
-  fflush(gnuplot);
+  fprintf(fpScript, "pause -1\n");
 
-  /* Pausing before kill process that has gnuplot */
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
   getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-  remove("data/temp.dat");
 
   return 0;
 

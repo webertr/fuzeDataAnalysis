@@ -37,25 +37,29 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  //hologramMain(&param);
+  hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1");
-  //plotImageDataFile(param.fileLineInt, 1, 1, 1, "set size ratio -1");
+  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1",
+  //		    "data/dhiImage.dat", "data/dhiScript.sh");
+  //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1",
+  //		    "data/dhiImage.dat", "data/dhiScript.sh");
+  //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1",
+  //		    "data/dhiImage.dat", "data/dhiScript.sh");
+  //plotImageDataFile(param.fileLineIntPos, 1, 1, 1, "set size ratio -1",
+  //		    "data/dhiImage.dat", "data/dhiScript.sh");
+  //plotImageDataFile(param.fileLineInt, 1, 1, 1, "set size ratio -1", 
+  //		    "data/dhiImage.dat", "data/dhiScript.sh");
 
   //plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, "");
-
   //plotMatrixColVColDataFile(param.fileLeftInvert, 0, 60, "");
   //plotMatrixColDataFile(param.fileLineIntText, 10, "");
-
   //plotImageDataFile(param.fileHologram, 1, 1, 1,
-  //	    "set size ratio -1\nset term png\nset output 'data/temp.png'");
+  //	              "set size ratio -1\nset term png\nset output 'data/temp.png'",
+  //                  "data/dhiImage.dat", "data/dhiScript.sh");
   //plot2MatrixColDataFile(param.fileRightInvert, 60, 
   //			 param.fileLeftInvert, 60, "");
-
-  //plotImageDataFile(param.fileFullInvert, 1, 1, 1, "set size ratio -1\n");
+  //plotImageDataFile(param.fileFullInvert, 1, 1, 1, "set size ratio -1\n",
+  //                  "data/dhiImage.dat", "data/dhiScript.sh");
 
   
   /* 
@@ -64,8 +68,8 @@ int hologramAnalysis() {
   if (1) {
 
     char *keywords = "set size ratio -1\n"
-      "set terminal png\n"
-      "set output '/home/fuze/Downloads/180710008_Line_Integrated.png'\n"
+      //"set terminal png\n"
+      //"set output '/home/fuze/Downloads/180710008_Line_Integrated.png'\n"
       "set title 'Pulse 180723022' font 'Times Bold,14'\n"
       "set xrange [13.624:14.3763]\n"
       "set yrange [-0.69125:0.682125]\n"
@@ -74,7 +78,8 @@ int hologramAnalysis() {
       "set xtics 13.5, 0.25, 14.5\n"
       "set label front 'Line integrated n_{e} (cm^{-2})' at graph 1.60,0.20 "
       "rotate by 90 font 'Times Bold, 14'\n";
-    plotImageDataFile(param.fileLineIntPos, 100, 100, 1E-4, keywords);
+    plotImageDataFile(param.fileLineIntPos, 100, 100, 1E-4, keywords,
+		      "data/dhiScript.sh");
 
   }
 
@@ -1020,8 +1025,6 @@ int invertFlatTopProfile() {
   param.centroidNum = 10;
   param.offsetIter = 10;
 
-  //plotImageData(densityProfile, 1.0, 1.0, "set title 'Line integrated data'\n");
-
   gsl_matrix *invertedImage = invertImageDHI(densityProfile, &param);
   saveImageData(invertedImage, param.fileFullInvert);
 
@@ -1122,7 +1125,8 @@ int invertFlatTopProfile() {
 
 
 
-  //plotImageDataFile(param.fileFullInvert, 1, 1, 1, "set cbrange [0:1.2]\n");
+  //plotImageDataFile(param.fileFullInvert, 1, 1, 1, "set cbrange [0:1.2]\n",
+  //                  "data/invertFlatTopScript.sh");
 
   return 0;
 

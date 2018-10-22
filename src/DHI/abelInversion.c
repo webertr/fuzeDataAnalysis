@@ -1328,7 +1328,8 @@ static int testInvertImageDHI() {
   param.centroidNum = 10;
   param.offsetIter = 10;
 
-  plotImageData(testData, 1.0, 1.0, "set title 'Forward Projected Data'\n");
+  plotImageData(testData, 1.0, 1.0, "set title 'Forward Projected Data'\n",
+		"data/forwardTest.dat", "data/forwardTestScript.sh");
     
   gsl_matrix *invertedImage = invertImageDHI(testData, &param);
   overlayCenterLineTest(invertedImage, param.fileCentroid);
@@ -1365,7 +1366,8 @@ static int testInvertImageDHI() {
     }
   }
 
-  plotImageData(forwardProjectResult, 1.0, 1.0, "set title 'Forward Projected Results'\n");
+  plotImageData(forwardProjectResult, 1.0, 1.0, "set title 'Forward Projected Results'\n",
+		"data/forwardProData.dat", "data/forwardProScript.sh");
 
   gsl_matrix *diffResults = gsl_matrix_alloc(numRows, numCols);
   double diffRes;
@@ -1379,7 +1381,8 @@ static int testInvertImageDHI() {
     }
   }
 
-  plotImageData(diffResults, 1.0, 1.0, "set title 'Forward Projected Diff'\n");
+  plotImageData(diffResults, 1.0, 1.0, "set title 'Forward Projected Diff'\n",
+		"data/forDiffRes.dat", "data/forDiffResScript.sh");
 
   int colPlot = 85;
   plot2MatrixColDataFile(param.fileLeftInvert, colPlot,
@@ -1391,7 +1394,8 @@ static int testInvertImageDHI() {
 				 1, 1, 1, "");
   
   plotImageDataFile(param.fileFullInvert, 1, 1, 1,
-		    "set cbrange [0:1.2]\nset title 'Full inversion'");
+		    "set cbrange [0:1.2]\nset title 'Full inversion'",
+		    "data/fullInvertDataScript.sh");
 
   return 0;
 

@@ -832,8 +832,8 @@ static int testGetHFactorGrid() {
   }
 
   char *keywords = "set size ratio -1\n"
-    "set terminal png\n"
-    "set output '/home/fuze/Downloads/H-factor.png'\n"
+    //"set terminal png\n"
+    //"set output '/home/fuze/Downloads/H-factor.png'\n"
     "set title 'H-factor (Toby)' font 'Times Bold,14'\n"
     "set xrange [490:790]\n"
     "set yrange [89:189]\n"
@@ -842,7 +842,8 @@ static int testGetHFactorGrid() {
     "set label front 'H-factor' at graph 1.2,0.30 "
     "rotate by 90 font 'Times Bold, 14'\n";
 
-  plotImageDimensions(image, imageY, imageX, keywords);
+  plotImageDimensions(image, imageY, imageX, keywords, "data/mcnpImage.dat",
+		      "data/mcnpScript.sh");
 
   free4DArray(dataHFactor, xVec, yVec, zVec, eVec);
   free(xVec);

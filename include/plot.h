@@ -8,13 +8,14 @@
 
 #include "save.h"
 
-int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions);
+int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions,
+		   char *tempDataFile, char *tempScriptFile);
 int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, char *plotOptions);
 int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec2In, char *y2Label, char *plotOptions, char *tempDataFile, 
 		     char *tempScriptFile);
 int plotImageDataFile(char *fileName, double xScale, double yScale, double zScale,
-		      char *plotOptions);
+		      char *plotOptions, char *tempScriptFile);
 int plot1DVectorData (gsl_vector *vecIn, char *plotOptions);
 int plotColumnImageDataFile(char *fileName, int numRows, int numCols, int colNum, 
 			    char *plotOptions);
@@ -42,6 +43,8 @@ int plotMatrixColVColErrorData2Files2Axes(char *fileName1, int colNumX1, int col
 					  double errorScale2, char *label2, char *plotOptions);
 int plotVectorDataWithError(gsl_vector *xIn, gsl_vector *yIn, char *yLabel, gsl_vector *yError,
 			    char *plotOptions, char *tempDataFile, char *tempScriptFile);
-int plotImageDimensions(gsl_matrix *mInput, gsl_vector *xVec, gsl_vector *yVec, char *plotOptions);
+int plotImageDimensions(gsl_matrix *mInput, gsl_vector *yVec, gsl_vector *xVec, char *plotOptions,
+			char *tempDataFile, char *tempScriptFile);
+
 
 #endif
