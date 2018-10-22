@@ -630,7 +630,7 @@ static int testMeshTally1() {
   gsl_vector *yVec;
   gsl_vector *zVec;
   gsl_vector *eVec;
-  char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
 
   double ****data = getMeshTallyData(fileName, &xVec, &yVec, &zVec, &eVec);
 
@@ -650,7 +650,7 @@ static int testMeshTally1() {
   printf("E-Vector(0.25): %g\n", gsl_vector_get(eVec, 0));
   printf("E-Vector Size (2): %d\n", (int) eVec->size);
 
-  char *fileNameTest = "/home/webertr/Github/fuzeDataAnalysis/data/temp.dat";
+  char *fileNameTest = "/home/fuze/Github/fuzeDataAnalysis/data/temp.dat";
   save4DData(data, xVec, yVec, zVec, eVec, fileNameTest);
 
   printf("data(1.30282E-06): %g\n", data[ll][ii][jj][kk]);
@@ -701,7 +701,7 @@ static int testMeshTally1() {
  
 static int testMeshTally2() {
 
-  char *fileName = "/home/webertr/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
+  char *fileName = "/home/fuze/webertrNAS/mcnpOutputFiles/9_15_Full/inpFullMeshmsht";
 
   gsl_vector *xVec;
   gsl_vector *yVec;
@@ -734,7 +734,10 @@ static int testGetHFactorGrid() {
 
   if (0) {
 
-    char *fileNameFull = "/home/webertr/webertrNAS/mcnpOutputFiles/brianFull/meshTalFull";
+    char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/brianFull/meshTalFull";
+    fileNameFull = 
+      "/home/fuze/webertrNAS/mcnpOutputFiles/10_16_2018_Full/fullGeometryMeshTally.txt";
+
     double ****dataFull = getMeshTallyData(fileNameFull, &xVec, &yVec, &zVec, &eVec);
 
     gsl_vector_free(xVec);
@@ -742,13 +745,16 @@ static int testGetHFactorGrid() {
     gsl_vector_free(zVec);
     gsl_vector_free(eVec);
 
-    char *fileNameVoid = "/home/webertr/webertrNAS/mcnpOutputFiles/brianVoid/meshTalVoid";
+    char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/brianVoid/meshTalVoid";
+    fileNameVoid = 
+      "/home/fuze/webertrNAS/mcnpOutputFiles/10_16_2018_Void/voidGeometryMeshTally.txt";
+
     double ****dataVoid = getMeshTallyData(fileNameVoid, &xVec, &yVec, &zVec, &eVec);
     
     dataHFactor = getHFactor(dataFull, dataVoid, eVec->size, xVec->size, yVec->size, 
 					zVec->size);
     
-    fileNameHFactor = "/home/webertr/Github/fuzeDataAnalysis/data/hFactor.dat";
+    fileNameHFactor = "/home/fuze/Github/fuzeDataAnalysis/data/hFactor.dat";
     
     save4DData(dataHFactor, xVec, yVec, zVec, eVec, fileNameHFactor);
 
@@ -769,7 +775,7 @@ static int testGetHFactorGrid() {
 
   }
   
-  fileNameHFactor = "/home/webertr/Github/fuzeDataAnalysis/data/hFactor.dat";
+  fileNameHFactor = "/home/fuze/Github/fuzeDataAnalysis/data/hFactor.dat";
 
   dataHFactor = read4DData(fileNameHFactor, &xVec, &yVec, &zVec, &eVec);
 
@@ -777,8 +783,6 @@ static int testGetHFactorGrid() {
   jj = 1;
   kk = 1;
   ll = 1;
-  
-  printf("H-Factor(): %g\n", dataHFactor[ll][ii][jj][kk]);
 
   /*
    * Want to get a grid that is z-y plane. That is jj, kk. The values are
@@ -787,7 +791,9 @@ static int testGetHFactorGrid() {
    * So we want,
    * x = 490 to 815, y = 254, z = 89 to 189.
    * ii = 163 to 263, jj = 84, kk = 29 to 129
+   * ii = 263 is the max for ii.
    */
+
   int iiMin = 163,
     iiMax = 263;
 
@@ -795,6 +801,13 @@ static int testGetHFactorGrid() {
 
   int kkMin = 29,
     kkMax = 63;
+
+  printf("Xmax: %d\n", (int) xVec->size);
+  printf("Xmin (490): %g\n", gsl_vector_get(xVec, iiMin));
+  printf("Xmax (815): %g\n", gsl_vector_get(xVec, iiMax));
+  printf("Yvalue (254): %g\n", gsl_vector_get(yVec, jjValue));
+  printf("Zmin (89): %g\n", gsl_vector_get(zVec, kkMin));
+  printf("Zmax (189): %g\n", gsl_vector_get(zVec, kkMax));
   
   gsl_vector *imageX = gsl_vector_alloc(iiMax-iiMin+1),
     *imageY = gsl_vector_alloc(kkMax-kkMin+1);
@@ -818,7 +831,18 @@ static int testGetHFactorGrid() {
     }
   }
 
-  plotImageDimensions(image, imageY, imageX, "");
+  char *keywords = "set size ratio -1\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/H-factor.png'\n"
+    "set title 'H-factor (Toby)' font 'Times Bold,14'\n"
+    "set xrange [490:790]\n"
+    "set yrange [89:189]\n"
+    "set xlabel 'z (cm)' font 'Times Bold,14' offset 0,0\n"
+    "set ylabel 'y (cm)' font 'Times Bold,14' offset 1,0\n"
+    "set label front 'H-factor' at graph 1.2,0.30 "
+    "rotate by 90 font 'Times Bold, 14'\n";
+
+  plotImageDimensions(image, imageY, imageX, keywords);
 
   free4DArray(dataHFactor, xVec, yVec, zVec, eVec);
   free(xVec);
