@@ -78,13 +78,13 @@ int main(int argc, char *argv[]) {
   /*
    * Calculating neutron production
    */
-  //testNeutronProduction();
+  testNeutronProduction();
 
   /* Testing save.c file */
   //testSave();
 
   /* Testing read mesh tally */
-  testReadMeshTally();
+  //testReadMeshTally();
   
   return 0;
 

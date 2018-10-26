@@ -191,9 +191,9 @@ static int testgetNeutronProduction() {
 		 gsl_vector_get(temperatureError, 1));
 
   save3VectorData(radius, temperature, temperatureError,
-		  "/home/webertr/Github/fuzeDataAnalysis/data/temperature.txt");
+		  "/home/fuze/Github/fuzeDataAnalysis/data/temperature.txt");
   save3VectorData(radius, density, densityError,
-		  "/home/webertr/Github/fuzeDataAnalysis/data/density.txt");
+		  "/home/fuze/Github/fuzeDataAnalysis/data/density.txt");
 
   /*
    * Temperature in eV
@@ -227,9 +227,9 @@ static int testgetNeutronProduction() {
   }
 
   save2VectorData(sigmaVRadius, sigmaVV,
-		  "/home/webertr/Github/fuzeDataAnalysis/data/sigmaV.txt");
+		  "/home/fuze/Github/fuzeDataAnalysis/data/sigmaV.txt");
   save2VectorData(sigmaVRadius, kernel,
-		  "/home/webertr/Github/fuzeDataAnalysis/data/kernel.txt");
+		  "/home/fuze/Github/fuzeDataAnalysis/data/kernel.txt");
 
   testPlot();
   return 0;
@@ -259,8 +259,8 @@ static int testPlot() {
   fprintf(fp, "#!/usr/bin/env gnuplot\n");
   //fprintf(fp, "set terminal pngcairo\n");
   //fprintf(fp, "set output 'data/Ddensity.png'\n");
-  //fprintf(fp, "set yrange[0:]\n");
-  //fprintf(fp, "set xrange[0:0.4]\n");
+  fprintf(fp, "set yrange[0:]\n");
+  fprintf(fp, "set xrange[0:0.4]\n");
   //fprintf(fp, "set grid\n");
   //fprintf(fp, "set key right top\n");
   //fprintf(fp, "set grid\n");
@@ -284,15 +284,15 @@ static int testPlot() {
   fprintf(fp, "set output 'data/yeild.png'\n");
   fprintf(fp, "set grid\n");
   fprintf(fp, "set key right top\n");
-  fprintf(fp, "set title 'Neutron Yield / dr for #180215012' font '0,18'\n");
-  fprintf(fp, "set xlabel 'radius (m)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'Y / dr' font ',16' offset 0,0\n");
-  fprintf(fp, "set label 'Y = 4 x 10^{5} Neutrons' at graph 0.5,0.5 font 'Times Bold, 20'\n");
-  fprintf(fp, "set label '= area under curve' at graph 0.5,0.4 font 'Times Bold, 20'\n");
-  fprintf(fp, "set label 'Lp: 15 cm' at graph 0.75,0.70 font 'Times Bold, 20'\n");
+  fprintf(fp, "set title 'dY/dr for #180215012' font '0,18'\n");
+  fprintf(fp, "set xlabel 'radius (cm)' font ',16' offset 0,0\n");
+  fprintf(fp, "set ylabel 'dY/dr' font ',16' offset 0,0\n");
+  fprintf(fp, "set label 'Y = 4 x 10^{5} Neutrons' at graph 0.40,0.5 font ', 20'\n");
+  fprintf(fp, "set label '= area under curve' at graph 0.40,0.4 font ', 20'\n");
+  fprintf(fp, "set label 'Lp: 15 cm' at graph 0.40,0.70 font ', 20'\n");
   fprintf(fp,
-	  "set label '{/Symbol t}: 5 {/Symbol m}sec' at graph 0.75,0.60 font 'Times Bold, 20'\n");  
-  fprintf(fp, "plot '%s' using ($1):($2) pt 7 title 'Y/dr'\n", "data/kernel.txt");
+	  "set label '{/Symbol t}: 5 {/Symbol m}sec' at graph 0.40,0.60 font ', 20'\n");  
+  fprintf(fp, "plot '%s' using ($1*100):($2) pt 7 title 'dY/dr'\n", "data/kernel.txt");
   fprintf(fp, "pause -1\n");
 
 
