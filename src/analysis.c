@@ -37,7 +37,7 @@ int hologramAnalysis() {
 
   holographyParameters param = HOLOGRAPHY_PARAMETERS_DEFAULT;
 
-  hologramMain(&param);
+  //hologramMain(&param);
 
   //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1",
   //		    "data/dhiImage.dat", "data/dhiScript.sh");
@@ -65,7 +65,7 @@ int hologramAnalysis() {
   /* 
    * Fancy plot of the hologram
    */
-  if (1) {
+  if (0) {
 
     char *keywords = "set size ratio -1\n"
       //"set terminal png\n"
@@ -98,7 +98,7 @@ int hologramAnalysis() {
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
       "set ylabel 'n_{e} (cm^{-3})' font 'Times Bold, 18'\n";
-    plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+10*2, 1+10*2+1, 
+    plotMatrixColVColErrorDataFile(param.fileDensity, 0, 1+60*2, 1+60*2+1, 
 				   1E2, 1E-6, 1E-6, errorKeywords);
     
   }
@@ -107,7 +107,7 @@ int hologramAnalysis() {
   /*
    * Plotting the azimuthal magnetic field
    */
-  if (1) {
+  if (0) {
 
     char *bThetaKeywords = "set size ratio 1\n"
       "set terminal png\n"
@@ -128,20 +128,20 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature 
    */
-  if (0) {
+  if (1) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"
-      "set output '/home/fuze/Downloads/180723022Temp.png'\n"
-      "set title 'Radial temperature profile for Pulse 180723022' font 'Time Bold, 16'\n"
+      "set output '/home/fuze/Downloads/180215012Temp.png'\n"
+      "set title 'T_{e}(r) for Pulse #180215012' font 'Time Bold, 16'\n"
       "set tics font 'Times Bold, 14'\n"
       "set grid\n"
-      //"set xrange [0:0.45]\n"
+      "set xrange [0:0.45]\n"
       "set yrange [0:]\n"
       "set xlabel 'r (cm)' font 'Times Bold, 18'\n"
-      "set ylabel 'T (eV)' font 'Times Bold, 18'\n";
+      "set ylabel 'T_{e} (eV)' font 'Times Bold, 18'\n";
 
-    plotMatrixColVColErrorDataFile(param.fileTemperature, 0, 1+10*2, 1+10*2+1, 
+    plotMatrixColVColErrorDataFile(param.fileTemperature, 0, 1+60*2, 1+60*2+1, 
 				   1E2, 1, 1, tempKeywords);
     
   }

@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   /*
    * Running the DHI analysis
    */
-  //hologramAnalysis();
+  hologramAnalysis();
 
   /*
    * Running the pinch formation analysis
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
   /*
    * Calculating neutron production
    */
-  testNeutronProduction();
+  //testNeutronProduction();
 
   /* Testing save.c file */
   //testSave();
