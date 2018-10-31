@@ -39,8 +39,19 @@ int hologramAnalysis() {
 
   //hologramMain(&param);
 
-  //plotImageDataFile(param.fileHologram, 1, 1, 1, "set size ratio -1",
-  //		    "data/dhiImage.dat", "data/dhiScript.sh");
+  char *plotOptions = "set size ratio -1\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/candleFlame.png'\n"
+    "set title 'Candle Flame Reconstruction' font 'Times Bold,14'\n"
+    "set label front 'Radians' at graph 1.25,0.55 "
+    "rotate by 270 font 'Times Bold, 14'\n"
+    "set xrange [0:4000]\n"
+    "set yrange [0:6000]\n"
+    "set xtics 0, 1000, 4000\n"
+    "set xlabel 'x (pixels)' font 'Times Bold,14' offset 0,0\n"
+    "set ylabel 'y (pixels)' font 'Times Bold,14' offset 1,0\n";
+
+  plotImageDataFile(param.fileHologram, 1, 1, 1, plotOptions, "data/dhiScript.sh");
   //plotImageDataFile(param.fileTwinImage, 1, 1, 1, "set size ratio -1",
   //		    "data/dhiImage.dat", "data/dhiScript.sh");
   //plotImageDataFile(param.fileWrappedPhase, 1, 1, 1, "set size ratio -1",
@@ -128,7 +139,7 @@ int hologramAnalysis() {
   /*
    * Plotting the temperature 
    */
-  if (1) {
+  if (0) {
 
     char *tempKeywords = "set size ratio 1\n"
       "set terminal png\n"
