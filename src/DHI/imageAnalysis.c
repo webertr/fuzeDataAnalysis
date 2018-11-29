@@ -1136,6 +1136,10 @@ int hologramMain(holographyParameters* param) {
  * Holography Parameters:
  *
  * Resolution of Camera CCD Pixels = 3.85E-6,
+ * CCD format: 23.2 mm x 15.4 mm
+ * Pixel format: 6016 x 4000
+ * Camera: D3200
+ * Sensor format: DX
  * Wavelength of the laser = 532E-9,
  * Reconstruction distance = 0.5;
  * Bounds of reconstructed image: xLL, yLL, xUR, yUR
