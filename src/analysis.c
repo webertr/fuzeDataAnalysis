@@ -14,7 +14,7 @@ static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3,
 			      char *tempDataFile, char *tempScriptFile);
 static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNumber3,
 				   int detectorNum, char *tempDataFile, char *tempScriptFile);
-static int plotPostShotAccelData(int shotNumber, int tmin, int tmax);
+static int plotPostShotAccelData(int shotNumber, char *tempDataFile, char *tempScriptFile);
 static int plotPostShotAccelDataN95(int shotNumber, int tmin, int tmax);
 static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3, 
 			      char *tempDataFile, char *tempScriptFile);
@@ -43,11 +43,14 @@ int hologramAnalysis() {
     "set terminal png\n"
     "set output '/home/fuze/Downloads/candleFlame.png'\n"
     "set title 'Candle Flame Reconstruction' font 'Times Bold,14'\n"
-    "set label front 'Radians' at graph 1.25,0.55 "
+    "set label front 'Radians' at graph 1.25,0.6 "
     "rotate by 270 font 'Times Bold, 14'\n"
-    "set xrange [0:4000]\n"
-    "set yrange [0:6000]\n"
-    "set xtics 0, 1000, 4000\n"
+    //"set xrange [0:4000]\n"
+    //"set yrange [0:6000]\n"
+    //"set xtics 0, 1000, 4000\n"
+    "set xrange [2650:3622]\n"
+    "set yrange [1902:3968]\n"
+    "set xtics 2600, 300, 3622\n"
     "set xlabel 'x (pixels)' font 'Times Bold,14' offset 0,0\n"
     "set ylabel 'y (pixels)' font 'Times Bold,14' offset 1,0\n";
 
@@ -255,27 +258,27 @@ int plotPostAnalysis() {
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
     plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
-		       "data/ipData.txt", "data/ipDataScript.sh");
+    		       "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
     plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
-			 "data/modeData.txt", "data/modeDataScript.sh");
+    			 "data/modeData.txt", "data/modeDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
     plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
-		   "data/ivData.txt", "data/ivDataScript.sh");
+    		   "data/ivData.txt", "data/ivDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 7,
-			    "data/neutron7Data.txt", "data/neutron7DataScript.sh");
+    			    "data/neutron7Data.txt", "data/neutron7DataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 6,
-			    "data/neutron6Data.txt", "data/neutron6DataScript.sh");
+    			    "data/neutron6Data.txt", "data/neutron6DataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
@@ -285,12 +288,11 @@ int plotPostAnalysis() {
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 4,
-			    "data/neutron4Data.txt", "data/neutron4DataScript.sh");
+    			    "data/neutron4Data.txt", "data/neutron4DataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
-			    "data/neutron5Data.txt", "data/neutron5DataScript.sh");
+    plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
     exit(0);
   }
 
@@ -301,9 +303,9 @@ int plotPostAnalysis() {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
 			    "data/neutronData.txt", "data/neutronDataScript.sh");
     plotPostShotSymmetryCheck(shotNumber, timeAccelI, timeAccelF);
-    plotPostShotAccelData(shotNumber, timeAccelI, timeAccelF);
     plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
 		   "data/ivData.txt", "data/ivDataScript.sh");
+    plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
     plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
     plotPostShotGVCurrent(shotNumber, shotNumber -1, shotNumber -2,
 			  "data/igvData.txt", "data/igvDataScript.sh");
@@ -397,19 +399,19 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
   gsl_vector_scale(time, 1E6);
 
   gsl_vector *mode1 = readDHIMDSplusVector(shotNumber1, "\\M_1_P15", "fuze", "10.10.10.240");
-  tempString = "with line lw 3 lc rgb 'black' title 'IP for %d'";
+  tempString = "with line lw 3 lc rgb 'black' title 'm=1 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
   char *mode1Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode1Label, sizeBuf+1, tempString, shotNumber1);
 
   gsl_vector *mode2 = readDHIMDSplusVector(shotNumber2, "\\M_1_P15", "fuze", "10.10.10.240");
-  tempString = "with line lw 3 lc rgb 'red' title 'IP for %d'";
+  tempString = "with line lw 3 lc rgb 'red' title 'm=1 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
   char *mode2Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode2Label, sizeBuf+1, tempString, shotNumber2);
 
   gsl_vector *mode3 = readDHIMDSplusVector(shotNumber3, "\\M_1_P15", "fuze", "10.10.10.240");
-  tempString = "with line lw 3 lc rgb 'blue' title 'IP for %d'";
+  tempString = "with line lw 3 lc rgb 'blue' title 'm=1 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
   char *mode3Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode3Label, sizeBuf+1, tempString, shotNumber3);
@@ -578,7 +580,8 @@ static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumbe
   size_t sizeBuf;
   char *tempString;
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\i_gv_1_valve", "fuze", "10.10.10.240");
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\i_gv_1_valve", 
+					     "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
 
   gsl_vector *igv1 = readDHIMDSplusVector(shotNumber1, "\\i_gv_1_valve", "fuze", "10.10.10.240");
@@ -621,7 +624,6 @@ static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumbe
   gsl_vector_free(igv2);
   gsl_vector_free(igv2Dummy);
 
-
   return 0;
 
 }
@@ -635,115 +637,73 @@ static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumbe
  * each pulse.
  ******************************************************************************/
 
-static int plotPostShotAccelData(int shotNumber, int tmin, int tmax) {
+static int plotPostShotAccelData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
 
-  char *data1Node = "\\b_n45_180_sm",
-    *data1Name = "n45",
-    *data2Node = "\\b_n35_000_sm",
-    *data2Name = "n35",
-    *data3Node = "\\b_n25_000_sm",
-    *data3Name = "n25",
-    *data4Node = "\\b_n15_000_sm",
-    *data4Name = "n15",
-    *data5Node = "\\b_n05_000_sm",
-    *data5Name = "n05";
+  size_t sizeBuf;
+  char *tempString;
 
-  int status;
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\b_n45_180_sm", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
 
-  char *gnuPlotFile = "script/tempAccel.sh",
-    *accelFile = "data/accel.txt";
+  gsl_vector *data1 = readDHIMDSplusVector(shotNumber, "\\b_n45_180_sm", "fuze", "10.10.10.240");
+  gsl_vector_scale(data1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'n45 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *data1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(data1Label, sizeBuf+1, tempString, shotNumber);
 
-  int sigSize = getSignalLengthMDSplus(data1Node, shotNumber);
-  
-  gsl_vector *data1 = gsl_vector_alloc(sigSize),
-    *data2 = gsl_vector_alloc(sigSize),
-    *data3 = gsl_vector_alloc(sigSize),
-    *data4 = gsl_vector_alloc(sigSize),
-    *data5 = gsl_vector_alloc(sigSize),
-    *time = gsl_vector_alloc(sigSize);
+  gsl_vector *data2 = readDHIMDSplusVector(shotNumber, "\\b_n35_000_sm", "fuze", "10.10.10.240");
+  gsl_vector_scale(data2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'n45 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *data2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(data2Label, sizeBuf+1, tempString, shotNumber);
 
-  initializeMagneticDataAndTime(shotNumber, data1Node, data1, time);
-  initializeMagneticData(shotNumber, data2Node, data2);
-  initializeMagneticData(shotNumber, data3Node, data3);
-  initializeMagneticData(shotNumber, data4Node, data4);
-  initializeMagneticData(shotNumber, data5Node, data5);
+  gsl_vector *data3 = readDHIMDSplusVector(shotNumber, "\\b_n25_000_sm", "fuze", "10.10.10.240");
+  gsl_vector_scale(data3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'n45 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *data3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(data3Label, sizeBuf+1, tempString, shotNumber);
 
+  gsl_vector *data4 = readDHIMDSplusVector(shotNumber, "\\b_n15_000_sm", "fuze", "10.10.10.240");
+  gsl_vector_scale(data4, 1E-3);
+  tempString = "with line lw 3 lc rgb 'green' title 'n15 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *data4Label = (char *)malloc(sizeBuf + 1);
+  snprintf(data4Label, sizeBuf+1, tempString, shotNumber);
 
-  /* Saving data */
-  save6VectorData(time, data1, data2, data3, data4, data5, accelFile);
+  gsl_vector *data5 = readDHIMDSplusVector(shotNumber, "\\b_n05_000_sm", "fuze", "10.10.10.240");
+  gsl_vector_scale(data5, 1E-3);
+  tempString = "with line lw 3 lc rgb 'yellow' title 'n05 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *data5Label = (char *)malloc(sizeBuf + 1);
+  snprintf(data5Label, sizeBuf+1, tempString, shotNumber);
 
+  char *keyWords = "set title 'Acceleration Region\n"
+    "set xrange[-800:0]\n"
+    "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n"
+    "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n"
+    "set grid\n"
+    "set xrange[0:100]\n"
+    "set key left top\n"
+    "set yrange [:]";
 
-  /* Creating gnuplot file */
-  if (remove(gnuPlotFile) != 0) {
-    printf("Unable to delete the file");
-  }
+  plot5VectorData(time, data1, data1Label, data2, data2Label, data3, data3Label, data4, 
+		  data4Label, data5, data5Label, keyWords, tempDataFile, tempScriptFile);
 
-  FILE *fp = fopen(gnuPlotFile, "w");
-  
-  if ( (fp == NULL) ) {
+  free(data1Label);
+  free(data2Label);
+  free(data3Label);
+  free(data4Label);
+  free(data5Label);
 
-    printf("Error opening files gnuplot file!\n");
-    exit(1);
-
-  }
-
-  fprintf(fp, "#!/usr/bin/env gnuplot\n");
-  fprintf(fp, "set xrange[%d:%d]\n", tmin, tmax);
-  fprintf(fp, "set key left top\n");
-  fprintf(fp, "set grid\n");
-  fprintf(fp, "set title 'Acceleration Region for Pulse #%d' font '0,18'\n", shotNumber);
-  fprintf(fp, "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n");
-  fprintf(fp, "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n");
-  fprintf(fp, "plot '%s' using ($1*1E6):($2) with line lw 3 lc rgb 'black' \
-title '%s',\\\n", accelFile, data1Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($3) with line lw 3 lc rgb 'red' \
-title '%s',\\\n", accelFile, data2Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($4) with line lw 3 lc rgb 'blue' \
-title '%s',\\\n", accelFile, data3Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($5) with line lw 3 lc rgb 'green' \
-title '%s',\\\n", accelFile, data4Name);
-  fprintf(fp, "     '%s' using ($1*1E6):($6) with line lw 3 lc rgb 'yellow' \
-title '%s'\n", accelFile, data5Name);
-  fprintf(fp, "pause -1\n");
-  
-  fclose(fp);
-
-  chmod(gnuPlotFile, S_IRWXG);
-  chmod(gnuPlotFile, S_IRWXO);
-  chmod(gnuPlotFile, S_IRWXU);
-
-
-  
-
-  /* Creating child process to run script */
-  FILE *gnuplot = popen(gnuPlotFile, "r");
-
-  if (!gnuplot) {
-    fprintf(stderr,"incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
-  }
-  
-  fflush(gnuplot);
-
-  /* Pausing so user can look at plot */
-  printf("\nPress any key, then ENTER to continue> \n");
-  getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
-
-
-  remove(gnuPlotFile);
-
+  gsl_vector_free(time);
   gsl_vector_free(data1);
   gsl_vector_free(data2);
   gsl_vector_free(data3);
   gsl_vector_free(data4);
   gsl_vector_free(data5);
-  gsl_vector_free(time);
 
   return 0;
 
