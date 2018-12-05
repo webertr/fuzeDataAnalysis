@@ -20,10 +20,11 @@ static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3,
 			      char *tempDataFile, char *tempScriptFile);
 static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3, 
 			  char *tempDataFile, char *tempScriptFile);
-static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumber3,
-				 char *tempDataFile, char *tempScriptFile);
+static int plotPostShotGVCurrent(int shotNumber, char *tempDataFile, char *tempScriptFile);
 static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber3, 
 				char *tempDataFile, char *tempScriptFile);
+static int plotPostShotIPinchData(int shotNumber1, int shotNumber2, int shotNumber3, 
+				  char *tempDataFile, char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -272,18 +273,17 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 7,
-    			    "data/neutron7Data.txt", "data/neutron7DataScript.sh");
+    plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 6,
-    			    "data/neutron6Data.txt", "data/neutron6DataScript.sh");
+    plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
+			   "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 2,
-    			    "data/neutron2Data.txt", "data/neutron2DataScript.sh");
+    			    "data/pinchData.txt", "data/pinchDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -292,7 +292,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
+    plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
     exit(0);
   }
 
@@ -307,8 +307,7 @@ int plotPostAnalysis() {
 		   "data/ivData.txt", "data/ivDataScript.sh");
     plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
     plotPostShotAccelDataN95(shotNumber, timeAccelI, timeAccelF);
-    plotPostShotGVCurrent(shotNumber, shotNumber -1, shotNumber -2,
-			  "data/igvData.txt", "data/igvDataScript.sh");
+    plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
     plotPostShotCompData(shotNumber, timeCompI, timeCompF, "");
     plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
 		       "data/ipData.txt", "data/ipDataScript.sh");
@@ -360,6 +359,66 @@ static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3,
   snprintf(ip3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'I_{P}'\n"
+    "set xrange[0:400]\n"
+    "set ylabel 'Current (kA)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange[0:]";
+  
+  plot3VectorData(time, ip1, ip1Label, ip2, ip2Label, ip3, ip3Label, 
+		  keyWords, tempDataFile, tempScriptFile);
+
+  free(ip1Label);
+  free(ip2Label);
+  free(ip3Label);
+  gsl_vector_free(time);
+  gsl_vector_free(ip1);
+  gsl_vector_free(ip2);
+  gsl_vector_free(ip3);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotIPinchData
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * magnetic mode data
+ ******************************************************************************/
+
+static int plotPostShotIPinchData(int shotNumber1, int shotNumber2, int shotNumber3, 
+				  char *tempDataFile, char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempString;
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+
+  gsl_vector *ip1 = readDHIMDSplusVector(shotNumber1, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip1, 500);
+  tempString = "with line lw 3 lc rgb 'black' title 'I_{pinch} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  char *ip1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip1Label, sizeBuf+1, tempString, shotNumber1);
+
+  gsl_vector *ip2 = readDHIMDSplusVector(shotNumber2, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip2, 500);
+  tempString = "with line lw 3 lc rgb 'red' title 'I_{pinch} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  char *ip2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip2Label, sizeBuf+1, tempString, shotNumber2);
+
+  gsl_vector *ip3 = readDHIMDSplusVector(shotNumber3, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip3, 500);
+  tempString = "with line lw 3 lc rgb 'blue' title 'I_{pinch} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
+  char *ip3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip3Label, sizeBuf+1, tempString, shotNumber3);
+
+  char *keyWords = "set title 'I_{pinch}'\n"
     "set xrange[0:400]\n"
     "set ylabel 'Current (kA)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
@@ -512,7 +571,7 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
   size_t sizeBuf;
   char *tempString;
   
-  tempString = "\\neutron_%d";
+  tempString = "\\neutron_%d_s";
   sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
   char *neutronNode = (char *)malloc(sizeBuf + 1);
   snprintf(neutronNode, sizeBuf+1, tempString, detectorNum);
@@ -574,47 +633,53 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
  * each pulse.
  ******************************************************************************/
 
-static int plotPostShotGVCurrent(int shotNumber1, int shotNumber2, int shotNumber3,
-				 char *tempDataFile, char *tempScriptFile) {
+static int plotPostShotGVCurrent(int shotNumber, char *tempDataFile, char *tempScriptFile) {
 
   size_t sizeBuf;
   char *tempString;
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\i_gv_1_valve", 
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\i_gv_1_valve", 
 					     "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
 
-  gsl_vector *igv1 = readDHIMDSplusVector(shotNumber1, "\\i_gv_1_valve", "fuze", "10.10.10.240");
+  gsl_vector *igv1 = readDHIMDSplusVector(shotNumber, "\\i_gv_1_valve", "fuze", "10.10.10.240");
   gsl_vector_scale(igv1, 1E-3);
   tempString = "with line lw 3 lc rgb 'black' title 'I_{GV1} for %d'";
-  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
   char *igv1Label = (char *)malloc(sizeBuf + 1);
-  snprintf(igv1Label, sizeBuf+1, tempString, shotNumber1);
+  snprintf(igv1Label, sizeBuf+1, tempString, shotNumber);
 
-  gsl_vector *igv2 = readDHIMDSplusVector(shotNumber2, "\\i_gv_2_valve", "fuze", "10.10.10.240");
+  gsl_vector *igv2 = readDHIMDSplusVector(shotNumber, "\\i_gv_2_valve", "fuze", "10.10.10.240");
   gsl_vector_scale(igv2, 1E-3);
   tempString = "with line lw 3 lc rgb 'red' title 'I_{GV2} for %d'";
-  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
   char *igv2Label = (char *)malloc(sizeBuf + 1);
-  snprintf(igv2Label, sizeBuf+1, tempString, shotNumber2);
+  snprintf(igv2Label, sizeBuf+1, tempString, shotNumber);
 
-  gsl_vector *igv2Dummy = readDHIMDSplusVector(shotNumber3, "\\i_gv_2_dummy_load", 
+  gsl_vector *igv2Dummy = readDHIMDSplusVector(shotNumber, "\\i_gv_2_dummy_load", 
 					       "fuze", "10.10.10.240");
   gsl_vector_scale(igv2Dummy, 1E-3);
-  tempString = "with line lw 3 lc rgb 'blue' title 'I_{GV2Dummy} for %d'";
-  sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'I_{GV2D} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
   char *igv2DummyLabel = (char *)malloc(sizeBuf + 1);
-  snprintf(igv2DummyLabel, sizeBuf+1, tempString, shotNumber3);
+  snprintf(igv2DummyLabel, sizeBuf+1, tempString, shotNumber);
+
+  gsl_vector *igv3 = readDHIMDSplusVector(shotNumber, "\\i_gv_3_valve", "fuze", "10.10.10.240");
+  gsl_vector_scale(igv3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'green' title 'I_{GV3} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *igv3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(igv3Label, sizeBuf+1, tempString, shotNumber);
 
 
   char *keyWords = "set title 'I_{GV}'\n"
-    "set xrange[-800:0]\n"
+    "set xrange[-1500:500]\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
 
-  plot3VectorData(time, igv1, igv1Label, igv2, igv2Label, igv2Dummy, igv2DummyLabel, 
-		  keyWords, tempDataFile, tempScriptFile);
+  plot4VectorData(time, igv1, igv1Label, igv2, igv2Label, igv2Dummy, igv2DummyLabel, 
+		  igv3, igv3Label, keyWords, tempDataFile, tempScriptFile);
   
   free(igv1Label);
   free(igv2Label);
@@ -654,14 +719,14 @@ static int plotPostShotAccelData(int shotNumber, char *tempDataFile, char *tempS
 
   gsl_vector *data2 = readDHIMDSplusVector(shotNumber, "\\b_n35_000_sm", "fuze", "10.10.10.240");
   gsl_vector_scale(data2, 1E-3);
-  tempString = "with line lw 3 lc rgb 'red' title 'n45 for %d'";
+  tempString = "with line lw 3 lc rgb 'red' title 'n35 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
   char *data2Label = (char *)malloc(sizeBuf + 1);
   snprintf(data2Label, sizeBuf+1, tempString, shotNumber);
 
   gsl_vector *data3 = readDHIMDSplusVector(shotNumber, "\\b_n25_000_sm", "fuze", "10.10.10.240");
   gsl_vector_scale(data3, 1E-3);
-  tempString = "with line lw 3 lc rgb 'blue' title 'n45 for %d'";
+  tempString = "with line lw 3 lc rgb 'blue' title 'n25 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
   char *data3Label = (char *)malloc(sizeBuf + 1);
   snprintf(data3Label, sizeBuf+1, tempString, shotNumber);

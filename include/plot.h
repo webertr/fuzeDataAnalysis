@@ -27,6 +27,10 @@ int plot3VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
 		     char *y3Label, char *plotOptions, char *tempDataFile, 
 		     char *tempScriptFile);
+int plot4VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
+		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
+		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
+		     char *plotOptions, char *tempDataFile, char *tempScriptFile);
 int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
 		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
