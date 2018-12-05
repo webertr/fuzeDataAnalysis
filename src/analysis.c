@@ -25,6 +25,8 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
 				char *tempDataFile, char *tempScriptFile);
 static int plotPostShotIPinchData(int shotNumber1, int shotNumber2, int shotNumber3, 
 				  char *tempDataFile, char *tempScriptFile);
+static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile, 
+					char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -258,41 +260,41 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
-    		       "data/ipData.txt", "data/ipDataScript.sh");
+    //plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
+    //		       "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
-    			 "data/modeData.txt", "data/modeDataScript.sh");
+    //plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
+    //			 "data/modeData.txt", "data/modeDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
-    		   "data/ivData.txt", "data/ivDataScript.sh");
+    //plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
+    //		   "data/ivData.txt", "data/ivDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
+    //plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
-			   "data/ipData.txt", "data/ipDataScript.sh");
+    //plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
+    //			   "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 2,
-    			    "data/pinchData.txt", "data/pinchDataScript.sh");
+    //plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 2,
+    //			    "data/pinchData.txt", "data/pinchDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
-    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 4,
-    			    "data/neutron4Data.txt", "data/neutron4DataScript.sh");
+    plotPostShotMultiNeutronData(shotNumber, "data/neutronMultiData.txt", 
+				 "data/neutronMultiDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
+    //plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
     exit(0);
   }
 
@@ -313,6 +315,9 @@ int plotPostAnalysis() {
 		       "data/ipData.txt", "data/ipDataScript.sh");
     plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
 			 "data/modeData.txt", "data/modeDataScript.sh");
+    plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
+    			   "data/ipData.txt", "data/ipDataScript.sh");
+
   }
 
   return 0;
@@ -619,6 +624,145 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
   gsl_vector_free(neutron1);
   gsl_vector_free(neutron2);
   gsl_vector_free(neutron3);
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotNeutronData
+ * Inputs: int, int, int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * total plasma current and voltage across the hot and cold plate
+ ******************************************************************************/
+
+static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile, 
+					char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempStringNode,
+    *tempStringTitle;
+  int detectorNum;
+ 
+  detectorNum = 1;
+  tempStringNode = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
+  char *neutronNode1 = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode1, sizeBuf+1, tempStringNode, detectorNum);
+  gsl_vector *time1 = readDHIMDSplusVectorDim(shotNumber, neutronNode1, "fuze", "10.10.10.240");
+  gsl_vector_scale(time1, 1E6);
+  gsl_vector *neutron1 = readDHIMDSplusVector(shotNumber, neutronNode1, "fuze", "10.10.10.240");
+  tempStringTitle = "with line lw 3 lc rgb 'black' title 'N_{D%d}'";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *neutron1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron1Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
+
+  detectorNum = 2;
+  tempStringNode = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
+  char *neutronNode2 = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode2, sizeBuf+1, tempStringNode, detectorNum);
+  gsl_vector *time2 = readDHIMDSplusVectorDim(shotNumber, neutronNode2, "fuze", "10.10.10.240");
+  gsl_vector_scale(time2, 1E6);
+  gsl_vector *neutron2 = readDHIMDSplusVector(shotNumber, neutronNode2, "fuze", "10.10.10.240");
+  tempStringTitle = "with line lw 3 lc rgb 'black' title 'N_{D%d}'";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *neutron2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron2Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
+
+  detectorNum = 2;
+  tempStringNode = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
+  char *neutronNode3 = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode3, sizeBuf+1, tempStringNode, detectorNum);
+  gsl_vector *time3 = readDHIMDSplusVectorDim(shotNumber, neutronNode3, "fuze", "10.10.10.240");
+  gsl_vector_scale(time3, 1E6);
+  gsl_vector *neutron3 = readDHIMDSplusVector(shotNumber, neutronNode3, "fuze", "10.10.10.240");
+  tempStringTitle = "with line lw 3 lc rgb 'black' title 'N_{D%d}'";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *neutron3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron3Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
+
+  detectorNum = 4;
+  tempStringNode = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
+  char *neutronNode4 = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode4, sizeBuf+1, tempStringNode, detectorNum);
+  gsl_vector *time4 = readDHIMDSplusVectorDim(shotNumber, neutronNode4, "fuze", "10.10.10.240");
+  gsl_vector_scale(time4, 1E6);
+  gsl_vector *neutron4 = readDHIMDSplusVector(shotNumber, neutronNode4, "fuze", "10.10.10.240");
+  tempStringTitle = "with line lw 3 lc rgb 'black' title 'N_{D%d}'";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *neutron4Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron4Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
+
+  detectorNum = 5;
+  tempStringNode = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
+  char *neutronNode5 = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode5, sizeBuf+1, tempStringNode, detectorNum);
+  gsl_vector *time5 = readDHIMDSplusVectorDim(shotNumber, neutronNode5, "fuze", "10.10.10.240");
+  gsl_vector_scale(time5, 1E6);
+  gsl_vector *neutron5 = readDHIMDSplusVector(shotNumber, neutronNode5, "fuze", "10.10.10.240");
+  tempStringTitle = "with line lw 3 lc rgb 'black' title 'N_{D%d}'";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *neutron5Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron5Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
+
+  detectorNum = 6;
+  tempStringNode = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
+  char *neutronNode6 = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode6, sizeBuf+1, tempStringNode, detectorNum);
+  gsl_vector *time6 = readDHIMDSplusVectorDim(shotNumber, neutronNode6, "fuze", "10.10.10.240");
+  gsl_vector_scale(time6, 1E6);
+  gsl_vector *neutron6 = readDHIMDSplusVector(shotNumber, neutronNode6, "fuze", "10.10.10.240");
+  tempStringTitle = "with line lw 3 lc rgb 'black' title 'N_{D%d}'";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *neutron6Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron6Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
+
+  tempStringTitle = "set title 'N_{D}'\n"
+    "set xrange[0:100]\n"
+    "set ylabel 'Voltage (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange [:]";
+  sizeBuf = snprintf(NULL, 0, tempStringTitle, detectorNum);
+  char *keyWords = (char *)malloc(sizeBuf + 1);
+  snprintf(keyWords, sizeBuf+1, tempStringTitle, detectorNum);
+
+  plot6PlotsVectorData(time1, neutron1, neutron1Label, time2, neutron2, neutron2Label,
+		       time3, neutron3, neutron3Label, time4, neutron4, neutron4Label,
+		       time5, neutron5, neutron5Label, time6, neutron6, neutron6Label,
+		       keyWords, tempDataFile, tempScriptFile);
+  
+  free(neutron1Label);
+  free(neutron2Label);
+  free(neutron3Label);
+  free(neutron4Label);
+  free(neutron5Label);
+  free(neutron6Label);
+  free(neutronNode1);
+  free(neutronNode2);
+  free(neutronNode3);
+  free(neutronNode4);
+  free(neutronNode5);
+  free(neutronNode6);
+  free(keyWords);
+  gsl_vector_free(time1);
+  gsl_vector_free(time2);
+  gsl_vector_free(time3);
+  gsl_vector_free(time4);
+  gsl_vector_free(time5);
+  gsl_vector_free(time6);
+  gsl_vector_free(neutron1);
+  gsl_vector_free(neutron2);
+  gsl_vector_free(neutron3);
+  gsl_vector_free(neutron4);
+  gsl_vector_free(neutron5);
+  gsl_vector_free(neutron6);
   
   return 0;
 

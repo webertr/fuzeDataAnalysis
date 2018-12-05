@@ -49,6 +49,13 @@ int plotVectorDataWithError(gsl_vector *xIn, gsl_vector *yIn, char *yLabel, gsl_
 			    char *plotOptions, char *tempDataFile, char *tempScriptFile);
 int plotImageDimensions(gsl_matrix *mInput, gsl_vector *yVec, gsl_vector *xVec, char *plotOptions,
 			char *tempDataFile, char *tempScriptFile);
-
+int plot6PlotsVectorData (gsl_vector *xVec1In, gsl_vector *yVec1In, char *y1Label,
+			  gsl_vector *xVec2In, gsl_vector *yVec2In, char *y2Label, 
+			  gsl_vector *xVec3In, gsl_vector *yVec3In, char *y3Label, 
+			  gsl_vector *xVec4In, gsl_vector *yVec4In, char *y4Label, 
+			  gsl_vector *xVec5In, gsl_vector *yVec5In, char *y5Label,
+			  gsl_vector *xVec6In, gsl_vector *yVec6In, char *y6Label, 
+			  char *plotOptions, char *tempDataFile, 
+			  char *tempScriptFile);
 
 #endif

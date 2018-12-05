@@ -474,6 +474,98 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 
 
 /******************************************************************************
+ * Function: plot6PlotsVectorData
+ * Inputs: gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*
+ * char *
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot6PlotsVectorData (gsl_vector *xVec1In, gsl_vector *yVec1In, char *y1Label,
+			  gsl_vector *xVec2In, gsl_vector *yVec2In, char *y2Label, 
+			  gsl_vector *xVec3In, gsl_vector *yVec3In, char *y3Label, 
+			  gsl_vector *xVec4In, gsl_vector *yVec4In, char *y4Label, 
+			  gsl_vector *xVec5In, gsl_vector *yVec5In, char *y5Label,
+			  gsl_vector *xVec6In, gsl_vector *yVec6In, char *y6Label, 
+			  char *plotOptions, char *tempDataFile, 
+			  char *tempScriptFile) {
+
+  int ii,
+    len = xVec1In->size;
+
+  /* Writing file to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
+
+  FILE *fpData = fopen(tempDataFile, "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  for (ii = 0; ii < len; ii++) {
+
+    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\n", 
+	    gsl_vector_get(xVec1In, ii), gsl_vector_get(yVec1In, ii),
+	    gsl_vector_get(xVec2In, ii), gsl_vector_get(yVec2In, ii), 
+	    gsl_vector_get(xVec3In, ii), gsl_vector_get(yVec3In, ii),
+	    gsl_vector_get(xVec4In, ii), gsl_vector_get(yVec4In, ii),
+	    gsl_vector_get(xVec5In, ii), gsl_vector_get(yVec5In, ii),
+	    gsl_vector_get(xVec6In, ii), gsl_vector_get(yVec6In, ii));
+
+  }
+
+  fclose(fpData);
+
+  
+  FILE *fpScript = fopen(tempScriptFile, "w");
+  
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions);
+
+  fprintf(fpScript, "set multiplot layout 3,3 rowsfirst\n");
+  fprintf(fpScript, "plot '%s' using 1:2 %s\n", tempDataFile, y1Label);
+  fprintf(fpScript, "plot '%s' using 3:4 %s\n", tempDataFile, y2Label);
+  fprintf(fpScript, "plot '%s' using 5:6 %s\n", tempDataFile, y3Label);
+  fprintf(fpScript, "plot '%s' using 7:8 %s\n", tempDataFile, y4Label);
+  fprintf(fpScript, "plot '%s' using 9:10 %s\n", tempDataFile, y5Label);
+  fprintf(fpScript, "plot '%s' using 11:12 %s\n", tempDataFile, y6Label);
+  fprintf(fpScript, "unset multiplot\n");
+
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plotImageDimensions
  * Inputs: gsl_matrix *
  * Returns: int
