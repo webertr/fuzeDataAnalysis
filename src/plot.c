@@ -533,7 +533,7 @@ int plot6PlotsVectorData (gsl_vector *xVec1In, gsl_vector *yVec1In, char *y1Labe
 
   fprintf(fpScript, "%s\n", plotOptions);
 
-  fprintf(fpScript, "set multiplot layout 3,3 rowsfirst\n");
+  fprintf(fpScript, "set multiplot layout 3,2 rowsfirst\n");
   fprintf(fpScript, "plot '%s' using 1:2 %s\n", tempDataFile, y1Label);
   fprintf(fpScript, "plot '%s' using 3:4 %s\n", tempDataFile, y2Label);
   fprintf(fpScript, "plot '%s' using 5:6 %s\n", tempDataFile, y3Label);
