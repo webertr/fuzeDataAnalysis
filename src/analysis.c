@@ -27,6 +27,8 @@ static int plotPostShotIPinchData(int shotNumber1, int shotNumber2, int shotNumb
 				  char *tempDataFile, char *tempScriptFile);
 static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile, 
 					char *tempScriptFile);
+static int plotPostShotMultiIVData(int shotNumber, char *tempDataFile, 
+				   char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -260,32 +262,32 @@ int plotPostAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    //plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
-    //		       "data/ipData.txt", "data/ipDataScript.sh");
+    plotPostShotIPData(shotNumber, shotNumber - 1, shotNumber - 2,
+    		       "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    //plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
-    //			 "data/modeData.txt", "data/modeDataScript.sh");
+    plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
+    			 "data/modeData.txt", "data/modeDataScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    //plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
-    //		   "data/ivData.txt", "data/ivDataScript.sh");
+    plotPostShotIV(shotNumber, shotNumber - 1, shotNumber - 2, 
+    		   "data/ivData.txt", "data/ivDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
+    plotPostShotAccelData(shotNumber, "data/accelData.txt", "data/accelScript.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
-    //			   "data/ipData.txt", "data/ipDataScript.sh");
+    plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
+    			   "data/ipData.txt", "data/ipDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 2,
-    //			    "data/pinchData.txt", "data/pinchDataScript.sh");
+    plotPostShotMultiIVData(shotNumber, "data/ivMultiData.txt", 
+				 "data/ivMultiDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -294,7 +296,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
+    plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
     exit(0);
   }
 
@@ -763,6 +765,92 @@ static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile,
   gsl_vector_free(neutron4);
   gsl_vector_free(neutron5);
   gsl_vector_free(neutron6);
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPostShotNeutronData
+ * Inputs: int, int, int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * total plasma current and voltage across the hot and cold plate
+ ******************************************************************************/
+
+static int plotPostShotMultiIVData(int shotNumber, char *tempDataFile, char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempString;
+
+  gsl_vector *timeIP = readDHIMDSplusVectorDim(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(timeIP, 1E6);
+  gsl_vector *ip = readDHIMDSplusVector(shotNumber, "\\I_P", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'IP for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ipLabel = (char *)malloc(sizeBuf + 1);
+  snprintf(ipLabel, sizeBuf+1, tempString, shotNumber);
+
+
+  char *ipKeyWords = "set xrange[0:400]\n"
+    "set title 'I_{P}'\n"
+    "set ylabel 'Current (kA)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange[0:]";
+
+
+  gsl_vector *timeV = readDHIMDSplusVectorDim(shotNumber, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(timeV, 1E6);
+  gsl_vector *vgap = readDHIMDSplusVector(shotNumber, "\\v_gap", "fuze", "10.10.10.240");
+  gsl_vector_scale(vgap, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'V_{Gap} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *vgapLabel = (char *)malloc(sizeBuf + 1);
+  snprintf(vgapLabel, sizeBuf+1, tempString, shotNumber);
+
+
+  char *vgapKeyWords = "set xrange[0:400]\n"
+    "set title 'V_{GAP}'\n"
+    "set ylabel 'Voltage (kV)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set autoscale y";
+
+  gsl_vector *timeIPH = readDHIMDSplusVectorDim(shotNumber, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(timeIPH, 1E6);
+  gsl_vector *iph = readDHIMDSplusVector(shotNumber, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(iph, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'I_{pinch} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *iphLabel = (char *)malloc(sizeBuf + 1);
+  snprintf(iphLabel, sizeBuf+1, tempString, shotNumber);
+
+
+  char *iphKeyWords = "set xrange[0:400]\n"
+    "set title 'I_{pinch}'\n"
+    "set ylabel 'Current (kA)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set xrange [:]\n"
+    "set yrange [0:]";
+
+
+  char *plotOptions =  "\n";
+
+  plot3PlotsVectorData(timeIP, ip, ipLabel, ipKeyWords,
+		       timeV, vgap, vgapLabel, vgapKeyWords,
+		       timeIPH, iph, iphLabel, iphKeyWords,
+		       plotOptions, tempDataFile, tempScriptFile);
+  
+  free(ipLabel);
+  free(vgapLabel);
+  free(iphLabel);
+  gsl_vector_free(timeIP);
+  gsl_vector_free(timeV);
+  gsl_vector_free(timeIPH);
+  gsl_vector_free(ip);
+  gsl_vector_free(vgap);
+  gsl_vector_free(iph);
   
   return 0;
 

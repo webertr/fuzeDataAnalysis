@@ -57,5 +57,10 @@ int plot6PlotsVectorData (gsl_vector *xVec1In, gsl_vector *yVec1In, char *y1Labe
 			  gsl_vector *xVec6In, gsl_vector *yVec6In, char *y6Label, 
 			  char *plotOptions, char *tempDataFile, 
 			  char *tempScriptFile);
+int plot3PlotsVectorData (gsl_vector *xVec1In, gsl_vector *yVec1In, char *y1Label, char *y1Key,
+			  gsl_vector *xVec2In, gsl_vector *yVec2In, char *y2Label, char *y2Key,
+			  gsl_vector *xVec3In, gsl_vector *yVec3In, char *y3Label, char *y3Key,
+			  char *plotOptions, char *tempDataFile, 
+			  char *tempScriptFile);
 
 #endif
