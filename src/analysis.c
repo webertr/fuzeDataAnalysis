@@ -286,8 +286,8 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotPostShotMultiIVData(shotNumber, "data/ivMultiData.txt", 
-				 "data/ivMultiDataScript.sh");
+    //plotPostShotMultiIVData(shotNumber, "data/ivMultiData.txt", 
+    //				 "data/ivMultiDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -319,6 +319,8 @@ int plotPostAnalysis() {
 			 "data/modeData.txt", "data/modeDataScript.sh");
     plotPostShotIPinchData(shotNumber, shotNumber - 1, shotNumber - 2,
     			   "data/ipData.txt", "data/ipDataScript.sh");
+    plotPostShotMultiIVData(shotNumber, "data/ivMultiData.txt", 
+			    "data/ivMultiDataScript.sh");
 
   }
 
@@ -461,32 +463,32 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
   size_t sizeBuf;
   char *tempString;
 
-  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\M_1_P15_NORM", "fuze", "10.10.10.240");
   gsl_vector_scale(time, 1E6);
 
-  gsl_vector *mode1 = readDHIMDSplusVector(shotNumber1, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector *mode1 = readDHIMDSplusVector(shotNumber1, "\\M_1_P15_NORM", "fuze", "10.10.10.240");
   tempString = "with line lw 3 lc rgb 'black' title 'm=1 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
   char *mode1Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode1Label, sizeBuf+1, tempString, shotNumber1);
 
-  gsl_vector *mode2 = readDHIMDSplusVector(shotNumber2, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector *mode2 = readDHIMDSplusVector(shotNumber2, "\\M_1_P15_NORM", "fuze", "10.10.10.240");
   tempString = "with line lw 3 lc rgb 'red' title 'm=1 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
   char *mode2Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode2Label, sizeBuf+1, tempString, shotNumber2);
 
-  gsl_vector *mode3 = readDHIMDSplusVector(shotNumber3, "\\M_1_P15", "fuze", "10.10.10.240");
+  gsl_vector *mode3 = readDHIMDSplusVector(shotNumber3, "\\M_1_P15_NORM", "fuze", "10.10.10.240");
   tempString = "with line lw 3 lc rgb 'blue' title 'm=1 for %d'";
   sizeBuf = snprintf(NULL, 0, tempString, shotNumber3);
   char *mode3Label = (char *)malloc(sizeBuf + 1);
   snprintf(mode3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'Normalized m=1 data'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Normalized Mode Amplitude'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
-    "set yrange[0:]";
+    "set yrange[0:0.5]";
   
   plot3VectorData(time, mode1, mode1Label, mode2, mode2Label, mode3, mode3Label, 
 		  keyWords, tempDataFile, tempScriptFile);
@@ -543,7 +545,7 @@ static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3,
   snprintf(vgap3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'V_{Gap}'\n"
-    "set xrange[-10:500]\n"
+    "set xrange[0:400]\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
