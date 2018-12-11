@@ -286,13 +286,13 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotPostShotMultiIVData(shotNumber, "data/ivMultiData.txt", 
-    //				 "data/ivMultiDataScript.sh");
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 6,
+			    "data/neutronData.txt", "data/neutronDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
     plotPostShotMultiNeutronData(shotNumber, "data/neutronMultiData.txt", 
-				 "data/neutronMultiDataScript.sh");
+    				 "data/neutronMultiDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -321,6 +321,8 @@ int plotPostAnalysis() {
     			   "data/ipData.txt", "data/ipDataScript.sh");
     plotPostShotMultiIVData(shotNumber, "data/ivMultiData.txt", 
 			    "data/ivMultiDataScript.sh");
+    plotPostShotMultiNeutronData(shotNumber, "data/neutronMultiData.txt", 
+    				 "data/neutronMultiDataScript.sh");
 
   }
 
