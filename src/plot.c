@@ -474,6 +474,215 @@ int plot5VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 
 
 /******************************************************************************
+ * Function: plot7VectorData
+ * Inputs: gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot7VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
+		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
+		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
+		     gsl_vector *yVec5In, char *y5Label, gsl_vector *yVec6In, char *y6Label,
+		     gsl_vector *yVec7In, char *y7Label,
+		     char *plotOptions, char *tempDataFile, char *tempScriptFile) {
+
+  int ii,
+    len = xVecIn->size;
+
+  int lengths[8];
+
+  lengths[0] = xVecIn->size;
+  lengths[1] = yVec1In->size;
+  lengths[2] = yVec2In->size;
+  lengths[3] = yVec3In->size;
+  lengths[4] = yVec4In->size;
+  lengths[5] = yVec5In->size;
+  lengths[6] = yVec6In->size;
+  lengths[7] = yVec7In->size;
+    
+  for (ii = 0; ii < 7; ii++) {
+    if (lengths[ii] != lengths[ii+1]) {
+      printf("Vectors not all the same length");
+      return -1;
+    }
+  }
+  
+  /* Writing file to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
+
+  FILE *fpData = fopen(tempDataFile, "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  for (ii = 0; ii < len; ii++) {
+
+    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii),
+	    gsl_vector_get(yVec3In, ii), gsl_vector_get(yVec4In, ii), 
+	    gsl_vector_get(yVec5In, ii), gsl_vector_get(yVec6In, ii),
+	    gsl_vector_get(yVec7In, ii));
+
+  }
+
+  fclose(fpData);
+
+  
+  FILE *fpScript = fopen(tempScriptFile, "w");
+  
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions);
+  
+  fprintf(fpScript, "plot '%s' using 1:2 %s,\\\n", tempDataFile, y1Label);
+  fprintf(fpScript, "     '%s' using 1:3 %s,\\\n", tempDataFile, y2Label);
+  fprintf(fpScript, "     '%s' using 1:4 %s,\\\n", tempDataFile, y3Label);
+  fprintf(fpScript, "     '%s' using 1:5 %s,\\\n", tempDataFile, y4Label);
+  fprintf(fpScript, "     '%s' using 1:6 %s,\\\n", tempDataFile, y5Label);
+  fprintf(fpScript, "     '%s' using 1:7 %s,\\\n", tempDataFile, y6Label);
+  fprintf(fpScript, "     '%s' using 1:8 %s\n", tempDataFile, y7Label);
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plot8VectorData
+ * Inputs: gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*
+ * char *
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot8VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
+		     gsl_vector *yVec2In, char *y2Label, gsl_vector *yVec3In, 
+		     char *y3Label, gsl_vector *yVec4In, char *y4Label, 
+		     gsl_vector *yVec5In, char *y5Label, gsl_vector *yVec6In, char *y6Label,
+		     gsl_vector *yVec7In, char *y7Label, gsl_vector *yVec8In, char *y8Label, 
+		     char *plotOptions, char *tempDataFile, char *tempScriptFile) {
+
+  int ii,
+    len = xVecIn->size;
+
+  int lengths[9];
+
+  lengths[0] = xVecIn->size;
+  lengths[1] = yVec1In->size;
+  lengths[2] = yVec2In->size;
+  lengths[3] = yVec3In->size;
+  lengths[4] = yVec4In->size;
+  lengths[5] = yVec5In->size;
+  lengths[6] = yVec6In->size;
+  lengths[7] = yVec7In->size;
+  lengths[8] = yVec8In->size;
+    
+  for (ii = 0; ii < 8; ii++) {
+    if (lengths[ii] != lengths[ii+1]) {
+      printf("Vectors not all the same length");
+      return -1;
+    }
+  }
+  
+  /* Writing file to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
+
+  FILE *fpData = fopen(tempDataFile, "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  for (ii = 0; ii < len; ii++) {
+
+    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii),
+	    gsl_vector_get(yVec3In, ii), gsl_vector_get(yVec4In, ii), 
+	    gsl_vector_get(yVec5In, ii), gsl_vector_get(yVec6In, ii),
+	    gsl_vector_get(yVec7In, ii), gsl_vector_get(yVec8In, ii));
+
+  }
+
+  fclose(fpData);
+
+  
+  FILE *fpScript = fopen(tempScriptFile, "w");
+  
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions);
+  
+  fprintf(fpScript, "plot '%s' using 1:2 %s,\\\n", tempDataFile, y1Label);
+  fprintf(fpScript, "     '%s' using 1:3 %s,\\\n", tempDataFile, y2Label);
+  fprintf(fpScript, "     '%s' using 1:4 %s,\\\n", tempDataFile, y3Label);
+  fprintf(fpScript, "     '%s' using 1:5 %s,\\\n", tempDataFile, y4Label);
+  fprintf(fpScript, "     '%s' using 1:6 %s,\\\n", tempDataFile, y5Label);
+  fprintf(fpScript, "     '%s' using 1:7 %s,\\\n", tempDataFile, y6Label);
+  fprintf(fpScript, "     '%s' using 1:8 %s,\\\n", tempDataFile, y7Label);
+  fprintf(fpScript, "     '%s' using 1:9 %s\n", tempDataFile, y8Label);
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plot6PlotsVectorData
  * Inputs: gsl_vector*, gsl_vector*, gsl_vector*, gsl_vector*
  * char *

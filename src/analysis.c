@@ -29,6 +29,8 @@ static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile,
 					char *tempScriptFile);
 static int plotPostShotMultiIVData(int shotNumber, char *tempDataFile, 
 				   char *tempScriptFile);
+static int plotIPMultipleShots(int shotNumber, char *tempDataFile, char *tempScriptFile);
+static int plot2Shots(int shotNumber1, int shotNumber2, char *tempDataFile, char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -248,6 +250,10 @@ int plotPostAnalysis() {
   int shotNumber,
     currShotNumber = getCurrentPulseNumber();
 
+  //plot2Shots(181211018, 181211006, "data/ipMulData.txt", "data/ipMulDataScript.sh");
+  plot2Shots(181211018, 181211024, "data/ipMulData.txt", "data/ipMulDataScript.sh");
+  exit(0);
+  
   printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
 
@@ -257,6 +263,8 @@ int plotPostAnalysis() {
 
   getchar();
 
+  //plotIPMultipleShots(shotNumber, "data/ipMulData.txt", "data/ipMulDataScript.sh");
+  
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
@@ -323,6 +331,7 @@ int plotPostAnalysis() {
 			    "data/ivMultiDataScript.sh");
     plotPostShotMultiNeutronData(shotNumber, "data/neutronMultiData.txt", 
     				 "data/neutronMultiDataScript.sh");
+    plotIPMultipleShots(shotNumber, "data/ipMulData.txt", "data/ipMulDataScript.sh");
 
   }
 
@@ -487,7 +496,7 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
   snprintf(mode3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'Normalized m=1 data'\n"
-    "set xrange[0:50]\n"
+    "set xrange[10:40]\n"
     "set ylabel 'Normalized Mode Amplitude'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:0.5]";
@@ -1135,6 +1144,164 @@ title '%s'\n", accelFile, data6Name);
 
   return 0;
 
+}
+
+
+/******************************************************************************
+ * Function: plotIPMultipleShots
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotIPMultipleShots(int shotNumber, char *tempDataFile, char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempString;
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+
+  gsl_vector *ip1 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip1, 1E-3);
+  tempString = "with line lw 3 lc rgb 'black' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip1Label, sizeBuf+1, tempString, shotNumber);
+
+  shotNumber = shotNumber + 1;
+  gsl_vector *ip2 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip2, 1E-3);
+  tempString = "with line lw 3 lc rgb 'red' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip2Label, sizeBuf+1, tempString, shotNumber);
+
+  shotNumber = shotNumber + 1;
+  gsl_vector *ip3 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip3, 1E-3);
+  tempString = "with line lw 3 lc rgb 'green' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip3Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip3Label, sizeBuf+1, tempString, shotNumber);
+
+  shotNumber = shotNumber + 1;
+  gsl_vector *ip4 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip4, 1E-3);
+  tempString = "with line lw 3 lc rgb 'blue' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip4Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip4Label, sizeBuf+1, tempString, shotNumber);
+
+  shotNumber = shotNumber + 1;
+  gsl_vector *ip5 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip5, 1E-3);
+  tempString = "with line lw 3 lc rgb 'orange' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip5Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip5Label, sizeBuf+1, tempString, shotNumber);
+
+  shotNumber = shotNumber + 1;
+  gsl_vector *ip6 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip6, 1E-3);
+  tempString = "with line lw 3 lc rgb 'purple' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip6Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip6Label, sizeBuf+1, tempString, shotNumber);
+
+  shotNumber = shotNumber + 1;
+  gsl_vector *ip7 = readDHIMDSplusVector(shotNumber, "\\neutron_4", "fuze", "10.10.10.240");
+  gsl_vector_scale(ip7, 1E-3);
+  tempString = "with line lw 3 lc rgb 'yellow' title 'N_{D4} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber);
+  char *ip7Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip7Label, sizeBuf+1, tempString, shotNumber);
+
+  char *keyWords = "set title 'I_{pinch}'\n"
+    //"set terminal png\n"
+    //"set output '/home/webertr/Downloads/IP.png'\n"
+    "set xrange[30:50]\n"
+    "set ylabel 'Current (kA)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange[:0]";
+  
+  plot7VectorData(time, ip1, ip1Label, ip2, ip2Label, ip3, ip3Label,
+		  ip4, ip4Label, ip5, ip5Label, ip6, ip6Label,
+		  ip7, ip7Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  free(ip1Label);
+  free(ip2Label);
+  free(ip3Label);
+  free(ip4Label);
+  free(ip5Label);
+  free(ip6Label);
+  free(ip7Label);
+  gsl_vector_free(time);
+  gsl_vector_free(ip1);
+  gsl_vector_free(ip2);
+  gsl_vector_free(ip3);
+  gsl_vector_free(ip4);
+  gsl_vector_free(ip5);
+  gsl_vector_free(ip6);
+  gsl_vector_free(ip7);
+  
+  return 0;
+  
+}
+
+
+/******************************************************************************
+ * Function: plotIPMultipleShots
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plot2Shots(int shotNumber1, int shotNumber2, char *tempDataFile, char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempString;
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber1, "\\m_0_p15", "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+
+  gsl_vector *ip1 = readDHIMDSplusVector(shotNumber1, "\\m_0_p15", "fuze", "10.10.10.240");
+  //gsl_vector_scale(ip1, 1E-3);
+  gsl_vector_scale(ip1, 500);
+  tempString = "with line lw 3 lc rgb 'black' title 'I_{pinch} at P15 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber1);
+  char *ip1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip1Label, sizeBuf+1, tempString, shotNumber1);
+
+  gsl_vector *ip2 = readDHIMDSplusVector(shotNumber2, "\\m_0_p15", "fuze", "10.10.10.240");
+  //gsl_vector_scale(ip2, 1E-3);
+  gsl_vector_scale(ip2, 500);
+  tempString = "with line lw 3 lc rgb 'red' title 'I_{pinch} at P15 for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, shotNumber2);
+  char *ip2Label = (char *)malloc(sizeBuf + 1);
+  snprintf(ip2Label, sizeBuf+1, tempString, shotNumber2);
+
+  char *keyWords = "set title 'I_{pinch} at P15'\n"
+    "set terminal png\n"
+    "set output '/home/webertr/Downloads/IP.png'\n"
+    "set xrange[20:50]\n"
+    "set ylabel 'Current (kA)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange[:]";
+  
+  plot2VectorData(time, ip1, ip1Label, ip2, ip2Label, keyWords, tempDataFile, tempScriptFile);
+
+  free(ip1Label);
+  free(ip2Label);
+  gsl_vector_free(time);
+  gsl_vector_free(ip1);
+  gsl_vector_free(ip2);
+  
+  return 0;
+  
 }
 
 
