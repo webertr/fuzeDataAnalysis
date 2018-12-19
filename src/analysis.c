@@ -31,6 +31,8 @@ static int plotPostShotMultiIVData(int shotNumber, char *tempDataFile,
 				   char *tempScriptFile);
 static int plotIPMultipleShots(int shotNumber, char *tempDataFile, char *tempScriptFile);
 static int plot2Shots(int shotNumber1, int shotNumber2, char *tempDataFile, char *tempScriptFile);
+static int plotPostShotNeutronDataOne(int shotNumber, int detectorNum, char *tempDataFile, 
+				      char *tempScriptFile);
 
 /******************************************************************************
  * Function: hologramAnalysis
@@ -289,16 +291,17 @@ int plotPostAnalysis() {
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 6,
-			    "data/neutronData.txt", "data/neutronDataScript.sh");
+			    "data/neutronData6.txt", "data/neutronDataScript6.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
     plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
-			    "data/neutronData.txt", "data/neutronDataScript.sh");
+			    "data/neutronData5.txt", "data/neutronDataScript5.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotGVCurrent(shotNumber, "data/igvData.txt", "data/igvDataScript.sh");
+    plotPostShotNeutronDataOne(shotNumber, 1, "data/neutronData1.txt", 
+			       "data/neutronDataScript1.sh");
     exit(0);
   }
 
@@ -327,6 +330,8 @@ int plotPostAnalysis() {
     				 "data/neutronMultiDataScript.sh");
     plotIPMultipleShots(shotNumber, "data/ipMulData.txt", "data/ipMulDataScript.sh");
     plot2Shots(181211018, 181211024, "data/ipMulData.txt", "data/ipMulDataScript.sh");
+    plotPostShotNeutronDataOne(shotNumber, 2,
+			    "data/neutronData2.txt", "data/neutronDataScript2.sh");
 
   }
 
@@ -634,6 +639,56 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
   gsl_vector_free(neutron1);
   gsl_vector_free(neutron2);
   gsl_vector_free(neutron3);
+  
+  return 0;
+
+}
+
+/******************************************************************************
+ * Function: plotPostShotNeutronDataOne
+ * Inputs: int, int, int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output the
+ * total plasma current and voltage across the hot and cold plate
+ ******************************************************************************/
+
+static int plotPostShotNeutronDataOne(int shotNumber, int detectorNum, char *tempDataFile, 
+				      char *tempScriptFile) {
+
+  size_t sizeBuf;
+  char *tempString;
+  
+  tempString = "\\neutron_%d";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
+  char *neutronNode = (char *)malloc(sizeBuf + 1);
+  snprintf(neutronNode, sizeBuf+1, tempString, detectorNum);
+
+  gsl_vector *time = readDHIMDSplusVectorDim(shotNumber, neutronNode, "fuze", "10.10.10.240");
+  gsl_vector_scale(time, 1E6);
+
+  gsl_vector *neutron1 = readDHIMDSplusVector(shotNumber, neutronNode, "fuze", "10.10.10.240");
+  tempString = "with line lw 3 lc rgb 'black' title 'N_{D%d} for %d'";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum, shotNumber);
+  char *neutron1Label = (char *)malloc(sizeBuf + 1);
+  snprintf(neutron1Label, sizeBuf+1, tempString, detectorNum, shotNumber);
+
+  tempString = "set title 'N_{D%d}'\n"
+    "set xrange[0:100]\n"
+    "set ylabel 'Voltage (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set yrange [:]";
+  sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
+  char *keyWords = (char *)malloc(sizeBuf + 1);
+  snprintf(keyWords, sizeBuf+1, tempString, detectorNum);
+
+
+  plotVectorData(time, neutron1, neutron1Label, keyWords, tempDataFile, tempScriptFile);
+  
+  free(neutron1Label);
+  free(neutronNode);
+  free(keyWords);
+  gsl_vector_free(time);
+  gsl_vector_free(neutron1);
   
   return 0;
 

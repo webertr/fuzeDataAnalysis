@@ -183,7 +183,7 @@ static int totalCurrentCapCheck(int shotNumber, char *nodeName, double limit) {
   /* Disconnecting from MDSplus */
   MdsDisconnect();
 
-  plotVectorData(time, data, "");
+  plotVectorData(time, data, "", "", "data/tempBankCheck.txt", "data/tempBankCheck.sh");
 
   int ii;
   for (ii = 0; ii < sigSize; ii++) {

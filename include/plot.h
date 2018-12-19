@@ -10,7 +10,8 @@
 
 int plotImageData (gsl_matrix *mInput, double dx, double dy, char *plotOptions,
 		   char *tempDataFile, char *tempScriptFile);
-int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, char *plotOptions);
+int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
+		    char *plotOptions, char *tempDataFile, char *tempScriptFile);
 int plot2VectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
 		     gsl_vector *yVec2In, char *y2Label, char *plotOptions, char *tempDataFile, 
 		     char *tempScriptFile);

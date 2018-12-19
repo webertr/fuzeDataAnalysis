@@ -61,40 +61,74 @@ int plot1DVectorData (gsl_vector *vecIn, char *plotOptions) {
  * then attach a pipe between that shell command and a stream
  ******************************************************************************/
 
-int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVecIn, char *plotOptions) {
+int plotVectorData (gsl_vector *xVecIn, gsl_vector *yVec1In, char *y1Label,
+		    char *plotOptions, char *tempDataFile, char *tempScriptFile) {
 
-  int ii, status;
+  int ii,
+    len = xVecIn->size;
+
+  int lengths[2];
+
+  lengths[0] = xVecIn->size;
+  lengths[1] = yVec1In->size;
+    
+  for (ii = 0; ii < 1; ii++) {
+    if (lengths[ii] != lengths[ii+1]) {
+      printf("Vectors not all the same length");
+      return -1;
+    }
+  }
   
-  FILE *gnuplot = popen("gnuplot", "w");
+  /* Writing file to hold data */
+  remove(tempDataFile);
+  remove(tempScriptFile);
 
-  if (!gnuplot) {
-    fprintf (stderr,
-	     "incorrect parameters or too many files.\n");
-    return EXIT_FAILURE;
+  FILE *fpData = fopen(tempDataFile, "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
   }
 
-  fprintf(gnuplot, "%s\n", plotOptions);
-  
-  fprintf(gnuplot, "plot '-'\n");
+  for (ii = 0; ii < len; ii++) {
 
-  for (ii = 0; ii < xVecIn->size; ii++) {
-
-    fprintf(gnuplot, "%g %g\n", gsl_vector_get(xVecIn, ii), gsl_vector_get(yVecIn, ii));
+    fprintf(fpData, "%g\t%g\n", gsl_vector_get(xVecIn, ii), gsl_vector_get(yVec1In, ii));
 
   }
 
-  fprintf(gnuplot, "e\n");
+  fclose(fpData);
 
-  fflush(gnuplot);
+  
+  FILE *fpScript = fopen(tempScriptFile, "w");
+  
+  if ( (fpScript == NULL) ) {
 
-  /* Pausing */
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions);
+  
+  fprintf(fpScript, "plot '%s' using 1:2 %s\n", tempDataFile, y1Label);
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile, S_IRWXG);
+  chmod(tempScriptFile, S_IRWXO);
+  chmod(tempScriptFile, S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile, pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
   getchar();
-
-  status = pclose(gnuplot);
-
-  if (status == -1) {
-    printf("Error reported bp close");
-  }
 
   return 0;
 
