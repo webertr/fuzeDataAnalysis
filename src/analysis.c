@@ -249,10 +249,6 @@ int plotPostAnalysis() {
 
   int shotNumber,
     currShotNumber = getCurrentPulseNumber();
-
-  //plot2Shots(181211018, 181211006, "data/ipMulData.txt", "data/ipMulDataScript.sh");
-  plot2Shots(181211018, 181211024, "data/ipMulData.txt", "data/ipMulDataScript.sh");
-  exit(0);
   
   printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
@@ -262,8 +258,6 @@ int plotPostAnalysis() {
   }
 
   getchar();
-
-  //plotIPMultipleShots(shotNumber, "data/ipMulData.txt", "data/ipMulDataScript.sh");
   
   int pid1 = fork();
   int pid2 = fork();
@@ -299,8 +293,8 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
-    plotPostShotMultiNeutronData(shotNumber, "data/neutronMultiData.txt", 
-    				 "data/neutronMultiDataScript.sh");
+    plotPostShotNeutronData(shotNumber, shotNumber - 1, shotNumber - 2, 5,
+			    "data/neutronData.txt", "data/neutronDataScript.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -332,6 +326,7 @@ int plotPostAnalysis() {
     plotPostShotMultiNeutronData(shotNumber, "data/neutronMultiData.txt", 
     				 "data/neutronMultiDataScript.sh");
     plotIPMultipleShots(shotNumber, "data/ipMulData.txt", "data/ipMulDataScript.sh");
+    plot2Shots(181211018, 181211024, "data/ipMulData.txt", "data/ipMulDataScript.sh");
 
   }
 
@@ -700,7 +695,7 @@ static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile,
   char *neutron3Label = (char *)malloc(sizeBuf + 1);
   snprintf(neutron3Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
 
-  detectorNum = 4;
+  detectorNum = 2;
   tempStringNode = "\\neutron_%d";
   sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
   char *neutronNode4 = (char *)malloc(sizeBuf + 1);
@@ -713,7 +708,7 @@ static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile,
   char *neutron4Label = (char *)malloc(sizeBuf + 1);
   snprintf(neutron4Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
 
-  detectorNum = 5;
+  detectorNum = 2;
   tempStringNode = "\\neutron_%d";
   sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
   char *neutronNode5 = (char *)malloc(sizeBuf + 1);
@@ -726,7 +721,7 @@ static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile,
   char *neutron5Label = (char *)malloc(sizeBuf + 1);
   snprintf(neutron5Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
 
-  detectorNum = 6;
+  detectorNum = 2;
   tempStringNode = "\\neutron_%d";
   sizeBuf = snprintf(NULL, 0, tempStringNode, detectorNum);
   char *neutronNode6 = (char *)malloc(sizeBuf + 1);
