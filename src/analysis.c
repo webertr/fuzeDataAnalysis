@@ -271,8 +271,8 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotPostShotModeData(shotNumber, shotNumber - 1, shotNumber - 2, 
-    			 "data/modeData.txt", "data/modeDataScript.sh");
+    plotPostShotNeutronDataOne(shotNumber, 9, "data/neutronData1.txt", 
+			       "data/neutronDataScript1.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
@@ -300,7 +300,7 @@ int plotPostAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotPostShotNeutronDataOne(shotNumber, 1, "data/neutronData1.txt", 
+    plotPostShotNeutronDataOne(shotNumber, 10, "data/neutronData1.txt", 
 			       "data/neutronDataScript1.sh");
     exit(0);
   }
@@ -379,7 +379,7 @@ static int plotPostShotIPData(int shotNumber1, int shotNumber2, int shotNumber3,
   snprintf(ip3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'I_{P}'\n"
-    "set xrange[0:400]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Current (kA)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:]";
@@ -439,7 +439,7 @@ static int plotPostShotIPinchData(int shotNumber1, int shotNumber2, int shotNumb
   snprintf(ip3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'I_{pinch}'\n"
-    "set xrange[0:400]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Current (kA)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:]";
@@ -496,7 +496,7 @@ static int plotPostShotModeData(int shotNumber1, int shotNumber2, int shotNumber
   snprintf(mode3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'Normalized m=1 data'\n"
-    "set xrange[10:40]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Normalized Mode Amplitude'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange[0:0.5]";
@@ -556,7 +556,7 @@ static int plotPostShotIV(int shotNumber1, int shotNumber2, int shotNumber3,
   snprintf(vgap3Label, sizeBuf+1, tempString, shotNumber3);
 
   char *keyWords = "set title 'V_{Gap}'\n"
-    "set xrange[0:400]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
@@ -618,7 +618,7 @@ static int plotPostShotNeutronData(int shotNumber1, int shotNumber2, int shotNum
   snprintf(neutron3Label, sizeBuf+1, tempString, detectorNum, shotNumber3);
 
   tempString = "set title 'N_{D%d}'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Voltage (V)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
@@ -658,7 +658,7 @@ static int plotPostShotNeutronDataOne(int shotNumber, int detectorNum, char *tem
   size_t sizeBuf;
   char *tempString;
   
-  tempString = "\\neutron_%d";
+  tempString = "\\neutron_%d_s";
   sizeBuf = snprintf(NULL, 0, tempString, detectorNum);
   char *neutronNode = (char *)malloc(sizeBuf + 1);
   snprintf(neutronNode, sizeBuf+1, tempString, detectorNum);
@@ -673,7 +673,7 @@ static int plotPostShotNeutronDataOne(int shotNumber, int detectorNum, char *tem
   snprintf(neutron1Label, sizeBuf+1, tempString, detectorNum, shotNumber);
 
   tempString = "set title 'N_{D%d}'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Voltage (V)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
@@ -790,7 +790,7 @@ static int plotPostShotMultiNeutronData(int shotNumber, char *tempDataFile,
   snprintf(neutron6Label, sizeBuf+1, tempStringTitle, detectorNum, shotNumber);
 
   tempStringTitle = "set title 'N_{D}'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Voltage (V)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set yrange [:]";
@@ -857,7 +857,7 @@ static int plotPostShotMultiIVData(int shotNumber, char *tempDataFile, char *tem
   snprintf(ipLabel, sizeBuf+1, tempString, shotNumber);
 
 
-  char *ipKeyWords = "set xrange[0:400]\n"
+  char *ipKeyWords = "set xrange[0:100]\n"
     "set title 'I_{P}'\n"
     "set ylabel 'Current (kA)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
@@ -1045,7 +1045,7 @@ static int plotPostShotAccelData(int shotNumber, char *tempDataFile, char *tempS
     "set xlabel 'time ({/Symbol m}sec)' font ',16' offset 0,0\n"
     "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n"
     "set grid\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set key left top\n"
     "set yrange [:]";
 
