@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   /* 
    * Plotting post shot data
    */
-  plotPostAnalysis();
+  //plotPostAnalysis();
 
   /*
    * Modeling magnetic field from random currents
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
   /*
    * Plotting plasma parameters
    */
-  //plasmaParameters();
+  plasmaParameters();
 
   /*
    * Simulating particle in acceleration region of marshall gun

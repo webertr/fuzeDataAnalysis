@@ -118,4 +118,27 @@ int alfvenVelocity(double bField, double ionDensity, double mu) {
 }
 
 
+/******************************************************************************
+ * Function: debyeLength
+ * Inputs: double
+ * Returns: int
+ * Description: This will calculate the plasma Debye Length for a given
+ * temperature, T (eV), and density, n (cm^-3). lambda_{D} = 7.43E2*T^(1/2)/n^(1/2)
+ * for T in eV, and n in cm^-3.
+ * Should see 7.44e-5 cm for T = 1 keV, n= 1E17 cm-3
+ ******************************************************************************/
+
+int debyeLength(double temperature, double density) {
+
+  double debyeLength = 7.43E2*sqrt(temperature) / (sqrt(density));
+
+  printf("\n**************************************************\n");
+  printf("\nPlasma Debye Length: %g cm\n", debyeLength);
+  printf("\n**************************************************\n");
+
+  return 1;
+
+}
+
+
   

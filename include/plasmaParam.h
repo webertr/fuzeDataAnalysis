@@ -11,5 +11,6 @@ int gyroFrequencies(double bField);
 double carbonIonTemperature(double centerWL, double widthWL);
 int gyroRadius(double bField, double temperature);
 int alfvenVelocity(double bField, double ionDensity, double mu);
+int debyeLength(double temperature, double density);
 
 #endif

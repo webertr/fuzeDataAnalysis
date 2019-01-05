@@ -210,8 +210,11 @@ int hologramAnalysis() {
 
 int plasmaParameters() {
 
-  gyroRadius(0.25E4, 5E3);
+  debyeLength(1000, 1E17);
   
+  if (0) {
+    gyroRadius(0.25E4, 5E3);
+  }
   return 0;
 
 }
