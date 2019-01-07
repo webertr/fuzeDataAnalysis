@@ -22,6 +22,12 @@ c to the ratio. So going from IMP:N=1 to IMP:N=2, each neutron will be split
 c into 2 neutrons, with 50% probability attached to each neutrons. If going
 c from 2 to 1, 50% of the neutrons will be killed, and the 50% that aren't
 c killed will count as double. This will be the source.
+c "101" = cell number. "4" = Material number ("M4" - Deuterium)
+c "-3.3E-6" = sets a density of the material to be 3.3E-6 g/cm^3
+c "-101" = Negative with respect to surface 101 (and "RCC" or right 
+c circular cylinder)
+c Negative means if surface is defined as f(x,y,z) = 0, then all points 
+c where f(x,y,z) < 0.
 c -----------------------------------------------------------------------------
 101    4      -3.3E-6     -101                          IMP:N=1 IMP:P=1
 c
@@ -1685,3 +1691,70 @@ you get the geometry viewer.
 
 In this cartesian, x,y,z geometry, z is up, x is downstream
 and y is towards the thyristor bank.
+
+Units used by MCNP:
+Length is in cm
+Energy is in MeV
+Times is in shakes 10^-8 sec
+Temperature is in MeV
+Mass Density is in g/cm^3
+Cross section in barns
+
+A:B = "A or B"
+A B = "A and B"
+#(A B) = "Not (A and B)"
+
+101    4      -3.3E-6     -101                          IMP:N=1 IMP:P=1
+This is the card found in Block 1, the cell cards.
+For a block cell, you start with the cell number, "101" in this case. 
+Not sure what you do with this number. 
+"4" means material number 4, or "M4" in the block 3 data cards.
+"-3.3E-6" specified the density of the material in g/cm^3.
+The material card does not specific by the density.
+"-101" specifies this cell as being negative with respect to the
+surface "101", which is defined in Block 2, the surface cards.
+Negative means that if the surface is defined by f(x,y,z) = 0, then
+the cell is points where f(x,y,z) < 0. In this case, surface 101 is
+a right circular cylinder or RCC, and negative means all points
+inside the cylinder.
+
+101      RCC      565 254 139 -50 0 0 0.25
+
+This is a card found in block 2, the surface cards.
+"101" means the surface number. This number is reference later in the
+definitions of cells defined in bloc 1, the cell cards.
+"RCC" means right circular cylinder. This is what you would think
+of as a cylinder. "565 254 139" = The vector that gives the
+center of the base "vx vy vz".
+"-50 0 0" = the vector that defines the axis and height of the
+cylinder "hx hy hz".
+"0.25" = the radius of the cylinder.
+RCC vx vy vz hx hy hz R
+
+
+m4      001002.73c 1                                      $ Deuterium
+
+This card is found in block 3, data cards.
+"m4" denotes material 4. The "4" is reference in the block 1,
+the cell cards. The "1" denotes that fraction of this element
+in the material. For "001002.72c", "001002" is the ZAID number 
+ZZZAAA or atomic number Z, and atomic mass number Z. 
+The ".72c" identify a particular cross section table. Most of them
+seem to be ".72c", some or ".80c".
+This is Deuterium (by atom fraction).
+
+
+F4:N 221
+FC4 Detector 1 Neutron Fluence
+
+These are called "Tally Specifications". ":N" = that we are tallying
+neutrons. "221" denotes the cell volume. 
+"F4" is the average cell flux tally. That is the following:
+Suppose a particle of weight W and energy E makes a 
+track-length (segment) T within a specified cell of volume V . 
+This segment makes a contribution W T /V to the flux (fluence) in the 
+cell. The sum of the contributions is reported as the F4 tally in the 
+MCNP output.
+You can specify other F4 detectors by "F14", "F24", ...
+"FC4" is the F4 tally comment card.
+
