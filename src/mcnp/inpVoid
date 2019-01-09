@@ -58,15 +58,16 @@ SI2 0 0.25
 SI5 0 32
 c
 MODE N
-fmesh104:n geom=rec origin 0 0 0
-           imesh= 264 528 792
-           iints= 88 88 88
-           jmesh= 255 510 765
-           jints= 85 85 85
-           kmesh= 222 444
-           kints= 74 74
-           out=ij
-           emesh 0.5 2.5
+FC104      Detailed mesh tally in FuZE Machine
+FMESH104:N GEOM=REC ORIGIN 465 154 137.5
+           IMESH=815
+	   IINTS=699
+	   JMESH=354
+	   JINTS=399
+	   KMESH=149
+	   KINTS=2
+           OUT=IJ
+           EMESH 0.4 2.5
 c
 c
 NPS 100000000                                           

@@ -1311,35 +1311,21 @@ TR14 590 154 139 1 0 0 0 1 0 0 -0 1 1
 TR21 615 154 139 1 0 0 0 1 0 0 -0 1 1
 TR22 615 154 139 1 0 0 0 1 0 0 -0 1 1
 TR23 615 154 139 1 0 0 0 1 0 0 -0 1 1
-TR24 615 154 139 1 0 0 0 1 0 0 -0 1 1c
-fmesh104:n geom=rec origin 515 70 190
-           imesh= 565
-           iints= 50
-           jmesh= 120 170 220
-           jints= 50  50  50
-           kmesh= 240 290
-           kints= 50  50
-           out=ij
-           emesh 0.4 2.5
- -----------------------------------------------------------------------------
-c Fluence per neutron through detector 1. F4 is the track length in cell 221,
-c ":N" means neutrons, and 221 is the scintillator. 
+TR24 615 154 139 1 0 0 0 1 0 0 -0 1 1
 c -----------------------------------------------------------------------------
-F4:N 221
-FC4 Detector 1 Neutron Fluence
+c A detailed mesh tally in the FuZE machine
 c -----------------------------------------------------------------------------
-c Fluence per neutron through detector 2
-c -----------------------------------------------------------------------------
-F14:N 231
-FC14 Detector 2 Neutron Fluence
-c -----------------------------------------------------------------------------
-c Fluence per neutron through detector 3
-c -----------------------------------------------------------------------------
-F24:N 241
-FC24 Detector 3 Neutron Fluence
-c -----------------------------------------------------------------------------
-e0 0.025 98i 2.5
-prdmp j j 1
+FC104      Detailed mesh tally in FuZE Machine
+FMESH104:N GEOM=REC ORIGIN 465 154 137.5
+           IMESH=815
+	   IINTS=699
+	   JMESH=354
+	   JINTS=399
+	   KMESH=149
+	   KINTS=2
+           OUT=IJ
+           EMESH 0.4 2.5
+c
 c -----------------------------------------------------------------------------
 c Copper (8.96 g/cm^3) (by atom fraction)
 c -----------------------------------------------------------------------------
@@ -1805,23 +1791,84 @@ Potential fine mesh in the plasma region:
 
 -50 -> 300: x
 -100 -> 100: y
--100 -> 100: z
+-10 -> 10: z
 
 Nose cone: 515, 254, 139
 
-x: 465->815
-y: 154->354
-z: 39->239
+x: 465->815  (350 cm)
+y: 154->354  (200 cm)
+z = 137.5->140.5 (3 cm)
 
 FC104      Detailed mesh tally in FuZE Machine
-FMESH104:N GEOM=REC ORIGIN 465 154 39
+FMESH104:N GEOM=REC ORIGIN 465 154 137.5
            IMESH=815
-	   IINTS=700
+	   IINTS=699
 	   JMESH=354
-	   JINTS=400
-	   KMESH=239
-	   KINTS=400
+	   JINTS=399
+	   KMESH=149
+	   KINTS=2
            OUT=IJ
            EMESH 0.4 2.5
 
 
+Here are the detector dector positions that I took out:
+c -----------------------------------------------------------------------------
+c Fluence per neutron through detector 1. F4 is the track length in cell 221,
+c ":N" means neutrons, and 221 is the scintillator. 
+c -----------------------------------------------------------------------------
+F4:N 221
+FC4 Detector 1 Neutron Fluence
+c -----------------------------------------------------------------------------
+c Fluence per neutron through detector 2
+c -----------------------------------------------------------------------------
+F14:N 231
+FC14 Detector 2 Neutron Fluence
+c -----------------------------------------------------------------------------
+c Fluence per neutron through detector 3
+c -----------------------------------------------------------------------------
+F24:N 241
+FC24 Detector 3 Neutron Fluence
+c -----------------------------------------------------------------------------
+
+
+Here is the fmesh that I took out:
+fmesh104:n geom=rec origin 515 70 190
+           imesh= 565
+           iints= 50
+           jmesh= 120 170 220
+           jints= 50  50  50
+           kmesh= 240 290
+           kints= 50  50
+           out=ij
+           emesh 0.4 2.5
+
+
+I took this out:
+c -----------------------------------------------------------------------------
+c Tally Energy Card. E0 sets a default energy bin for all tallies.
+c If no EN card exists, a single default bin will be used for all tallies.
+c E0 will set this default bin. Each number is an upper bound for the
+c energy bins. "98i" means 98 equal spacings between 0.025 and 2.5.
+c -----------------------------------------------------------------------------
+e0 0.025 98i 2.5
+
+
+I took this out:
+c -----------------------------------------------------------------------------
+c PDRMP allows user to control the interval at which tallies are printed
+c to the output file, and dumped to the RUNTPE file.
+c "Print & Dump Cycle Card"
+c By default, an output file is created only at the conclusion of a
+c calculation, a binary continuation file, RUNTPE, is written every 
+c 15 minutes, and no tally-plot file, MCTAL, is written
+c PRDMP ndp ndm mct ndmp dmmp
+c ndp = increment for printing tallies
+c ndm = Increment for dumping to RTYPE file
+c mct = controls the printing of the MCTAL file
+c ndmp = Maximum number of dumps to RUTYPE file
+c dmmp = Controls how frequently tally fluctuation entries 
+c and rendevoius occur
+c "j" = 
+c -----------------------------------------------------------------------------
+prdmp j j 1
+c
