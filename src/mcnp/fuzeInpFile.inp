@@ -1311,7 +1311,7 @@ TR14 590 154 139 1 0 0 0 1 0 0 -0 1 1
 TR21 615 154 139 1 0 0 0 1 0 0 -0 1 1
 TR22 615 154 139 1 0 0 0 1 0 0 -0 1 1
 TR23 615 154 139 1 0 0 0 1 0 0 -0 1 1
-TR24 615 154 139 1 0 0 0 1 0 0 -0 1 1
+TR24 615 154 139 1 0 0 0 1 0 0 -0 1 1c
 fmesh104:n geom=rec origin 515 70 190
            imesh= 565
            iints= 50
@@ -1321,7 +1321,7 @@ fmesh104:n geom=rec origin 515 70 190
            kints= 50  50
            out=ij
            emesh 0.4 2.5
-c -----------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
 c Fluence per neutron through detector 1. F4 is the track length in cell 221,
 c ":N" means neutrons, and 221 is the scintillator. 
 c -----------------------------------------------------------------------------
@@ -1757,4 +1757,71 @@ cell. The sum of the contributions is reported as the F4 tally in the
 MCNP output.
 You can specify other F4 detectors by "F14", "F24", ...
 "FC4" is the F4 tally comment card.
+
+fmesh104:n geom=rec origin 515 70 190
+           imesh= 565
+           iints= 50
+           jmesh= 120 170 220
+           jints= 50  50  50
+           kmesh= 240 290
+           kints= 50  50
+           out=ij
+           emesh 0.4 2.5
+
+FMESH tally places a mesh over a geometry and tallies volumertric
+flux in each voxel. It has few statistical checks than other
+MCNP6 tallies.
+
+FMESHn:<pl> KEYWORD=value
+
+"n" = is a tally number ending in 4 (only type 4 volume flux
+tallies are permitted)
+<pl>= N or P or E. Particle type.
+Keywords:
+
+GEOM= Mesh geometry. "REC" means cartesian. Origin defines
+the x,y,z coordinates of the origin of the mesh in terms
+of the mcnp6 cell geometry.
+
+IMESH = Locations of coarse mesh points in the x-direction.
+IINTS = Number of fine mesh points within each coarse
+mesh in the x-direction
+JMESH = Locations of coarse mesh points in the y-direction.
+JINTS = Number of fine mesh points within each corresponding
+coarse mesh in the y direction.
+KMESH = Locations of coarse mesh points in z-direction
+KINTS = Number of fine mesh points with each coarse mesh
+in the z-direction
+OUT = "IJ", tally results are printed in series of two
+2D matrices with I=x and J=y. The first matrix contains
+the tally results, the second matrix the relative errors.
+The rows and columns are labled by the mid-points of
+the corresponding mesh bins.
+EMESH = Values of coarse mesh points in energy MeV
+
+The FM card determines the cross sections that are
+used to calculate the mesh bin values
+Potential fine mesh in the plasma region:
+
+-50 -> 300: x
+-100 -> 100: y
+-100 -> 100: z
+
+Nose cone: 515, 254, 139
+
+x: 465->815
+y: 154->354
+z: 39->239
+
+FC104      Detailed mesh tally in FuZE Machine
+FMESH104:N GEOM=REC ORIGIN 465 154 39
+           IMESH=815
+	   IINTS=700
+	   JMESH=354
+	   JINTS=400
+	   KMESH=239
+	   KINTS=400
+           OUT=IJ
+           EMESH 0.4 2.5
+
 
