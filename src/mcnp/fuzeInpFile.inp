@@ -1802,11 +1802,11 @@ z = 39->239 (200 cm)
 FC104      Detailed mesh tally in FuZE Machine
 FMESH104:N GEOM=REC ORIGIN 465 252.5 39
            IMESH=815
-	   IINTS=699
+	   IINTS=701
 	   JMESH=255.5
-	   JINTS=2
+	   JINTS=4
 	   KMESH=239
-	   KINTS=399
+	   KINTS=401
            OUT=IJ
            EMESH 0.4 2.5
 

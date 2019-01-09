@@ -301,11 +301,11 @@ MODE N
 FC104      Detailed mesh tally in FuZE Machine
 FMESH104:N GEOM=REC ORIGIN 465 252.5 39
            IMESH=815
-	   IINTS=699
+	   IINTS=701
 	   JMESH=255.5
-	   JINTS=2
+	   JINTS=4
 	   KMESH=239
-	   KINTS=399
+	   KINTS=401
            OUT=IJ
            EMESH 0.4 2.5
 c
@@ -456,6 +456,7 @@ c Graphite (1.70 g/cm^3)
 m18	006000.72c 1                                      $ C
 mx18:p 6012
 c
-NPS 100000000                                           
-Print 30                                                
+c NPS 100000000
+NPS 1000000
+Print 30
 c End of data cards
