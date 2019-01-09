@@ -1790,23 +1790,23 @@ used to calculate the mesh bin values
 Potential fine mesh in the plasma region:
 
 -50 -> 300: x
--100 -> 100: y
--10 -> 10: z
+-1.5 -> 1.5: y
+-100 -> 100: z
 
 Nose cone: 515, 254, 139
 
 x: 465->815  (350 cm)
-y: 154->354  (200 cm)
-z = 137.5->140.5 (3 cm)
+y: 252.5->255.5  (3 cm)
+z = 39->239 (200 cm)
 
 FC104      Detailed mesh tally in FuZE Machine
-FMESH104:N GEOM=REC ORIGIN 465 154 137.5
+FMESH104:N GEOM=REC ORIGIN 465 252.5 39
            IMESH=815
 	   IINTS=699
-	   JMESH=354
-	   JINTS=399
-	   KMESH=149
-	   KINTS=2
+	   JMESH=255.5
+	   JINTS=2
+	   KMESH=239
+	   KINTS=399
            OUT=IJ
            EMESH 0.4 2.5
 

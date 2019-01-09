@@ -59,13 +59,13 @@ SI5 0 32
 c
 MODE N
 FC104      Detailed mesh tally in FuZE Machine
-FMESH104:N GEOM=REC ORIGIN 465 154 137.5
+FMESH104:N GEOM=REC ORIGIN 465 252.5 39
            IMESH=815
 	   IINTS=699
-	   JMESH=354
-	   JINTS=399
-	   KMESH=149
-	   KINTS=2
+	   JMESH=255.5
+	   JINTS=2
+	   KMESH=239
+	   KINTS=399
            OUT=IJ
            EMESH 0.4 2.5
 c
