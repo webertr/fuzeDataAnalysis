@@ -62,7 +62,10 @@ static int free4DArray(double ****data4D, gsl_vector *xVec, gsl_vector *yVec, gs
 static double ****getHFactor(double ****dataFull, double ****dataVoid,
 			     int eSize, int xSize, int ySize, int zSize) {
 
-  int ii, jj, kk, ll;
+  int ii, 
+    jj, 
+    kk = 0, 
+    ll;
 
   double ****dataHFactor = (double ****) malloc(sizeof(double ***)*eSize);
 
@@ -71,7 +74,7 @@ static double ****getHFactor(double ****dataFull, double ****dataVoid,
     for (ii = 0; ii < xSize; ii++) {
       dataHFactor[ll][ii] = (double **) malloc(sizeof(double *)*ySize);
       for (jj = 0; jj < ySize; jj++) {
-	dataHFactor[ll][ii][jj] = (double *) malloc(sizeof(double)*ySize);
+	dataHFactor[ll][ii][jj] = (double *) malloc(sizeof(double)*zSize);
 	for (kk = 0; kk < zSize; kk++) {
 	  dataHFactor[ll][ii][jj][kk] = dataFull[ll][ii][jj][kk]/dataVoid[ll][ii][jj][kk];
 	}
@@ -206,7 +209,7 @@ static double ****read4DData(char *fileName, gsl_vector **xVecIn, gsl_vector **y
     for (ii = 0; ii < xSize; ii++) {
       data4D[ll][ii] = (double **) malloc(sizeof(double *)*ySize);
       for (jj = 0; jj < ySize; jj++) {
-	data4D[ll][ii][jj] = (double *) malloc(sizeof(double)*ySize);
+	data4D[ll][ii][jj] = (double *) malloc(sizeof(double)*zSize);
 	for (kk = 0; kk < zSize; kk++) {
 	  data4D[ll][ii][jj][kk] = data[ii+jj*xSize+kk*xSize*ySize+ll*xSize*ySize*zSize];
 	}
@@ -243,7 +246,7 @@ static double ****read4DData(char *fileName, gsl_vector **xVecIn, gsl_vector **y
  ******************************************************************************/
 
 static double ****getMeshTallyData(char *fileName, gsl_vector **xVec, gsl_vector **yVec,
-				    gsl_vector **zVec, gsl_vector **eVec) {
+				   gsl_vector **zVec, gsl_vector **eVec) {
 
 
   FILE *fp = fopen(fileName, "r");
@@ -342,7 +345,7 @@ static double ****getMeshTallyData(char *fileName, gsl_vector **xVec, gsl_vector
   }
   double *dataZTemp = (double *) malloc(sizeof(double)*zSize);
   charLoc = 0;
-  resTest = sscanf(charBuf, "Z direction:\t%lf%n", &yValue, &loc);
+  resTest = sscanf(charBuf, "Z direction:\t%lf%n", &zValue, &loc);
   ii = 0;
   charLoc = charLoc + loc;
   while (resTest == 1) {
@@ -609,14 +612,16 @@ static gsl_vector *getMeshTallyZVector(char *fileName) {
 static int testMeshTally1();
 static int testMeshTally2();
 static int testGetHFactorGrid();
+static int testGetHFactorGridJames();
 
 int testReadMeshTally() {
 
-  testGetHFactorGrid();
+  testGetHFactorGridJames();
 
   if (0) {
     testMeshTally1();
     testMeshTally2();
+    testGetHFactorGrid();
   }
 
   return 0;
@@ -732,7 +737,7 @@ static int testGetHFactorGrid() {
   char *fileNameHFactor;
   double ****dataHFactor;
 
-  if (0) {
+  if (1) {
 
     char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/brianFull/meshTalFull";
     fileNameFull = 
@@ -843,6 +848,108 @@ static int testGetHFactorGrid() {
     "rotate by 90 font 'Times Bold, 14'\n";
 
   plotImageDimensions(image, imageY, imageX, keywords, "data/mcnpImage.dat",
+		      "data/mcnpScript.sh");
+
+  free4DArray(dataHFactor, xVec, yVec, zVec, eVec);
+  free(xVec);
+  free(yVec);
+  free(zVec);
+  free(eVec);
+  
+  return 0;
+
+}
+
+
+static int testGetHFactorGridJames() {
+
+  int ii, jj, kk, ll;
+
+  gsl_vector *xVec;
+  gsl_vector *yVec;
+  gsl_vector *zVec;
+  gsl_vector *eVec;
+
+  char *fileNameHFactor;
+  double ****dataHFactor;
+
+  if (0) {
+
+    char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/test/inpFull.tally";
+
+    double ****dataFull = getMeshTallyData(fileNameFull, &xVec, &yVec, &zVec, &eVec);
+
+    gsl_vector_free(xVec);
+    gsl_vector_free(yVec);
+    gsl_vector_free(zVec);
+    gsl_vector_free(eVec);
+
+    char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/test/inpVoid.tally";
+
+    double ****dataVoid = getMeshTallyData(fileNameVoid, &xVec, &yVec, &zVec, &eVec);
+
+    dataHFactor = getHFactor(dataFull, dataVoid, eVec->size, xVec->size, yVec->size, 
+			     zVec->size);
+
+    fileNameHFactor = "/home/fuze/Github/fuzeDataAnalysis/data/hFactor.dat";
+
+    save4DData(dataHFactor, xVec, yVec, zVec, eVec, fileNameHFactor);
+
+    free4DArray(dataHFactor, xVec, yVec, zVec, eVec);
+    free4DArray(dataFull, xVec, yVec, zVec, eVec);
+    free4DArray(dataVoid, xVec, yVec, zVec, eVec);
+    free(xVec);
+    free(yVec);
+    free(zVec);
+    free(eVec);
+
+  }
+  
+  fileNameHFactor = "/home/fuze/Github/fuzeDataAnalysis/data/hFactor.dat";
+
+  dataHFactor = read4DData(fileNameHFactor, &xVec, &yVec, &zVec, &eVec);
+
+  /*
+   * Want to get a grid that is z-y plane. That is jj, kk. The values are
+   * -25 to 300 cm in x and -50 to 50 cm in z. The y = 0. The nose cone is at:
+   * x = 515 y = 254 z = 139
+   * So we want,
+   * x = 490 to 815, y = 254, z = 89 to 189.
+   * ii = 163 to 263, jj = 84, kk = 29 to 129
+   * ii = 263 is the max for ii.
+   */
+
+  int xSize = xVec->size;
+  int zSize = zVec->size;
+
+  gsl_matrix *image = gsl_matrix_alloc(zSize, xSize);
+
+  ll = 1;
+  jj = 1;
+  for (kk = 0; kk < zSize; kk++) {
+    for (ii = 0; ii < xSize; ii++) {
+      gsl_matrix_set(image, kk, ii, dataHFactor[ll][ii][jj][kk]);
+    }
+  }
+
+  double yValue = gsl_vector_get(yVec, jj);
+  double eValue = gsl_vector_get(eVec, ll);
+
+  printf("Y Value: %g cm\n", yValue);
+  printf("E Value: %g MeV\n", eValue);
+  
+  char *keywords = "set size ratio -1\n"
+    //"set terminal png\n"
+    //"set output '/home/fuze/Downloads/H-factor.png'\n"
+    "set title 'H-factor' font 'Times Bold,14'\n"
+    //"set xrange [490:790]\n"
+    //"set yrange [89:189]\n"
+    "set xlabel 'x (cm)' font 'Times Bold,14' offset 0,0\n"
+    "set ylabel 'z (cm)' font 'Times Bold,14' offset 1,0\n"
+    "set label front 'H-factor' at graph 1.2,0.30 "
+    "rotate by 90 font 'Times Bold, 14'\n";
+
+  plotImageDimensions(image, zVec, xVec, keywords, "data/mcnpImage.dat",
 		      "data/mcnpScript.sh");
 
   free4DArray(dataHFactor, xVec, yVec, zVec, eVec);
