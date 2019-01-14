@@ -1872,3 +1872,16 @@ c "j" =
 c -----------------------------------------------------------------------------
 prdmp j j 1
 c
+
+
+This is what I think might working for the fmesh reproducing zack's results:
+FC104      Detailed mesh tally in FuZE Machine
+FMESH104:N GEOM=REC ORIGIN 465 252.5 39
+           IMESH=815
+           IINTS=700
+           JMESH=255.5
+           JINTS=3
+           KMESH=239
+           KINTS=400
+           OUT=IJ
+           EMESH 0.4 2.5
