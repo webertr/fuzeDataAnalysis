@@ -456,7 +456,6 @@ c Graphite (1.70 g/cm^3)
 m18	006000.72c 1                                      $ C
 mx18:p 6012
 c
-c NPS 100000000
-NPS 1000000
+NPS 100000000
 Print 30
 c End of data cards
