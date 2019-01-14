@@ -875,7 +875,7 @@ static int testGetHFactorGridJames() {
 
   if (0) {
 
-    char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/test/inpFull.tally";
+    char *fileNameFull = "/home/fuze/webertrNAS/mcnpOutputFiles/1_14_19/inpFull.tally";
 
     double ****dataFull = getMeshTallyData(fileNameFull, &xVec, &yVec, &zVec, &eVec);
 
@@ -884,7 +884,7 @@ static int testGetHFactorGridJames() {
     gsl_vector_free(zVec);
     gsl_vector_free(eVec);
 
-    char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/test/inpVoid.tally";
+    char *fileNameVoid = "/home/fuze/webertrNAS/mcnpOutputFiles/1_14_19/inpVoid.tally";
 
     double ****dataVoid = getMeshTallyData(fileNameVoid, &xVec, &yVec, &zVec, &eVec);
 
@@ -939,11 +939,11 @@ static int testGetHFactorGridJames() {
   printf("E Value: %g MeV\n", eValue);
   
   char *keywords = "set size ratio -1\n"
-    //"set terminal png\n"
-    //"set output '/home/fuze/Downloads/H-factor.png'\n"
-    "set title 'H-factor' font 'Times Bold,14'\n"
-    //"set xrange [490:790]\n"
-    //"set yrange [89:189]\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/H-factor.png'\n"
+    "set title 'H-factor with detailed fmesh' font 'Times Bold,14'\n"
+    "set xrange [465:815]\n"
+    "set yrange [39:239]\n"
     "set xlabel 'x (cm)' font 'Times Bold,14' offset 0,0\n"
     "set ylabel 'z (cm)' font 'Times Bold,14' offset 1,0\n"
     "set label front 'H-factor' at graph 1.2,0.30 "

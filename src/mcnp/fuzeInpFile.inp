@@ -1885,3 +1885,12 @@ FMESH104:N GEOM=REC ORIGIN 465 252.5 39
            KINTS=400
            OUT=IJ
            EMESH 0.4 2.5
+
+Here is the commands I ran:
+
+rm inpVoid.*
+rm inpFull.*
+mcnp6 INP=inpFull OUTP=inpFull.out RUNTPE=inpFull.bin MESHTAL=inpFull.tally
+cp inpFull.tally ~/webertrNAS/mcnpOutputFiles/1_14_19
+mcnp6 INP=inpVoid OUTP=inpVoid.out RUNTPE=inpVoid.bin MESHTAL=inpVoid.tally
+cp inpVoid.tally ~/webertrNAS/mcnpOutputFiles/1_14_19/
