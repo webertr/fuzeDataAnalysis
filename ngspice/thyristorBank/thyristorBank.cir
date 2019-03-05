@@ -160,6 +160,10 @@ write ic1.txt (v(r1p)-v(r1n))/1m/1000
 write id1.txt -v(id1)/1u/1000
 * Writting output file for I from thyristor 1
 write it1.txt (v(it1p)-v(it1n))/3.33m/1000
+* Writting output file for V_GAP across resistor
+write vgapR.txt (v(1)-v(2))*1E-3
+* Writting output file for V_GAP across inductor
+write vgapL.txt (v(2))*1E-3
 
 * Ending control statement
 .endc

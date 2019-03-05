@@ -15,6 +15,8 @@ int main() {
   convert("ic1.txt", "ic1_convert.txt");
   convert("id1.txt", "id1_convert.txt");
   convert("it1.txt", "it1_convert.txt");
+  convert("vgapR.txt", "vgapR_convert.txt");
+  convert("vgapL.txt", "vgapL_convert.txt");
 
   return 0;
 
