@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   //testSave();
 
   /* Testing read mesh tally */
-  testReadMeshTally();
+  //testReadMeshTally();
   
   return 0;
 
