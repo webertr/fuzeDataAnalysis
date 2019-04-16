@@ -10,7 +10,7 @@ CCP = g++
 
 INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS_CPP = -g -Wall
-LIBRY_CPP = -lgsl -lgslcblas
+LIBRY_CPP = -lgsl -lgslcblas -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr
 
 
 SRC_DIR = src

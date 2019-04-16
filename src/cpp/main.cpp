@@ -7,6 +7,9 @@ int main() {
   int x = testGSL();
   std::cout << "Returned " << x;
 
+  int y = testMDSplus();
+  std::cout << "Returned " << y;
+
   return 0;
 
 }
