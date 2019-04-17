@@ -10,8 +10,8 @@
 #include <mdsobjects.h>
 
 #include <cpp/plot.h>
+#include <cpp/mdsplusAccess.h>
 
-int testGSL();
 int testMDSplus();
 
 #endif
