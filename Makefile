@@ -41,6 +41,7 @@ SOURCE := src/magnetic.c \
 	src/bankCheck.c
 
 SOURCE_CPP := src/cpp/main.cpp \
+	src/cpp/plot.cpp \
 	src/cpp/test.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))

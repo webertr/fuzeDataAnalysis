@@ -9,9 +9,9 @@
 #include <gsl/gsl_vector.h>
 #include <mdsobjects.h>
 
+#include <cpp/plot.h>
 
 int testGSL();
 int testMDSplus();
-int testMDSplusPlotData();
 
 #endif

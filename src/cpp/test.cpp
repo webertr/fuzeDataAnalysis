@@ -39,14 +39,15 @@ int testGSL() {
 int testMDSplus() {
 
   MDSplus::Tree *tree;
-  MDSplus::Data *evalData;
   std::string experiment = "fuze";
-  int shotNumber = 0;
-
-
   char experimentName[experiment.length()];
-
   strcpy(experimentName, experiment.c_str());
+  int shotNumber = 190416014;
+  MDSplus::TreeNode *node;
+  MDSplus::Data *data;
+  int numElements;
+  double *doubleArray;
+  double *timeArray;
 
   /*
    * Trying to open an experiment and shot number
@@ -67,49 +68,53 @@ int testMDSplus() {
 
   }
 
-  return 0;
+  node = tree->getNode("\\I_P");
 
-}
+  data = node->getData();
 
+  std::cout << "Data read from \\I_P: " << data << "\n";
 
-/******************************************************************************
- * Function: testMDSplusPlotData
- * Inputs: 
- * Returns: int
- * Description: Testing to see if the MDSplus works
- ******************************************************************************/
+  doubleArray = data->getDoubleArray(&numElements);
+  //timeArray = data->getDims();
+  //int *dim = node->dim_of();
 
-int testMDSplusPlotData() {
+  gsl_vector *timeVector = gsl_vector_alloc(numElements);
+  gsl_vector *ipVector = gsl_vector_alloc(numElements);
 
-  MDSplus::Tree *tree;
-  MDSplus::Data *evalData;
-  std::string experiment = "fuze";
-  int shotNumber = 0;
-
-
-  char experimentName[experiment.length()];
-
-  strcpy(experimentName, experiment.c_str());
-
-  /*
-   * Trying to open an experiment and shot number
-   */
-  try {
-
-    tree = new MDSplus::Tree(experimentName, shotNumber);
-
-  } catch(MDSplus::MdsException &exc) {
-
-    std::cout << "Cannot open tree " << experiment  
-	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
-    exit(0);
-
-  } catch(...) {
-
-    std::cout << "Default error";
-
+  int ii;
+  for (ii = 0; ii < numElements; ii++) {
+    gsl_vector_set(timeVector, ii, ii);
+    gsl_vector_set(ipVector, ii, doubleArray[ii]);
   }
 
+  std::string label1 = "with line lw 3 lc rgb 'black' title 'I_{p}'";
+  std::string label2 = "with line lw 3 lc rgb 'red' title 'I_{p}'";
+  std::string keywords = "set title 'Corn dogs'\n";
+  std::string tempDataFile = "data/test.txt";
+  std::string tempScriptFile = "data/test.sh";
+
+  plot2VectorData(timeVector, ipVector, label1.c_str(), ipVector, label2.c_str(), 
+		  keywords.c_str(), tempDataFile.c_str(), tempScriptFile.c_str());
+
+  // Freeing GSL vectors
+  gsl_vector_free(timeVector);
+  gsl_vector_free(ipVector);
+
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(data);
+ 
+  // Tree objects use C++ delete
+  delete tree;
+
+  // ???
+  delete node;
+
+  // Delete pointer to memory that mdsplus created. Shouldn't already be deleted?
+  delete doubleArray;
+
+  //delete timeArray;
+
   return 0;
 
 }
+
