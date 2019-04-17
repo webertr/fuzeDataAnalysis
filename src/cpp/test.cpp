@@ -43,8 +43,8 @@ int testMDSplus() {
   char experimentName[experiment.length()];
   strcpy(experimentName, experiment.c_str());
   int shotNumber = 190416014;
-  MDSplus::TreeNode *node;
   MDSplus::Data *data;
+  MDSplus::Data *dataT;
   int numElements;
   double *doubleArray;
   double *timeArray;
@@ -68,22 +68,18 @@ int testMDSplus() {
 
   }
 
-  node = tree->getNode("\\I_P");
-
-  data = node->getData();
-
-  std::cout << "Data read from \\I_P: " << data << "\n";
+  data = MDSplus::execute("\\I_P", tree);
+  dataT = MDSplus::execute("DIM_OF(\\I_P)", tree);
 
   doubleArray = data->getDoubleArray(&numElements);
-  //timeArray = data->getDims();
-  //int *dim = node->dim_of();
+  timeArray = dataT->getDoubleArray(&numElements);
 
   gsl_vector *timeVector = gsl_vector_alloc(numElements);
   gsl_vector *ipVector = gsl_vector_alloc(numElements);
 
   int ii;
   for (ii = 0; ii < numElements; ii++) {
-    gsl_vector_set(timeVector, ii, ii);
+    gsl_vector_set(timeVector, ii, timeArray[ii]);
     gsl_vector_set(ipVector, ii, doubleArray[ii]);
   }
 
@@ -102,17 +98,14 @@ int testMDSplus() {
 
   // Data objects must be freed via routine deleteData()
   MDSplus::deleteData(data);
+  MDSplus::deleteData(dataT);
  
   // Tree objects use C++ delete
   delete tree;
 
-  // ???
-  delete node;
-
   // Delete pointer to memory that mdsplus created. Shouldn't already be deleted?
   delete doubleArray;
-
-  //delete timeArray;
+  delete timeArray;
 
   return 0;
 
