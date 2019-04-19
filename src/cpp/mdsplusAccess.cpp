@@ -31,6 +31,7 @@ gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string 
 
     /*
      * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
      */
     tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
 
@@ -96,6 +97,7 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
 
     /*
      * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
      */
     tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
 
@@ -133,5 +135,24 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
   delete doubleArray;
 
   return retVec;
+
+}
+
+
+/******************************************************************************
+ * Function: getCurrentPulseNumber
+ * Inputs: const char *
+ * Returns: int
+ * Description: Returns the length of the specified signal if successful, -1
+ ******************************************************************************/
+
+int getCurrentPulseNumber() {
+
+  MDSplus::Data *data;
+  std::string getShot = "current_shot('fuze')";
+  data = MDSplus::execute(getShot.c_str());
+
+  /* return pulse number */
+  return data->getLong();
 
 }

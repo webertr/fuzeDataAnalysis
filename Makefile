@@ -43,6 +43,7 @@ SOURCE := src/magnetic.c \
 SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/plot.cpp \
 	src/cpp/mdsplusAccess.cpp \
+	src/cpp/analysis.cpp \
 	src/cpp/test.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))

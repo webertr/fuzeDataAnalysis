@@ -5,5 +5,6 @@
 
 
 #include "cpp/test.h"
+#include "cpp/analysis.h"
 
 #endif

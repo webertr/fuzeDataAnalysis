@@ -2,7 +2,7 @@
 
 int main() {
 
-  testMDSplus();
+  plotPostShotAnalysis();
 
   return 0;
 
