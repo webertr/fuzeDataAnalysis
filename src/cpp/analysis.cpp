@@ -70,6 +70,28 @@ int plotPostShotAnalysis() {
 
 
 /******************************************************************************
+ * Function: kiranaImageAnalysis
+ * Inputs: int
+ * Returns: int
+ * Description: This will analyze images from the kirana
+ ******************************************************************************/
+
+int kiranaImageAnalysis() {
+
+  Kirana kirana("/home/fuze/webertrNAS/kiranaVideo/170915068.SVF");
+  
+  //kirana.saveImage(0, "data/kiranaImage.dat");
+
+  gsl_matrix *image = kirana.getImage(20);
+
+  plotImageData(image, 1, 1, "set title 'corn'", "data/temp.dat", "data/temp.sh");
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plotCompCurrent
  * Inputs: int
  * Returns: int
@@ -77,4 +99,8 @@ int plotPostShotAnalysis() {
  * the post shot analysis
  ******************************************************************************/
 
-static int plotCompCurrent
+static int plotCompCurrent() {
+
+  return 0;
+
+}

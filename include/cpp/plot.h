@@ -5,6 +5,7 @@
 #include <gsl/gsl_matrix.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <string>
 
 
 int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, const char *yLabel,
@@ -12,5 +13,7 @@ int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, const char *yLabel,
 int plot2VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, const char *y1Label,
 		    gsl_vector *yVec2In, const char *y2Label, const char *plotOptions, 
 		    const char *tempDataFile, const char *tempScriptFile);
+int plotImageData(gsl_matrix *mInput, double dx, double dy, std::string plotOptions,
+		  std::string tempDataFile, std::string tempScriptFile);
 
 #endif

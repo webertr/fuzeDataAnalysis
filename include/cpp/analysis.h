@@ -11,7 +11,10 @@
 
 #include <cpp/plot.h>
 #include <cpp/mdsplusAccess.h>
+#include <cpp/getSVFData.h>
+
 
 int plotPostShotAnalysis();
+int kiranaImageAnalysis();
 
 #endif
