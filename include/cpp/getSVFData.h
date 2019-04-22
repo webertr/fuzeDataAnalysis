@@ -13,6 +13,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <byteswap.h>
+#include <iostream>
 
 
 /******************************************************************************
@@ -39,7 +40,11 @@ class Kirana {
     imageSeqSize,               // Size of image sequence
     offsetBytes,                //  number of bytes offset for the file
     setupDataSize,              // Size of xml setup block
-    versionNum;                 // Version number
+    versionNum,                 // Version number
+    cropRowLow,                 // The crop row value on the bottom
+    cropRowHigh,                // The crop row value in the top
+    cropColHigh,                // The crop value on the far right
+    cropColLow;                 // The crop value on the far left
     
   long metaData,                // Offset of meta data block
     setupData,                  // Offset of xml setup block
@@ -67,6 +72,8 @@ class Kirana {
   gsl_matrix *getImage(int imageNumber);
   void saveImage(int imageNumber, std::string fileName);
   void saveVideo(std::string fileName);
+  void setCropRow(int rowLow, int rowHigh);
+  void setCropCol(int colLow, int colHigh);
 
 };
 

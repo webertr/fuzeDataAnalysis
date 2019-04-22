@@ -80,12 +80,14 @@ int kiranaImageAnalysis() {
 
   Kirana kirana("/home/fuze/webertrNAS/kiranaVideo/170915068.SVF");
   
+  kirana.setCropRow(315, 410);
   //kirana.saveImage(0, "data/kiranaImage.dat");
-
-  gsl_matrix *image = kirana.getImage(20);
-
-  plotImageData(image, 1, 1, "set title 'corn'", "data/temp.dat", "data/temp.sh");
   
+  gsl_matrix *image = kirana.getImage(1);
+
+  std::string keywords = "set palette gray\nset title 'corn'"; 
+  plotImageData(image, 1, 1, keywords, "data/temp.dat", "data/temp.sh");
+
   return 0;
 
 }

@@ -181,6 +181,9 @@ Kirana::Kirana(std::string fileNameParam) {
     }
   }
 
+  setCropRow(0,imageHeight-1);
+  setCropCol(0,imageWidth-1);
+
   fclose(fp);  
   
 }
@@ -208,13 +211,13 @@ Kirana::~Kirana() {
 
 gsl_matrix *Kirana::getImage(int imageNumber) {
 
-  gsl_matrix *retImage = gsl_matrix_alloc(imageHeight, imageWidth);
+  gsl_matrix *retImage = gsl_matrix_alloc(cropRowHigh-cropRowLow+1, cropColHigh-cropColLow+1);
 
   int ii, jj;
-  for (ii = 0; ii < imageHeight; ii++) {
-    for (jj = 0; jj < imageWidth; jj++) {
+  for (ii = cropRowLow; ii <= cropRowHigh; ii++) {
+    for (jj = cropColLow; jj <= cropColHigh; jj++) {
 
-      gsl_matrix_set(retImage,ii,jj,data[ii+jj*imageHeight+
+      gsl_matrix_set(retImage,ii-cropRowLow,jj-cropColLow,data[ii+jj*imageHeight+
 					 imageHeight*imageWidth*imageNumber]);
 
     }
@@ -250,8 +253,8 @@ void Kirana::saveImage(int imageNumber, std::string fileName) {
   gsl_matrix *saveImage = gsl_matrix_alloc(imageHeight, imageWidth);
 
   int ii, jj;
-  for (ii = 0; ii < imageHeight; ii++) {
-    for (jj = 0; jj < imageWidth; jj++) {
+  for (ii = cropRowLow; ii <= cropRowHigh; ii++) {
+    for (jj = cropColLow; jj <= cropColHigh; jj++) {
 
       gsl_matrix_set(saveImage,ii,jj,data[ii+jj*imageHeight+
 					 imageHeight*imageWidth*imageNumber]);
@@ -296,6 +299,40 @@ void Kirana::saveImage(int imageNumber, std::string fileName) {
 
   gsl_matrix_float_free(temp);  
   gsl_matrix_free(saveImage);
+
+  return;
+
+}
+
+
+/******************************************************************************
+ * Function: setCropRow
+ * Inputs: int, int
+ * Returns: void
+ * Description: Set the values to crop the row, up/down
+ ******************************************************************************/
+
+void Kirana::setCropRow(int rowLow, int rowHigh) {
+
+  cropRowLow = rowLow;
+  cropRowHigh = rowHigh;
+
+  return;
+
+}
+
+
+/******************************************************************************
+ * Function: setCropCol
+ * Inputs: int, int
+ * Returns: void
+ * Description: Set the values to crop the col, left/right
+ ******************************************************************************/
+
+void Kirana::setCropCol(int colLow, int colHigh) {
+
+  cropColLow = colLow;
+  cropColHigh = colHigh;
 
   return;
 

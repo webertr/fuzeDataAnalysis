@@ -243,9 +243,8 @@ int plotImageData(gsl_matrix *mInput, double dx, double dy, std::string plotOpti
 
   fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
 
-  fprintf(fpScript, "%s\n", plotOptions.c_str());
-
   fprintf(fpScript, "set palette rgb 33,13,10\n");
+  fprintf(fpScript, "%s\n", plotOptions.c_str());
   fprintf(fpScript, "plot '%s' binary matrix with image title ''\n", tempDataFile.c_str());
   fprintf(fpScript, "pause -1\n");
 
