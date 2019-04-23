@@ -33,11 +33,10 @@ int testMDSplus() {
   std::string tempDataFile = "data/test.txt";
   std::string tempScriptFile = "data/test.sh";
 
-  plot2VectorData(time, ip, label1.c_str(), ip, label2.c_str(), 
-		  ipKeyWords.c_str(), tempDataFile.c_str(), tempScriptFile.c_str());
+  plot2VectorData(time, ip, label1, ip, label2, 
+		  ipKeyWords, tempDataFile, tempScriptFile);
 
-  plotVectorData(time, ip, label1.c_str(), 
-		 ipKeyWords.c_str(), tempDataFile.c_str(), tempScriptFile.c_str());
+  plotVectorData(time, ip, label1, ipKeyWords, tempDataFile, tempScriptFile);
 
   // Freeing GSL vectors
   gsl_vector_free(time);

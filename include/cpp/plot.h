@@ -8,11 +8,20 @@
 #include <string>
 
 
-int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, const char *yLabel,
-		   const char *plotOptions, const char *tempDataFile, const char *tempScriptFile);
-int plot2VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, const char *y1Label,
-		    gsl_vector *yVec2In, const char *y2Label, const char *plotOptions, 
-		    const char *tempDataFile, const char *tempScriptFile);
+int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, std::string yLabel,
+		   std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
+int plot2VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label,
+		    gsl_vector *yVec2In, std::string y2Label, std::string plotOptions, 
+		    std::string tempDataFile, std::string tempScriptFile);
+int plot3VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label,
+		    gsl_vector *yVec2In, std::string y2Label, 
+		    gsl_vector *yVec3In, std::string y3Label,
+		    std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
+int plot4VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label,
+		    gsl_vector *yVec2In, std::string y2Label, 
+		    gsl_vector *yVec3In, std::string y3Label,
+		    gsl_vector *yVec4In, std::string y4Label,
+		    std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
 int plotImageData(gsl_matrix *mInput, double dx, double dy, std::string plotOptions,
 		  std::string tempDataFile, std::string tempScriptFile);
 

@@ -2,9 +2,9 @@
 
 int main() {
 
-  //plotPostShotAnalysis();
+  plotPostShotAnalysis();
 
-  kiranaImageAnalysis();
+  //kiranaImageAnalysis();
 
   return 0;
 

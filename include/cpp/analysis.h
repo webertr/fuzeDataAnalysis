@@ -8,6 +8,7 @@
 #include <string>
 #include <cstring>
 #include <gsl/gsl_vector.h>
+#include <sstream>
 
 #include <cpp/plot.h>
 #include <cpp/mdsplusAccess.h>
