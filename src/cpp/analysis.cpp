@@ -9,6 +9,8 @@
 static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
 static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
 static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
+static int plotNeutron(int shotNumber, std::string neutronNode,
+		       std::string tempDataFile, std::string tempScriptFile);
 
 
 /******************************************************************************
@@ -50,6 +52,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
+    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -268,6 +271,62 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   oss.str("");
   
   plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotNeutron
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotNeutron(int shotNumber, std::string neutronNode,
+		       std::string tempDataFile, std::string tempScriptFile) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *neutron1;
+  gsl_vector *neutron2;
+  gsl_vector *neutron3;
+  std::string neutron1Label;
+  std::string neutron2Label;
+  std::string neutron3Label;
+
+  time = readMDSplusVectorDim(shotNumber, neutronNode, "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  neutron1 = readMDSplusVector(shotNumber, neutronNode, "fuze");
+  gsl_vector_scale(neutron1, 1E-3);
+  oss << "with line lw 3 lc rgb 'black' title 'ND for " << shotNumber << "'";
+  neutron1Label = oss.str();
+  oss.str("");
+
+  neutron2 = readMDSplusVector(shotNumber-1, neutronNode, "fuze");
+  gsl_vector_scale(neutron2, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title 'ND for " << shotNumber-1 << "'";
+  neutron2Label = oss.str();
+  oss.str("");
+
+  neutron3 = readMDSplusVector(shotNumber-2, neutronNode, "fuze");
+  gsl_vector_scale(neutron3, 1E-3);
+  oss << "with line lw 3 lc rgb 'green' title 'ND for " << shotNumber-2 << "'";
+  neutron3Label = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Neutron Detectors'\n"
+    "set xrange[0:100]\n"
+    "set ylabel 'Signal (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left bottom\n"
+    "set yrange[:]";
+  
+  plot3VectorData(time, neutron1, neutron1Label, neutron2, neutron2Label, neutron3, neutron3Label,
 		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;

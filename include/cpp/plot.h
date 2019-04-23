@@ -22,6 +22,12 @@ int plot4VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label
 		    gsl_vector *yVec3In, std::string y3Label,
 		    gsl_vector *yVec4In, std::string y4Label,
 		    std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
+int plot5VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label,
+		    gsl_vector *yVec2In, std::string y2Label, 
+		    gsl_vector *yVec3In, std::string y3Label,
+		    gsl_vector *yVec4In, std::string y4Label,
+		    gsl_vector *yVec5In, std::string y5Label,
+		    std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
 int plotImageData(gsl_matrix *mInput, double dx, double dy, std::string plotOptions,
 		  std::string tempDataFile, std::string tempScriptFile);
 

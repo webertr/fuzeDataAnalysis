@@ -293,7 +293,7 @@ int plot4VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label
   lengths[1] = yVec1In->size;
   lengths[2] = yVec2In->size;
   lengths[3] = yVec3In->size;
-  lengths[4] = yVec3In->size;
+  lengths[4] = yVec4In->size;
   
   for (ii = 0; ii < 4; ii++) {
     if (lengths[ii] != lengths[ii+1]) {
@@ -341,6 +341,104 @@ int plot4VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label
   fprintf(fpScript, "     '%s' using 1:3 %s,\\\n", tempDataFile.c_str(), y2Label.c_str());
   fprintf(fpScript, "     '%s' using 1:4 %s,\\\n", tempDataFile.c_str(), y3Label.c_str());
   fprintf(fpScript, "     '%s' using 1:5 %s\n", tempDataFile.c_str(), y4Label.c_str());
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile.c_str(), S_IRWXG);
+  chmod(tempScriptFile.c_str(), S_IRWXO);
+  chmod(tempScriptFile.c_str(), S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile.c_str(), pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+
+  return 0;
+
+}
+
+/******************************************************************************
+ * Function: plot5VectorData
+ * Inputs: gsl_vector*, gsl_vector*, gsl_vector*
+ * char *
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot5VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label,
+		    gsl_vector *yVec2In, std::string y2Label, 
+		    gsl_vector *yVec3In, std::string y3Label,
+		    gsl_vector *yVec4In, std::string y4Label,
+		    gsl_vector *yVec5In, std::string y5Label,
+		    std::string plotOptions, std::string tempDataFile, std::string tempScriptFile) {
+
+  int ii,
+    len = xVecIn->size;
+
+  int lengths[6];
+
+  lengths[0] = xVecIn->size;
+  lengths[1] = yVec1In->size;
+  lengths[2] = yVec2In->size;
+  lengths[3] = yVec3In->size;
+  lengths[4] = yVec4In->size;
+  lengths[5] = yVec5In->size;
+  
+  for (ii = 0; ii < 5; ii++) {
+    if (lengths[ii] != lengths[ii+1]) {
+      printf("Vectors not all the same length");
+      return -1;
+    }
+  }
+  
+  /* Writing file to hold data */
+  remove(tempDataFile.c_str());
+  remove(tempScriptFile.c_str());
+
+  FILE *fpData = fopen(tempDataFile.c_str(), "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  for (ii = 0; ii < len; ii++) {
+
+    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii), 
+	    gsl_vector_get(yVec3In, ii), gsl_vector_get(yVec4In, ii), 
+	    gsl_vector_get(yVec5In, ii));
+
+  }
+
+  fclose(fpData);
+
+  
+  FILE *fpScript = fopen(tempScriptFile.c_str(), "w");
+  
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions.c_str());
+  
+  fprintf(fpScript, "plot '%s' using 1:2 %s,\\\n", tempDataFile.c_str(), y1Label.c_str());
+  fprintf(fpScript, "     '%s' using 1:3 %s,\\\n", tempDataFile.c_str(), y2Label.c_str());
+  fprintf(fpScript, "     '%s' using 1:4 %s,\\\n", tempDataFile.c_str(), y3Label.c_str());
+  fprintf(fpScript, "     '%s' using 1:5 %s,\\\n", tempDataFile.c_str(), y4Label.c_str());
+  fprintf(fpScript, "     '%s' using 1:6 %s\n", tempDataFile.c_str(), y5Label.c_str());
   fprintf(fpScript, "pause -1\n");
   
   fclose(fpScript);
