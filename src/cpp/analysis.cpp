@@ -52,7 +52,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh");
+    //plotNeutron(shotNumber, "\\neutron_5_s", "data/neutron4.txt", "data/neutron4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -69,7 +69,7 @@ int plotPostShotAnalysis() {
   }
 
   if (0) {
-    
+    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh");
   }
 
   return 0;
@@ -237,30 +237,30 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   gsl_vector_scale(time, 1E6);
 
   p5 = readMDSplusVector(shotNumber, "\\m_0_p5", "fuze");
-  gsl_vector_scale(p5, 1E-3);
+  gsl_vector_scale(p5, 5E2);
   oss << "with line lw 3 lc rgb 'black' title 'I_{P-5}'";
   p5Label = oss.str();
   oss.str("");
 
   p15 = readMDSplusVector(shotNumber, "\\m_0_p15", "fuze");
-  gsl_vector_scale(p15, 1E-3);
+  gsl_vector_scale(p15, 5E2);
   oss << "with line lw 3 lc rgb 'red' title 'I_{P-15}'";
   p15Label = oss.str();
   oss.str("");
 
   p35 = readMDSplusVector(shotNumber, "\\m_0_p35", "fuze");
-  gsl_vector_scale(p35, 1E-3);
+  gsl_vector_scale(p35, 5E2);
   oss << "with line lw 3 lc rgb 'green' title 'I_{P-35}'";
   p35Label = oss.str();
   oss.str("");
 
   p45 = readMDSplusVector(shotNumber, "\\m_0_p45", "fuze");
-  gsl_vector_scale(p45, 1E-3);
+  gsl_vector_scale(p45, 5E2);
   oss << "with line lw 3 lc rgb 'blue' title 'I_{P-45}'";
   p45Label = oss.str();
   oss.str("");
 
-  oss << "set title 'I_{P} for " << shotNumber << "'\n"
+  oss << "set title 'm=0 at different z values for " << shotNumber << "'\n"
       << "set xrange[0:100]\n"
       << "set ylabel 'Current (kA)'\n"
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
@@ -302,19 +302,16 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
   gsl_vector_scale(time, 1E6);
 
   neutron1 = readMDSplusVector(shotNumber, neutronNode, "fuze");
-  gsl_vector_scale(neutron1, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'ND for " << shotNumber << "'";
   neutron1Label = oss.str();
   oss.str("");
 
   neutron2 = readMDSplusVector(shotNumber-1, neutronNode, "fuze");
-  gsl_vector_scale(neutron2, 1E-3);
   oss << "with line lw 3 lc rgb 'red' title 'ND for " << shotNumber-1 << "'";
   neutron2Label = oss.str();
   oss.str("");
 
   neutron3 = readMDSplusVector(shotNumber-2, neutronNode, "fuze");
-  gsl_vector_scale(neutron3, 1E-3);
   oss << "with line lw 3 lc rgb 'green' title 'ND for " << shotNumber-2 << "'";
   neutron3Label = oss.str();
   oss.str("");
