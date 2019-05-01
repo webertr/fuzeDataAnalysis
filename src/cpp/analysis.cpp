@@ -52,7 +52,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotNeutron(shotNumber, "\\neutron_5_s", "data/neutron4.txt", "data/neutron4.sh");
+    plotNeutron(shotNumber, "\\neutron_8_s", "data/neutron4.txt", "data/neutron4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
