@@ -13,7 +13,7 @@
 #include <cpp/plot.h>
 #include <cpp/mdsplusAccess.h>
 #include <cpp/getSVFData.h>
-
+#include <cpp/magnetic.h>
 
 int plotPostShotAnalysis();
 int kiranaImageAnalysis();

@@ -3,9 +3,11 @@
 int main() {
 
 
-  testMDSplusAccess();
+  //testMagnetic();
+
+  //testMDSplusAccess();
   
-  //plotPostShotAnalysis();
+  plotPostShotAnalysis();
 
   //kiranaImageAnalysis();
 

@@ -11,7 +11,8 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
 static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
 static int plotNeutron(int shotNumber, std::string neutronNode,
 		       std::string tempDataFile, std::string tempScriptFile);
-
+static int plotAzimuthalArray(int shotNumber, std::string nodeName,
+			      std::string tempDataFile, std::string tempScriptFile);
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
@@ -40,19 +41,19 @@ int plotPostShotAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
+    //plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
+    //plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
+    //plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotNeutron(shotNumber, "\\neutron_8_s", "data/neutron4.txt", "data/neutron4.sh");
+    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimtuh4.txt", "data/azimuth4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -73,6 +74,7 @@ int plotPostShotAnalysis() {
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
+    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimtuh4.txt", "data/azimuth4.sh");
   }
 
   return 0;
@@ -328,6 +330,59 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
   
   plot3VectorData(time, neutron1, neutron1Label, neutron2, neutron2Label, neutron3, neutron3Label,
 		  keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotAzimuthalArray
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotAzimuthalArray(int shotNumber, std::string nodeName,
+			      std::string tempDataFile, std::string tempScriptFile) {
+
+  gsl_vector* time = 0,
+    *p_000 = 0,
+    *p_045 = 0,
+    *p_090 = 0,
+    *p_135 = 0,
+    *p_180 = 0,
+    *p_225 = 0,
+    *p_270 = 0,
+    *p_315 = 0;
+
+  gsl_matrix *azimuthalArray = get8AzimuthalArray(shotNumber, nodeName);  
+
+  gsl_matrix_get_col(time, azimuthalArray, 0);
+  gsl_matrix_get_col(p_000, azimuthalArray, 1);
+  gsl_matrix_get_col(p_045, azimuthalArray, 2);
+  gsl_matrix_get_col(p_090, azimuthalArray, 3);
+  gsl_matrix_get_col(p_135, azimuthalArray, 4);
+  gsl_matrix_get_col(p_180, azimuthalArray, 5);
+  gsl_matrix_get_col(p_225, azimuthalArray, 6);
+  gsl_matrix_get_col(p_270, azimuthalArray, 7);
+  gsl_matrix_get_col(p_315, azimuthalArray, 8);
+
+  std::string plotOptions = "\n"
+    "\n";
+
+  plot5VectorData(time, p_000, "0 deg", p_045, "45 deg", p_090, "90 deg", p_135, "135 deg", 
+		  p_180, "180 deg", plotOptions, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(p_045);
+  gsl_vector_free(p_090);
+  gsl_vector_free(p_135);
+  gsl_vector_free(p_180);
+  gsl_vector_free(p_225);
+  gsl_vector_free(p_270);
+  gsl_vector_free(p_315);
 
   return 0;
 

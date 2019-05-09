@@ -31,43 +31,29 @@
  * Description: Returns 1 if OK, 0 otherwise. Status is OK if the LSB is set.
  ******************************************************************************/
 
-static char *replaceWord(const char *s, const char *oldW, const char *newW) {
+static std::string replaceWord(std::string sen, std::string oldW, std::string newW) {
 
-  char *result;
-  int i, cnt = 0;
-  int newWlen = strlen(newW);
-  int oldWlen = strlen(oldW);
- 
-  // Counting the number of times old word
-  // occur in the string
-  for (i = 0; s[i] != '\0'; i++) {
-    if (strstr(&s[i], oldW) == &s[i]) {
-      cnt++;
- 
-      // Jumping to index after the old word.
-      i += oldWlen - 1;
-    }
+  std::string result(sen);
+  int jj = 0, 
+    cnt = 0;
+  int newWLen = newW.length();
+  int oldWLen = oldW.length();
+
+  // Counting the number of times old word occur in the string jj = sen.find(oldW, 0);
+  jj = sen.find(oldW, 0);
+  while (jj != sen.npos) {
+    std::cout << "Iteration: " << cnt;
+    cnt++;
+    result.replace(jj, newWLen, newW);
+    result.erase(jj+newWLen, oldWLen);
+    jj = sen.find(oldW, jj + oldWLen - 1);
+    std::cout << " Old sentence: " << sen
+	      << "New Sentence: " << result << " jj: " << jj << "\n";
   }
- 
-  // Making new string of enough length
-  result = (char *)malloc(i + cnt * (newWlen - oldWlen) + 1);
- 
-  i = 0;
-  while (*s) {
-    
-    // compare the substring with the result
-    if (strstr(s, oldW) == s) {
-      strcpy(&result[i], newW);
-      i += newWlen;
-      s += oldWlen;
-    } else
-      result[i++] = *s++;
-  }
- 
-  result[i] = '\0';
+
   return result;
-}
 
+}
 
 
 /******************************************************************************
@@ -80,7 +66,7 @@ static char *replaceWord(const char *s, const char *oldW, const char *newW) {
  * moving forward in time.
  ******************************************************************************/
 
-gsl_matrix *get8AzimuthalArray(int shotNumber, string nodeName) {
+gsl_matrix *get8AzimuthalArray(int shotNumber, std::string nodeName) {
 
 
   gsl_vector* time,
@@ -101,14 +87,14 @@ gsl_matrix *get8AzimuthalArray(int shotNumber, string nodeName) {
   gsl_matrix *azimuthArray = gsl_matrix_alloc(sigSize, 9);
  
 
-  char *nodeName0 = nodeName,
-    *nodeName45 = replaceWord(nodeName, "000", "045"),
-    *nodeName90 = replaceWord(nodeName, "000", "090"),
-    *nodeName135 = replaceWord(nodeName, "000", "135"),
-    *nodeName180 = replaceWord(nodeName, "000", "180"),
-    *nodeName225 = replaceWord(nodeName, "000", "225"),
-    *nodeName270 = replaceWord(nodeName, "000", "270"),
-    *nodeName315 = replaceWord(nodeName, "000", "315");
+  std::string nodeName0 = nodeName,
+    nodeName45 = replaceWord(nodeName, "000", "045"),
+    nodeName90 = replaceWord(nodeName, "000", "090"),
+    nodeName135 = replaceWord(nodeName, "000", "135"),
+    nodeName180 = replaceWord(nodeName, "000", "180"),
+    nodeName225 = replaceWord(nodeName, "000", "225"),
+    nodeName270 = replaceWord(nodeName, "000", "270"),
+    nodeName315 = replaceWord(nodeName, "000", "315");
 
   /* Geting Data */
   p_000 = readMDSplusVector(shotNumber, nodeName0, "fuze");
@@ -216,6 +202,7 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
  ******************************************************************************/
 
 gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn) {
+
   int ii,
     numRows = mIn->size1,
     numCols = mIn->size2;
@@ -273,15 +260,11 @@ gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn) {
  ******************************************************************************/
 
 static int testAziMode();
-static int testDHIRead();
 static int testOffAxis();
 
 int testMagnetic() {
 
-  if (0) {
-    testAziMode();
-    testDHIRead();
-  }
+  testAziMode();
 
   testOffAxis();
 
@@ -289,13 +272,6 @@ int testMagnetic() {
 
 }
 
-static int testDHIRead() {
-
-  printf("DHI Time (should be 59E-5): %g\n", getDHITime(180517018));
-
-  return 0;
-
-}
 
 static int testOffAxis() {
 
@@ -342,19 +318,25 @@ static int testOffAxis() {
   /* Pulling data from tree for 180517006 */
 
   int shotNumber = 180517006;
-  char *dataNodeX = "\\X_P15";
-  char *dataNodeY = "\\Y_P15";
-  int sizeVec = getSignalLengthMDSplus(dataNodeX, shotNumber);
-  gsl_vector *xDataVec1 = gsl_vector_alloc(sizeVec),
-    *xDataVec2 = gsl_vector_alloc(sizeVec),
-    *yDataVec1 = gsl_vector_alloc(sizeVec),
-    *yDataVec2 = gsl_vector_alloc(sizeVec),
-    *dataVec = gsl_vector_alloc(sizeVec);
-  initializeMagneticData(shotNumber, dataNodeX, xDataVec1);
-  initializeMagneticData(shotNumber, dataNodeY, yDataVec1);
+  std::string dataNodeX = "\\X_P15";
+  std::string dataNodeY = "\\Y_P15";
+
+  gsl_vector *xDataVec1,
+    *yDataVec1,
+    *dataVec;
+  
+  xDataVec1 = readMDSplusVector(shotNumber, dataNodeX, "fuze");
+  yDataVec1 = readMDSplusVector(shotNumber, dataNodeY, "fuze");
+  dataVec = readMDSplusVectorDim(shotNumber, dataNodeX, "fuze");
+
+  int sizeVec = xDataVec1->size;
+
+  gsl_vector *xDataVec2 = gsl_vector_alloc(sizeVec),
+    *yDataVec2 = gsl_vector_alloc(sizeVec);
 
   /* Getting data */
-  gsl_matrix *azimuthArray = getAzimuthalArray(shotNumber, "\\b_p15_000");
+  gsl_matrix *azimuthArray = get8AzimuthalArray(shotNumber, "\\b_p15_000");
+  getAzimuthalArrayModes(azimuthArray);
   gsl_matrix *disp = getOffAxisDisplacement(azimuthArray);
 
   for (ii = 0; ii < sizeVec; ii++) {
