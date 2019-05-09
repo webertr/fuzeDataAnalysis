@@ -10,5 +10,7 @@
 gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string treeName);
 gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::string treeName);
 int getCurrentPulseNumber();
+double readMDSplusDouble(int shotNumber, std::string nodeName, std::string treeName);
+int testMDSplusAccess();
 
 #endif

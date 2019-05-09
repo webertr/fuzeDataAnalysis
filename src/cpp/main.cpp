@@ -2,7 +2,10 @@
 
 int main() {
 
-  plotPostShotAnalysis();
+
+  testMDSplusAccess();
+  
+  //plotPostShotAnalysis();
 
   //kiranaImageAnalysis();
 

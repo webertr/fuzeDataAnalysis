@@ -150,9 +150,95 @@ int getCurrentPulseNumber() {
 
   MDSplus::Data *data;
   std::string getShot = "current_shot('fuze')";
+  int pulseNumber;
+  
   data = MDSplus::execute(getShot.c_str());
+  pulseNumber = data->getLong();
+
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(data);
 
   /* return pulse number */
-  return data->getLong();
+  return pulseNumber;
+
+}
+
+
+/******************************************************************************
+ * Function: readDHIMDSplusDouble
+ * Inputs: int, char *, char *, char *
+ * Returns: gsl_vector *
+ * Description: 
+ ******************************************************************************/
+
+double readMDSplusDouble(int shotNumber, std::string nodeName, std::string treeName) {
+
+  MDSplus::Tree *tree;
+  MDSplus::Data *data;
+  double doubleValue;
+  std::string readOnly = "READONLY";
+
+  /*
+   * Trying to open an experiment and shot number
+   */
+  try {
+
+    /*
+     * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
+     */
+    tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
+
+  } catch(MDSplus::MdsException &exc) {
+
+    std::cout << "Cannot open tree " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    return -1;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    return -1;
+
+  }
+
+  data = MDSplus::execute(nodeName.c_str(), tree);
+  doubleValue = data->getDouble();
+  
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(data);
+
+  // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
+  delete tree;
+
+  return doubleValue;
+
+}
+
+
+/******************************************************************************
+ *
+ * TESTING SECTION
+ *
+ ******************************************************************************/
+
+static int testDHIRead();
+
+int testMDSplusAccess() {
+
+  testDHIRead();
+
+  return 0;
+
+}
+
+static int testDHIRead() {
+
+  int shotNumber = 180517018; // DHI Time = 59E-5
+  shotNumber = 190501030;     // DHI Time = 4.4E-5
+  std::cout << "DHI Time (should be 4.4E-5): " << readMDSplusDouble(shotNumber,"\\T_DHI_GATE" ,"fuze")
+	    << "\n";
+
+  return 0;
 
 }

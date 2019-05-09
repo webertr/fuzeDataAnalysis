@@ -52,7 +52,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotNeutron(shotNumber, "\\neutron_8_s", "data/neutron4.txt", "data/neutron4.sh");
+    //plotNeutron(shotNumber, "\\neutron_8_s", "data/neutron4.txt", "data/neutron4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -70,6 +70,9 @@ int plotPostShotAnalysis() {
 
   if (0) {
     plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh");
+    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
+    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
+    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
   }
 
   return 0;
