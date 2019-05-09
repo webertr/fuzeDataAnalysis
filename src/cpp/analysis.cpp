@@ -53,7 +53,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimtuh4.txt", "data/azimuth4.sh");
+    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -74,7 +74,7 @@ int plotPostShotAnalysis() {
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
-    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimtuh4.txt", "data/azimuth4.sh");
+    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh");
   }
 
   return 0;
@@ -347,19 +347,29 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      std::string tempDataFile, std::string tempScriptFile) {
 
-  gsl_vector* time = 0,
-    *p_000 = 0,
-    *p_045 = 0,
-    *p_090 = 0,
-    *p_135 = 0,
-    *p_180 = 0,
-    *p_225 = 0,
-    *p_270 = 0,
-    *p_315 = 0;
+  std::ostringstream oss;
+  std::string p_000Label,
+    p_045Label,
+    p_090Label,
+    p_135Label,
+    p_180Label;
 
   gsl_matrix *azimuthalArray = get8AzimuthalArray(shotNumber, nodeName);  
 
+  int vecSize = azimuthalArray->size1;
+
+  gsl_vector* time = gsl_vector_alloc(vecSize),
+    *p_000 = gsl_vector_alloc(vecSize),
+    *p_045 = gsl_vector_alloc(vecSize),
+    *p_090 = gsl_vector_alloc(vecSize),
+    *p_135 = gsl_vector_alloc(vecSize),
+    *p_180 = gsl_vector_alloc(vecSize),
+    *p_225 = gsl_vector_alloc(vecSize),
+    *p_270 = gsl_vector_alloc(vecSize),
+    *p_315 = gsl_vector_alloc(vecSize);
+
   gsl_matrix_get_col(time, azimuthalArray, 0);
+  gsl_vector_scale(time, 1E6);
   gsl_matrix_get_col(p_000, azimuthalArray, 1);
   gsl_matrix_get_col(p_045, azimuthalArray, 2);
   gsl_matrix_get_col(p_090, azimuthalArray, 3);
@@ -369,11 +379,31 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
   gsl_matrix_get_col(p_270, azimuthalArray, 7);
   gsl_matrix_get_col(p_315, azimuthalArray, 8);
 
-  std::string plotOptions = "\n"
-    "\n";
+  oss << "with line lw 3 lc rgb 'black' title '0 Deg.'";
+  p_000Label = oss.str();
+  oss.str("");
 
-  plot5VectorData(time, p_000, "0 deg", p_045, "45 deg", p_090, "90 deg", p_135, "135 deg", 
-		  p_180, "180 deg", plotOptions, tempDataFile, tempScriptFile);
+  oss << "with line lw 3 lc rgb 'red' title '45 Deg.'";
+  p_045Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'green' title '90 Deg.'";
+  p_090Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'orange' title '135 Deg.'";
+  p_135Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'yellow' title '180 Deg.'";
+  p_180Label = oss.str();
+  oss.str("");
+
+  std::string plotOptions = "set title 'Azimuthal Array'\n"
+    "set xlabel 'Time ({/Symbol m}sec)\n";
+
+  plot5VectorData(time, p_000, p_000Label, p_045, p_045Label, p_090, p_090Label, 
+		  p_135, p_135Label, p_180, p_180Label, plotOptions, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
   gsl_vector_free(p_045);
@@ -383,6 +413,8 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
   gsl_vector_free(p_225);
   gsl_vector_free(p_270);
   gsl_vector_free(p_315);
+
+  gsl_matrix_free(azimuthalArray);
 
   return 0;
 

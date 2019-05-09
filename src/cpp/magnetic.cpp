@@ -34,21 +34,18 @@
 static std::string replaceWord(std::string sen, std::string oldW, std::string newW) {
 
   std::string result(sen);
-  int jj = 0, 
-    cnt = 0;
+  size_t jj = 0;
+  int cnt = 0;
   int newWLen = newW.length();
   int oldWLen = oldW.length();
 
   // Counting the number of times old word occur in the string jj = sen.find(oldW, 0);
   jj = sen.find(oldW, 0);
   while (jj != sen.npos) {
-    std::cout << "Iteration: " << cnt;
     cnt++;
     result.replace(jj, newWLen, newW);
     result.erase(jj+newWLen, oldWLen);
     jj = sen.find(oldW, jj + oldWLen - 1);
-    std::cout << " Old sentence: " << sen
-	      << "New Sentence: " << result << " jj: " << jj << "\n";
   }
 
   return result;
