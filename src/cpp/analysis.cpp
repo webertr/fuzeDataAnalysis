@@ -13,6 +13,8 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
 		       std::string tempDataFile, std::string tempScriptFile);
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      std::string tempDataFile, std::string tempScriptFile);
+static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
+
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
@@ -53,6 +55,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
+    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -237,28 +240,28 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   std::string p45Label;
   std::string keyWords;
 
-  time = readMDSplusVectorDim(shotNumber, "\\m_0_p5", "fuze");
+  time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
   gsl_vector_scale(time, 1E6);
 
-  p5 = readMDSplusVector(shotNumber, "\\m_0_p5", "fuze");
+  p5 = getM0Mode(shotNumber, "\\b_p5_000");
   gsl_vector_scale(p5, 5E2);
   oss << "with line lw 3 lc rgb 'black' title 'I_{P-5}'";
   p5Label = oss.str();
   oss.str("");
 
-  p15 = readMDSplusVector(shotNumber, "\\m_0_p15", "fuze");
+  p15 = getM0Mode(shotNumber, "\\b_p15_000");
   gsl_vector_scale(p15, 5E2);
   oss << "with line lw 3 lc rgb 'red' title 'I_{P-15}'";
   p15Label = oss.str();
   oss.str("");
 
-  p35 = readMDSplusVector(shotNumber, "\\m_0_p35", "fuze");
+  p35 = getM0Mode(shotNumber, "\\b_p35_000");
   gsl_vector_scale(p35, 5E2);
   oss << "with line lw 3 lc rgb 'green' title 'I_{P-35}'";
   p35Label = oss.str();
   oss.str("");
 
-  p45 = readMDSplusVector(shotNumber, "\\m_0_p45", "fuze");
+  p45 = getM0Mode(shotNumber, "\\b_p45_000");
   gsl_vector_scale(p45, 5E2);
   oss << "with line lw 3 lc rgb 'blue' title 'I_{P-45}'";
   p45Label = oss.str();
@@ -270,6 +273,69 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
       << "set yrange[:]\n"
       << "set key left top";
+
+  keyWords = oss.str();
+  oss.str("");
+  
+  plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotM1Mode
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *p5;
+  gsl_vector *p15;
+  gsl_vector *p35;
+  gsl_vector *p45;
+  std::string p5Label;
+  std::string p15Label;
+  std::string p35Label;
+  std::string p45Label;
+  std::string keyWords;
+
+  time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  p5 = getM1Mode(shotNumber, "\\b_p5_000");
+  oss << "with line lw 3 lc rgb 'black' title 'M_0 at P5'";
+  p5Label = oss.str();
+  oss.str("");
+
+  p15 = getM1Mode(shotNumber, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'red' title 'M_0 at P15'";
+  p15Label = oss.str();
+  oss.str("");
+
+  p35 = getM1Mode(shotNumber, "\\b_p35_000");
+  oss << "with line lw 3 lc rgb 'green' title 'M_0 at P35'";
+  p35Label = oss.str();
+  oss.str("");
+
+  p45 = getM1Mode(shotNumber, "\\b_p45_000");
+  oss << "with line lw 3 lc rgb 'blue' title 'M_0 at P45'";
+  p45Label = oss.str();
+  oss.str("");
+
+  oss << "set title 'm=1 at different z values for " << shotNumber << "'\n"
+      << "set xrange[0:100]\n"
+      << "set ylabel 'Normalized mode'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set yrange[0:1]\n"
+      << "set key right top";
 
   keyWords = oss.str();
   oss.str("");

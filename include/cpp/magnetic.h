@@ -19,5 +19,7 @@ int testMagnetic();
 gsl_matrix *get8AzimuthalArray(int shotNumber, std::string nodeName);
 int getAzimuthalArrayModes(gsl_matrix *mIn);
 gsl_matrix *getOffAxisDisplacement(gsl_matrix *mIn);
+gsl_vector *getM0Mode(int shotNumber, std::string nodeName);
+gsl_vector *getM1Mode(int shotNumber, std::string nodeName);
 
 #endif

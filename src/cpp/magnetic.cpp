@@ -60,7 +60,7 @@ static std::string replaceWord(std::string sen, std::string oldW, std::string ne
  * Description: Returns a matrix of the 8 azimuthal array of magnetic probes
  * at p15 in the fuze machine with time at the end. First column is the time
  * values, next 8 are the 8 azimuthal probes. Going down the rows represent
- * moving forward in time.
+ * moving forward in time. Use "\\b_p15_000"
  ******************************************************************************/
 
 gsl_matrix *get8AzimuthalArray(int shotNumber, std::string nodeName) {
@@ -207,6 +207,31 @@ gsl_vector *getM0Mode(int shotNumber, std::string nodeName) {
   gsl_matrix_get_col(m0Mode, azimuthalArray, 1);
 
   return m0Mode;
+
+}
+
+
+/******************************************************************************
+ * Function: getM1Mode
+ * Inputs: int, std::string
+ * Returns: gsl_vector *
+ * Description: Will return the m=0 mode for the 0 degree azimuthal probe
+ * passed to it.
+ ******************************************************************************/
+
+gsl_vector *getM1Mode(int shotNumber, std::string nodeName) {
+
+  gsl_vector *m1Mode;
+  int vecSize;
+  
+  gsl_matrix *azimuthalArray = get8AzimuthalArray(shotNumber, nodeName);
+  getAzimuthalArrayModes(azimuthalArray);
+
+  vecSize = azimuthalArray->size1;
+  m1Mode = gsl_vector_alloc(vecSize);
+  gsl_matrix_get_col(m1Mode, azimuthalArray, 2);
+
+  return m1Mode;
 
 }
 
