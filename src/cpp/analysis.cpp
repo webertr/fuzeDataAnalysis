@@ -41,19 +41,18 @@ int plotPostShotAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    //plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
+    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    //plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
+    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    //plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
+    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
@@ -352,7 +351,10 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
     p_045Label,
     p_090Label,
     p_135Label,
-    p_180Label;
+    p_180Label,
+    p_225Label,
+    p_270Label,
+    p_315Label;
 
   gsl_matrix *azimuthalArray = get8AzimuthalArray(shotNumber, nodeName);  
 
@@ -399,13 +401,29 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
   p_180Label = oss.str();
   oss.str("");
 
-  std::string plotOptions = "set title 'Azimuthal Array'\n"
-    "set xlabel 'Time ({/Symbol m}sec)\n";
+  oss << "with line lw 3 lc rgb 'purple' title '225 Deg.'";
+  p_225Label = oss.str();
+  oss.str("");
 
-  plot5VectorData(time, p_000, p_000Label, p_045, p_045Label, p_090, p_090Label, 
-		  p_135, p_135Label, p_180, p_180Label, plotOptions, tempDataFile, tempScriptFile);
+  oss << "with line lw 3 lc rgb 'brown' title '270 Deg.'";
+  p_270Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'pink' title '315 Deg.'";
+  p_315Label = oss.str();
+  oss.str("");
+
+  std::string plotOptions = "set title 'Azimuthal Array'\n"
+    "set xlabel 'Time ({/Symbol m}sec)\n"
+    "set xrange[0:100]\n"
+    "set key left top\n"; 
+
+  plot8VectorData(time, p_000, p_000Label, p_045, p_045Label, p_090, p_090Label, 
+		  p_135, p_135Label, p_180, p_180Label, p_225, p_225Label, p_270, p_270Label,
+		  p_315, p_315Label, plotOptions, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
+  gsl_vector_free(p_000);
   gsl_vector_free(p_045);
   gsl_vector_free(p_090);
   gsl_vector_free(p_135);

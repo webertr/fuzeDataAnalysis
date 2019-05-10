@@ -187,6 +187,31 @@ int getAzimuthalArrayModes(gsl_matrix *mIn) {
 
 
 /******************************************************************************
+ * Function: getM0Mode
+ * Inputs: int, std::string
+ * Returns: gsl_vector *
+ * Description: Will return the m=0 mode for the 0 degree azimuthal probe
+ * passed to it.
+ ******************************************************************************/
+
+gsl_vector *getM0Mode(int shotNumber, std::string nodeName) {
+
+  gsl_vector *m0Mode;
+  int vecSize;
+  
+  gsl_matrix *azimuthalArray = get8AzimuthalArray(shotNumber, nodeName);
+  getAzimuthalArrayModes(azimuthalArray);
+
+  vecSize = azimuthalArray->size1;
+  m0Mode = gsl_vector_alloc(vecSize);
+  gsl_matrix_get_col(m0Mode, azimuthalArray, 1);
+
+  return m0Mode;
+
+}
+
+
+/******************************************************************************
  * Function: getOffAxisDisplacement
  * Inputs: gsl_matrix *
  * Returns: gsl_matrix *
