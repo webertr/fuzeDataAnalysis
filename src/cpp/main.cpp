@@ -7,9 +7,11 @@ int main() {
 
   //testMDSplusAccess();
   
-  plotPostShotAnalysis();
+  //plotPostShotAnalysis();
 
   //kiranaImageAnalysis();
+
+  testLightField();
 
   return 0;
 

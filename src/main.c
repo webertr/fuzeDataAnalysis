@@ -85,7 +85,10 @@ int main(int argc, char *argv[]) {
 
   /* Testing read mesh tally */
   //testReadMeshTally();
-  
+
+  /* Testing LF read */
+  //saveLFImage("/home/webertr/Spectroscopy/Data/171212/171212  020.spe", "data/temp.dat");
+
   return 0;
 
 }

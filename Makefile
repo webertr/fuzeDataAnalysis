@@ -10,7 +10,7 @@ CCP = g++
 
 INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
 FLAGS_CPP = -g -Wall
-LIBRY_CPP = -lgsl -lgslcblas -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr
+LIBRY_CPP = -lgsl -lgslcblas -lxml2 -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr
 
 
 SRC_DIR = src
@@ -46,6 +46,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/analysis.cpp \
 	src/cpp/getSVFData.cpp \
 	src/cpp/magnetic.cpp \
+	src/cpp/LightField.cpp \
 	src/cpp/test.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
