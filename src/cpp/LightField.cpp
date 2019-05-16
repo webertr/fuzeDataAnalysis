@@ -202,6 +202,8 @@ LightField::LightField(std::string fileNameParam):
   int sz = ftell(fp);
   
   std::string xmlTempFile = "data/xmlTemp.xml";
+  /* Removing file in case it exists */
+  remove(xmlTempFile.c_str());
 
   /*
    * Set fp to start of the xml file and read xml file
@@ -267,6 +269,12 @@ LightField::LightField(std::string fileNameParam):
   /* free data */
   free(data);
 
+  /* Setting the index of the brightess line */
+  maxLineIndex = getColMax();
+
+  /* Setting the index of the brightess line */
+  binnedLine = getBinnedCol(maxLineIndex, 5);
+  
   /*
    * Returning Success
    */
@@ -346,12 +354,90 @@ bool LightField::xmlParserSPE(std::string fileName, float *dataArray, int dim) {
 
 
 /******************************************************************************
+ * Function: plotImage
+ * Inputs: 
+ * Returns: 
+ * Description: Plots image
+ ******************************************************************************/
+
+int LightField::plotImage() {
+
+  plotImageData(image, 1, 1, "", "data/plotImageLF.dat", "data/plotImageLF.sh");
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: getColMax
+ * Inputs: 
+ * Returns: 
+ * Description: This will go through the image and find the maximum value
+ * for the sum of each column. This will be identified as the primary
+ * line to use
+ ******************************************************************************/
+
+int LightField::getColMax() {
+
+  int ii, jj;
+
+  gsl_vector *sumCol = gsl_vector_alloc(xdim);
+  double sum;
+
+  for (jj = 0; jj < xdim; jj++) {
+    sum = 0;
+    for (ii = 0; ii < ydim; ii++) {
+      sum = sum + gsl_matrix_get(image, ii, jj);
+    }
+    gsl_vector_set(sumCol, jj, sum);
+  }
+
+  int maxIndex = gsl_vector_max_index(sumCol);
+
+  gsl_vector_free(sumCol);
+
+  return maxIndex;
+
+}
+
+
+/******************************************************************************
+ * Function: getBinnedCol
+ * Inputs: 
+ * Returns: gsl_vector *
+ * Description: This will go through the image at the specified column
+ * and bin up by +/- the specified pixels
+ ******************************************************************************/
+
+gsl_vector *LightField::getBinnedCol(int colIndex, int binNum) {
+
+  int ii, jj;
+  double sum;
+
+  gsl_vector *retVec = gsl_vector_alloc(ydim);
+  
+  for (ii = 0; ii < ydim; ii++) {
+    sum = 0;
+    for (jj = -binNum; jj <= binNum; jj++) {
+      sum = sum + gsl_matrix_get(image, ii, colIndex+jj);
+    }
+    gsl_vector_set(retVec, ii, sum);
+  }
+
+  return retVec;
+
+}
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *
  ******************************************************************************/
 
 static bool testClassCreation();
+static bool testFindColMax();
 
 bool testLightField() {
 
@@ -359,6 +445,17 @@ bool testLightField() {
     std::cout << "Failed Class Creation\n";
     return false;
   }
+
+  if( !testFindColMax() ) {
+    std::cout << "Failed Find Column Max\n";
+    return false;
+  }
+
+  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+  test.plotImage();
+
+  plotVectorData(test.waveLength, test.binnedLine, 
+		 "", "", "data/splTest.dat", "data/splTest.sh");
 
   std::cout << "Passed All Light Field Tests\n";
 
@@ -370,6 +467,21 @@ bool testLightField() {
 static bool testClassCreation() {
 
   LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+
+  return true;
+
+}
+
+
+static bool testFindColMax() {
+
+  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+
+  int colMax = test.maxLineIndex;
+
+  if (colMax != 462) {
+    return false;
+  }
 
   return true;
 
