@@ -275,8 +275,8 @@ LightField::LightField(std::string fileNameParam):
   /* Setting the index of the brightess line */
   binnedLine = getBinnedCol(maxLineIndex, 5);
 
-  /* Getting the fiber centers */
-  //fiberCenters = smoothVector(binnedLine);
+  /* Smooth line by applying an FFT */
+  smoothedLine = smoothVector(binnedLine, 4);
 
   /*
    * Returning Success
@@ -440,107 +440,47 @@ gsl_vector *LightField::getBinnedCol(int colIndex, int binNum) {
  * Description: This will determine the local maxima of the passed vectors
  ******************************************************************************/
 
-gsl_vector *LightField::smoothVector(gsl_vector *vecIn) {
+gsl_vector *LightField::smoothVector(gsl_vector *vecIn, int maxFFTCutoff) {
 
-  const int vecSize = vecIn->size;
-  const int N_COEFFS = 12;
-  const int K = 4;                        // k = 4 for cubic spline
-  const int N_BREAK = N_COEFFS + 2 - K;   // nbreak = ncoeffs + 2 - k = ncoeffs - 2 since k = 4
-  int ii, jj;
-  gsl_bspline_workspace *bw;
-  gsl_vector *B;
-  gsl_rng *r;
-  gsl_vector *c, *w;
-  gsl_vector *x, *y;
-  gsl_matrix *X, *cov;
-  gsl_multifit_linear_workspace *mw;
-  double chisq, Rsq, dof, tss;
+  int vecSize = vecIn->size;
+  int ii;
 
   gsl_vector *retVec = gsl_vector_alloc(vecSize);
-  gsl_vector *xVec = gsl_vector_alloc(vecSize);
+  size_t *sortIndex = (size_t *)malloc(sizeof(size_t) * vecSize);
+
+  gsl_fft_real_wavetable * real;
+  gsl_fft_halfcomplex_wavetable * hc;
+  gsl_fft_real_workspace * work;
+
+  work = gsl_fft_real_workspace_alloc(vecSize);
+  real = gsl_fft_real_wavetable_alloc(vecSize);
 
   for (ii = 0; ii < vecSize; ii++) {
-    gsl_vector_set(xVec, ii, ii);
+    gsl_vector_set(retVec, ii, gsl_vector_get(vecIn, ii));
   }
 
-  gsl_rng_env_setup();
-  r = gsl_rng_alloc(gsl_rng_default);
+  gsl_fft_real_transform (retVec->data, 1, vecSize, real, work);
 
-  /* allocate a cubic bspline workspace (k = 4) */
-  bw = gsl_bspline_alloc(K, N_BREAK);
-  B = gsl_vector_alloc(N_COEFFS);
+  /* Sorting elements from smallest to largest */
+  gsl_sort_index(sortIndex, retVec->data, 1, vecSize);
 
-  x = gsl_vector_alloc(vecSize);
-  y = gsl_vector_alloc(vecSize);
-  X = gsl_matrix_alloc(vecSize, N_COEFFS);
-  c = gsl_vector_alloc(N_COEFFS);
-  w = gsl_vector_alloc(vecSize);
-  cov = gsl_matrix_alloc(N_COEFFS, N_COEFFS);
-  mw = gsl_multifit_linear_alloc(vecSize, N_COEFFS);
-
-  /* this is the data to be fitted */
-  for (ii = 0; ii < vecSize; ii++) {
-    gsl_vector_set(x, ii, gsl_vector_get(xVec, ii));
-    gsl_vector_set(y, ii, gsl_vector_get(vecIn, ii));
-    gsl_vector_set(w, ii, 1.0);
+  /* Zeroing all elements not in the maxFFTCutoff largest */
+  for (ii = 0; (ii + maxFFTCutoff) < vecSize; ii++) {
+    std::cout << "ii: " << ii << "\n";
+    gsl_vector_set(retVec, sortIndex[ii], 0);
   }
 
-  /* use uniform breakpoints on [0, vecSize] */
-  gsl_bspline_knots_uniform(0.0, vecSize, bw);
+  gsl_fft_real_wavetable_free(real);
 
-  /* construct the fit matrix X */
-  for (ii = 0; ii < vecSize; ++ii) {
-   
-    double xi = gsl_vector_get(x, ii);
+  hc = gsl_fft_halfcomplex_wavetable_alloc(vecSize);
 
-    /* compute B_j(xi) for all j */
-    gsl_bspline_eval(xi, B, bw);
+  gsl_fft_halfcomplex_inverse(retVec->data, 1, vecSize, hc, work);
+  gsl_fft_halfcomplex_wavetable_free(hc);
 
-    /* fill in row i of X */
-    for (jj = 0; jj < N_COEFFS; ++jj) {
-      double Bj = gsl_vector_get(B, jj);
-      gsl_matrix_set(X, ii, jj, Bj);
-    }
-  }
+  gsl_fft_real_workspace_free(work);
 
-  /* do the fit */
-  gsl_multifit_wlinear(X, w, y, c, cov, &chisq, mw);
+  free(sortIndex);
 
-  dof = vecSize - N_COEFFS;
-  tss = gsl_stats_wtss(w->data, 1, y->data, 1, y->size);
-  Rsq = 1.0 - chisq / tss;
-
-  fprintf(stderr, "chisq/dof = %e, Rsq = %f\n",
-                   chisq / dof, Rsq);
-
-  printf("\n\n");
-
-  /* output the smoothed curve */
-  double yi, yerr;
-
-  for (ii =0; ii < vecSize; ++ii) {
-    gsl_bspline_eval(ii, B, bw);
-    gsl_multifit_linear_est(B, c, cov, &yi, &yerr);
-    gsl_vector_set(retVec, ii, yi);
-  }
-
-  gsl_rng_free(r);
-  gsl_bspline_free(bw);
-  gsl_vector_free(B);
-  gsl_vector_free(x);
-  gsl_vector_free(y);
-  gsl_matrix_free(X);
-  gsl_vector_free(c);
-  gsl_vector_free(w);
-  gsl_matrix_free(cov);
-  gsl_multifit_linear_free(mw);
-
-
-  plot2VectorData(xVec, vecIn, "title 'data'", retVec, "title 'model'", 
-		  "", "data/temp.txt", "data/temp.sh");
-
-  gsl_vector_free(xVec);
- 
   return retVec;
 
 }
@@ -568,10 +508,17 @@ bool testLightField() {
   }
 
   LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
-  test.plotImage();
+  //test.plotImage();
 
-  plotVectorData(test.waveLength, test.binnedLine, 
-		 "", "", "data/splTest.dat", "data/splTest.sh");
+  //plotVectorData(test.waveLength, test.binnedLine, 
+  //		 "", "", "data/splTest.dat", "data/splTest.sh");
+
+  std::cout << "Wavlength size: " << test.waveLength->size << "\n";
+  std::cout << "Binned line size: " << test.binnedLine->size << "\n";
+  std::cout << "Smoothed line size: " << test.smoothedLine->size << "\n";
+  plot2VectorData(test.waveLength, test.binnedLine, "title 'data'", 
+		  test.smoothedLine, "with line lw 3 title 'model'", 
+		  "", "data/temp.txt", "data/temp.sh");
 
   std::cout << "Passed All Light Field Tests\n";
 

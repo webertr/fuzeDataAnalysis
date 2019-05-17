@@ -19,6 +19,9 @@
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 #include <gsl/gsl_statistics.h>
+#include <gsl/gsl_fft_real.h>
+#include <gsl/gsl_fft_halfcomplex.h>
+#include <gsl/gsl_sort.h>
 
 #include "plot.h"
 
@@ -41,15 +44,15 @@ class LightField {
   signed int pixelType;                          // The pixel type 32f = 32 bit floating type
   char speFile[100];                             // The SPE fiel anem
   bool xmlParserSPE(std::string fileName,        // Internal function to deal with .xml file
-		    float *dataArray, 
-		    int dim);
+		    float *dataArray, int dim); 
   int getColMax();                               // Find the max summed column in the image
   gsl_vector *getBinnedCol(int colIndex,         // For the col line index this bins the col 
 			   int binNum);          // +/- 5 pixels around this column
-  gsl_vector *smoothVector(gsl_vector *vecIn);   // Finds the local maxima of the passed vector
-
+  gsl_vector *smoothVector(gsl_vector *vecIn,    // Smooths passed vector by chopping off
+			   int maxFFTCutoff);    // FFT components below cutoff
  public:
 
+  int fiberSpacing;                          // The average spacing between fiber centers
   int maxLineIndex;                          // The index of the brighted sumed col. This is what
                                              // We will say is the location of the chord we will
                                              // Use to find the fiber centers/boundaries
@@ -57,6 +60,7 @@ class LightField {
   gsl_vector *fiberCenters;                  // A vector of the center values of each fiber
   gsl_vector *binnedLine;                    // A the primary line summed across +/- 5 pixels
                                              // to account for any doppler shifts in wavelength
+  gsl_vector *smoothedLine;                  // Binned line but smoothed with FFT
   gsl_matrix *image;                         // The full image of all 20 fibers
   
   LightField(std::string fileNameParam);
