@@ -41,6 +41,8 @@ class LightField {
   int ydim;                                      // The height of the frame in pixels
   int frameNum;                                  // The Number of frames.
   int imageSize;                                 // The total number of pixels
+  int numFibers;                                 // The total number of fibers found
+  int numBoundaries;                             // The total number of fiber boundaries found
   signed int pixelType;                          // The pixel type 32f = 32 bit floating type
   char speFile[100];                             // The SPE fiel anem
   bool xmlParserSPE(std::string fileName,        // Internal function to deal with .xml file
@@ -50,6 +52,9 @@ class LightField {
 			   int binNum);          // +/- 5 pixels around this column
   gsl_vector *smoothVector(gsl_vector *vecIn,    // Smooths passed vector by chopping off
 			   int maxFFTCutoff);    // FFT components below cutoff
+  gsl_vector *getMaxima(gsl_vector *vecIn);      // Getting the peaks of the smoothed line
+  gsl_vector *getMinima(gsl_vector *vecIn);      // Getting the valleys of the smoothed line
+
  public:
 
   int fiberSpacing;                          // The average spacing between fiber centers
@@ -58,9 +63,12 @@ class LightField {
                                              // Use to find the fiber centers/boundaries
   gsl_vector *waveLength;                    // A vector of the wavelengths of the spectrometer
   gsl_vector *fiberCenters;                  // A vector of the center values of each fiber
+  gsl_vector *fiberBoundaries;               // The boundaries of all fibers
   gsl_vector *binnedLine;                    // A the primary line summed across +/- 5 pixels
                                              // to account for any doppler shifts in wavelength
   gsl_vector *smoothedLine;                  // Binned line but smoothed with FFT
+  gsl_vector *fiberCenterCol;                // A 1 if a fiber center, zero otherwise
+  gsl_vector *fiberBoundCol;                 // A 1 if a fiber boundary, zero otherwise
   gsl_matrix *image;                         // The full image of all 20 fibers
   
   LightField(std::string fileNameParam);

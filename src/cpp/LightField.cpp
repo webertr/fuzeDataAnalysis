@@ -278,6 +278,32 @@ LightField::LightField(std::string fileNameParam):
   /* Smooth line by applying an FFT */
   smoothedLine = smoothVector(binnedLine, 4);
 
+  /* Getting the peaks of the smoothed line */
+  fiberCenters = getMaxima(smoothedLine);
+
+  /* Setting total number of fibers */
+  numFibers = fiberCenters->size;
+
+  /* Populating fiberCenterCol */
+  fiberCenterCol = gsl_vector_alloc(smoothedLine->size);
+  gsl_vector_set_zero(fiberCenterCol);
+  for (ii = 0; ii < numFibers; ii++) {
+    gsl_vector_set(fiberCenterCol, (int) gsl_vector_get(fiberCenters, ii), 1);
+  }
+
+  /* Finding fiber boundaries */
+  fiberBoundaries = getMinima(smoothedLine);
+
+  /* Setting total number of fiber boundaries */
+  numBoundaries = fiberBoundaries->size;
+
+  /* Populating fiberBoundCol */
+  fiberBoundCol = gsl_vector_alloc(smoothedLine->size);
+  gsl_vector_set_zero(fiberBoundCol);
+  for (ii = 0; ii < numBoundaries; ii++) {
+    gsl_vector_set(fiberBoundCol, (int) gsl_vector_get(fiberBoundaries, ii), 1);
+  }
+
   /*
    * Returning Success
    */
@@ -437,7 +463,8 @@ gsl_vector *LightField::getBinnedCol(int colIndex, int binNum) {
  * Function: smoothVector
  * Inputs: 
  * Returns: gsl_vector *
- * Description: This will determine the local maxima of the passed vectors
+ * Description: This will smooth the passed vector by chopping of all FFT
+ * components that are not the nth largest.
  ******************************************************************************/
 
 gsl_vector *LightField::smoothVector(gsl_vector *vecIn, int maxFFTCutoff) {
@@ -466,7 +493,6 @@ gsl_vector *LightField::smoothVector(gsl_vector *vecIn, int maxFFTCutoff) {
 
   /* Zeroing all elements not in the maxFFTCutoff largest */
   for (ii = 0; (ii + maxFFTCutoff) < vecSize; ii++) {
-    std::cout << "ii: " << ii << "\n";
     gsl_vector_set(retVec, sortIndex[ii], 0);
   }
 
@@ -480,6 +506,134 @@ gsl_vector *LightField::smoothVector(gsl_vector *vecIn, int maxFFTCutoff) {
   gsl_fft_real_workspace_free(work);
 
   free(sortIndex);
+
+  return retVec;
+
+}
+
+
+/******************************************************************************
+ * Function: getMaxima
+ * Inputs: 
+ * Returns: gsl_vector *
+ * Description: This will find the local maxima of this smoothed vector
+ ******************************************************************************/
+
+gsl_vector *LightField::getMaxima(gsl_vector *vecIn) {
+
+  int vecSize = vecIn->size;
+  int ii, jj;
+  int numMaxima = 0;
+
+  gsl_vector *tempDeriv = gsl_vector_alloc(vecSize);
+  gsl_vector *tempMaxima = gsl_vector_alloc(vecSize);
+  gsl_vector_set_zero(tempMaxima);
+
+  /* taking the derivative */
+  for (ii = 0; ii < (vecSize-1); ii++) {
+    gsl_vector_set(tempDeriv, ii,
+		   gsl_vector_get(vecIn, ii+1)-gsl_vector_get(vecIn, ii));
+  }
+  gsl_vector_set(tempDeriv, vecSize-1, 0);
+
+  /* find the zero crossing positive to negative zero crossings */
+  for (ii = 5; ii < (vecSize-5); ii++) {
+
+    /* Assuming we have a maxima */
+    gsl_vector_set(tempMaxima, ii, 1);
+    numMaxima += 1;
+    for (jj = 0; jj < 5; jj++) {
+      
+      /* If yes, we found that it isn't a maxima, and zero and break */
+      if ( (GSL_SIGN(tempDeriv->data[ii-(1+jj)])!=1) || 
+	   (GSL_SIGN(tempDeriv->data[ii+1+jj])!=-1)  ||
+	   (gsl_vector_get(tempMaxima, ii-1) == 1) ) {
+	gsl_vector_set(tempMaxima, ii, 0);
+	numMaxima -= 1;
+	break;
+      }
+
+    }
+  }
+
+  gsl_vector *retVec = gsl_vector_alloc(numMaxima);
+
+  jj = 0;
+  double val;
+  for (ii = 0; ii < vecSize; ii++) {
+    val = gsl_vector_get(tempMaxima, ii); 
+    if ( val == 1) {
+      gsl_vector_set(retVec, jj, ii);
+      jj++;
+    }
+  }
+
+  gsl_vector_free(tempDeriv);
+  gsl_vector_free(tempMaxima);
+
+  return retVec;
+
+}
+
+
+/******************************************************************************
+ * Function: getMinima
+ * Inputs: 
+ * Returns: gsl_vector *
+ * Description: This will find the local minima of this smoothed vector
+ ******************************************************************************/
+
+gsl_vector *LightField::getMinima(gsl_vector *vecIn) {
+
+  int vecSize = vecIn->size;
+  int ii, jj;
+  int numMaxima = 0;
+
+  gsl_vector *tempDeriv = gsl_vector_alloc(vecSize);
+  gsl_vector *tempMinima = gsl_vector_alloc(vecSize);
+  gsl_vector_set_zero(tempMinima);
+
+  /* taking the derivative */
+  for (ii = 0; ii < (vecSize-1); ii++) {
+    gsl_vector_set(tempDeriv, ii,
+		   gsl_vector_get(vecIn, ii+1)-gsl_vector_get(vecIn, ii));
+  }
+  gsl_vector_set(tempDeriv, vecSize-1, 0);
+
+  /* find the zero crossing positive to negative zero crossings */
+  for (ii = 5; ii < (vecSize-5); ii++) {
+
+    /* Assuming we have a maxima */
+    gsl_vector_set(tempMinima, ii, 1);
+    numMaxima += 1;
+    for (jj = 0; jj < 5; jj++) {
+      
+      /* If yes, we found that it isn't a maxima, and zero and break */
+      if ( (GSL_SIGN(tempDeriv->data[ii-(1+jj)])!=-1) || 
+	   (GSL_SIGN(tempDeriv->data[ii+1+jj])!=1)  ||
+	   (gsl_vector_get(tempMinima, ii-1) == 1) ) {
+	gsl_vector_set(tempMinima, ii, 0);
+	numMaxima -= 1;
+	break;
+      }
+
+    }
+  }
+
+  gsl_vector *retVec = gsl_vector_alloc(numMaxima);
+
+  jj = 0;
+  double val;
+  for (ii = 0; ii < vecSize; ii++) {
+    val = gsl_vector_get(tempMinima, ii); 
+    if ( val == 1) {
+      gsl_vector_set(retVec, jj, ii);
+      jj++;
+    }
+  }
+
+  gsl_vector_free(tempDeriv);
+  gsl_vector_free(tempMinima);
 
   return retVec;
 
@@ -513,13 +667,20 @@ bool testLightField() {
   //plotVectorData(test.waveLength, test.binnedLine, 
   //		 "", "", "data/splTest.dat", "data/splTest.sh");
 
-  std::cout << "Wavlength size: " << test.waveLength->size << "\n";
-  std::cout << "Binned line size: " << test.binnedLine->size << "\n";
-  std::cout << "Smoothed line size: " << test.smoothedLine->size << "\n";
   plot2VectorData(test.waveLength, test.binnedLine, "title 'data'", 
-		  test.smoothedLine, "with line lw 3 title 'model'", 
-		  "", "data/temp.txt", "data/temp.sh");
+  		  test.smoothedLine, "with line lw 3 title 'model'", 
+  		  "", "data/temp1.txt", "data/temp1.sh");
 
+  gsl_vector_scale(test.fiberCenterCol, 150);
+  plot2VectorData(test.waveLength, test.fiberCenterCol, "with line title 'centers'", 
+		  test.smoothedLine, "with line lw 3 title 'model'", 
+		  "", "data/temp2.txt", "data/temp2.sh");
+
+  gsl_vector_scale(test.fiberBoundCol, 150);
+  plot2VectorData(test.waveLength, test.fiberBoundCol, "with line title 'bound'", 
+		  test.smoothedLine, "with line lw 3 title 'model'", 
+		  "", "data/temp3.txt", "data/temp3.sh");
+  
   std::cout << "Passed All Light Field Tests\n";
 
   return true;
