@@ -37,12 +37,6 @@ class LightField {
 
   std::string fileName;                          // The file name
   static const int MAX_BUFFER = 1000;            // Used instead of #define directive
-  int xdim;                                      // The width of the frame in pixels
-  int ydim;                                      // The height of the frame in pixels
-  int frameNum;                                  // The Number of frames.
-  int imageSize;                                 // The total number of pixels
-  int numFibers;                                 // The total number of fibers found
-  int numBoundaries;                             // The total number of fiber boundaries found
   signed int pixelType;                          // The pixel type 32f = 32 bit floating type
   char speFile[100];                             // The SPE fiel anem
   bool xmlParserSPE(std::string fileName,        // Internal function to deal with .xml file
@@ -54,6 +48,7 @@ class LightField {
 			   int maxFFTCutoff);    // FFT components below cutoff
   gsl_vector *getMaxima(gsl_vector *vecIn);      // Getting the peaks of the smoothed line
   gsl_vector *getMinima(gsl_vector *vecIn);      // Getting the valleys of the smoothed line
+  int populateChords();                          // Populating chords 1-20
 
  public:
 
@@ -61,14 +56,39 @@ class LightField {
   int maxLineIndex;                          // The index of the brighted sumed col. This is what
                                              // We will say is the location of the chord we will
                                              // Use to find the fiber centers/boundaries
+  int xdim;                                  // The width of the frame in pixels
+  int ydim;                                  // The height of the frame in pixels
+  int frameNum;                              // The Number of frames.
+  int imageSize;                             // The total number of pixels
+  int numFibers;                             // The total number of fibers found
+  int numBoundaries;                         // The total number of fiber boundaries found
   gsl_vector *waveLength;                    // A vector of the wavelengths of the spectrometer
+  gsl_vector *rows;                          // A vector of row values 0 -> ydim
   gsl_vector *fiberCenters;                  // A vector of the center values of each fiber
   gsl_vector *fiberBoundaries;               // The boundaries of all fibers
   gsl_vector *binnedLine;                    // A the primary line summed across +/- 5 pixels
                                              // to account for any doppler shifts in wavelength
   gsl_vector *smoothedLine;                  // Binned line but smoothed with FFT
-  gsl_vector *fiberCenterCol;                // A 1 if a fiber center, zero otherwise
-  gsl_vector *fiberBoundCol;                 // A 1 if a fiber boundary, zero otherwise
+  gsl_vector *chord1;                        // Chord #1
+  gsl_vector *chord2;                        // Chord #2
+  gsl_vector *chord3;                        // Chord #3
+  gsl_vector *chord4;                        // Chord #4
+  gsl_vector *chord5;                        // Chord #5
+  gsl_vector *chord6;                        // Chord #6
+  gsl_vector *chord7;                        // Chord #7
+  gsl_vector *chord8;                        // Chord #8
+  gsl_vector *chord9;                        // Chord #9
+  gsl_vector *chord10;                       // Chord #10
+  gsl_vector *chord11;                       // Chord #11
+  gsl_vector *chord12;                       // Chord #12
+  gsl_vector *chord13;                       // Chord #13
+  gsl_vector *chord14;                       // Chord #14
+  gsl_vector *chord15;                       // Chord #15
+  gsl_vector *chord16;                       // Chord #16
+  gsl_vector *chord17;                       // Chord #17
+  gsl_vector *chord18;                       // Chord #18
+  gsl_vector *chord19;                       // Chord #19
+  gsl_vector *chord20;                       // Chord #20
   gsl_matrix *image;                         // The full image of all 20 fibers
   
   LightField(std::string fileNameParam);

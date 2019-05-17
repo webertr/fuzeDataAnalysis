@@ -9,15 +9,14 @@
  ******************************************************************************/
 
 LightField::LightField(std::string fileNameParam):
+  pixelType(0),
   xdim(0),
   ydim(0),
   frameNum(0),
   imageSize(0),
-  pixelType(0),
   waveLength(0),
-  image(0)
- {
-
+  image(0) {
+   
   fileName = fileNameParam;
 
   FILE *fp;
@@ -269,6 +268,12 @@ LightField::LightField(std::string fileNameParam):
   /* free data */
   free(data);
 
+  /* Initiliazing the row vector 0 -> num of Rows */
+  rows = gsl_vector_alloc(ydim);
+  for (ii = 0; ii < ydim; ii++) {
+    gsl_vector_set(rows, ii, ii);
+  }
+
   /* Setting the index of the brightess line */
   maxLineIndex = getColMax();
 
@@ -284,27 +289,38 @@ LightField::LightField(std::string fileNameParam):
   /* Setting total number of fibers */
   numFibers = fiberCenters->size;
 
-  /* Populating fiberCenterCol */
-  fiberCenterCol = gsl_vector_alloc(smoothedLine->size);
-  gsl_vector_set_zero(fiberCenterCol);
-  for (ii = 0; ii < numFibers; ii++) {
-    gsl_vector_set(fiberCenterCol, (int) gsl_vector_get(fiberCenters, ii), 1);
-  }
-
   /* Finding fiber boundaries */
   fiberBoundaries = getMinima(smoothedLine);
 
   /* Setting total number of fiber boundaries */
   numBoundaries = fiberBoundaries->size;
 
-  /* Populating fiberBoundCol */
-  fiberBoundCol = gsl_vector_alloc(smoothedLine->size);
-  gsl_vector_set_zero(fiberBoundCol);
-  for (ii = 0; ii < numBoundaries; ii++) {
-    gsl_vector_set(fiberBoundCol, (int) gsl_vector_get(fiberBoundaries, ii), 1);
-  }
+  /* Allocating all 20 chords */
+  chord1 = gsl_vector_alloc(xdim);
+  chord2 = gsl_vector_alloc(xdim);
+  chord3 = gsl_vector_alloc(xdim);
+  chord4 = gsl_vector_alloc(xdim);
+  chord5 = gsl_vector_alloc(xdim);
+  chord6 = gsl_vector_alloc(xdim);
+  chord7 = gsl_vector_alloc(xdim);
+  chord8 = gsl_vector_alloc(xdim);
+  chord9 = gsl_vector_alloc(xdim);
+  chord10 = gsl_vector_alloc(xdim);
+  chord11 = gsl_vector_alloc(xdim);
+  chord12 = gsl_vector_alloc(xdim);
+  chord13 = gsl_vector_alloc(xdim);
+  chord14 = gsl_vector_alloc(xdim);
+  chord15 = gsl_vector_alloc(xdim);
+  chord16 = gsl_vector_alloc(xdim);
+  chord17 = gsl_vector_alloc(xdim);
+  chord18 = gsl_vector_alloc(xdim);
+  chord19 = gsl_vector_alloc(xdim);
+  chord20 = gsl_vector_alloc(xdim);
 
-  /*
+  /* Populating all 20 chords */
+  populateChords();
+
+   /*
    * Returning Success
    */
   return;
@@ -322,6 +338,32 @@ LightField::LightField(std::string fileNameParam):
 LightField::~LightField() {
 
   gsl_vector_free(waveLength);
+  gsl_vector_free(rows);
+  gsl_vector_free(fiberCenters);
+  gsl_vector_free(fiberBoundaries);
+  gsl_vector_free(binnedLine);
+  gsl_vector_free(smoothedLine);
+  gsl_vector_free(chord1);
+  gsl_vector_free(chord2);
+  gsl_vector_free(chord3);
+  gsl_vector_free(chord4);
+  gsl_vector_free(chord5);
+  gsl_vector_free(chord6);
+  gsl_vector_free(chord7);
+  gsl_vector_free(chord8);
+  gsl_vector_free(chord9);
+  gsl_vector_free(chord10);
+  gsl_vector_free(chord11);
+  gsl_vector_free(chord12);
+  gsl_vector_free(chord13);
+  gsl_vector_free(chord14);
+  gsl_vector_free(chord15);
+  gsl_vector_free(chord16);
+  gsl_vector_free(chord17);
+  gsl_vector_free(chord18);
+  gsl_vector_free(chord19);
+  gsl_vector_free(chord20);
+
   gsl_matrix_free(image);
 
   return;
@@ -641,6 +683,45 @@ gsl_vector *LightField::getMinima(gsl_vector *vecIn) {
 
 
 /******************************************************************************
+ * Function: populateChords
+ * Inputs: 
+ * Returns: gsl_vector *
+ * Description: 
+ ******************************************************************************/
+
+int LightField::populateChords() {
+
+  const int numChords = 20;
+
+  if (numChords != numFibers) {
+    std::cout << "Number of Fibers not 20!\n";
+  }
+
+  gsl_vector *chordMatrix[numChords] = {chord1, chord2, chord3, chord4, chord5, chord6,
+  					chord7, chord8, chord9, chord10, chord11, chord12,
+  					chord13, chord14, chord14, chord16, chord17, chord18,
+  					chord19, chord20};
+
+  int ii, jj, kk, ki, kf;
+  double val;
+
+  for (ii = 0; ii < numChords; ii++) {
+    ki = (int) gsl_vector_get(fiberBoundaries, ii);
+    kf = (int) gsl_vector_get(fiberBoundaries, ii+1);
+    for (jj = 0; jj < xdim; jj++) {
+      for (kk = ki + 1; kk < kf; kk++) {
+	val = gsl_matrix_get(image, kk, jj) + gsl_vector_get(chordMatrix[ii], jj);
+	gsl_vector_set(chordMatrix[ii], jj, val);
+      }
+    }
+  }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *
@@ -662,24 +743,58 @@ bool testLightField() {
   }
 
   LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
-  //test.plotImage();
 
-  //plotVectorData(test.waveLength, test.binnedLine, 
-  //		 "", "", "data/splTest.dat", "data/splTest.sh");
+  int ii, jj;
 
-  plot2VectorData(test.waveLength, test.binnedLine, "title 'data'", 
+  /* Populating fiberBoundCol */
+  gsl_vector *fiberBoundCol = gsl_vector_alloc(test.smoothedLine->size);
+  gsl_vector_set_zero(fiberBoundCol);
+  for (ii = 0; ii < test.numBoundaries; ii++) {
+    gsl_vector_set(fiberBoundCol, (int) gsl_vector_get(test.fiberBoundaries, ii), 1);
+  }
+
+  /* Populating fiberCenterCol */
+  gsl_vector *fiberCenterCol = gsl_vector_alloc(test.smoothedLine->size);
+  gsl_vector_set_zero(fiberCenterCol);
+  for (ii = 0; ii < test.numFibers; ii++) {
+    gsl_vector_set(fiberCenterCol, (int) gsl_vector_get(test.fiberCenters, ii), 1);
+  }
+
+  double maxVal = gsl_matrix_max(test.image);
+  /* Putting into boundary lines to image */
+  for (ii = 0; ii < test.numBoundaries; ii++) {
+    for (jj = 0; jj < test.xdim; jj++) {
+      gsl_matrix_set(test.image, (int) gsl_vector_get(test.fiberBoundaries, ii), jj, maxVal);
+    }
+  }
+
+  test.plotImage();
+
+  plotVectorData(test.rows, test.binnedLine, 
+  		 "", "", "data/splTest.dat", "data/splTest.sh");
+
+  plot2VectorData(test.rows, test.binnedLine, "title 'data'", 
   		  test.smoothedLine, "with line lw 3 title 'model'", 
   		  "", "data/temp1.txt", "data/temp1.sh");
 
-  gsl_vector_scale(test.fiberCenterCol, 150);
-  plot2VectorData(test.waveLength, test.fiberCenterCol, "with line title 'centers'", 
-		  test.smoothedLine, "with line lw 3 title 'model'", 
-		  "", "data/temp2.txt", "data/temp2.sh");
+  gsl_vector_scale(fiberCenterCol, maxVal);
+  plot2VectorData(test.rows, fiberCenterCol, "with line title 'centers'", 
+  		  test.smoothedLine, "with line lw 3 title 'model'", 
+  		  "", "data/temp2.txt", "data/temp2.sh");
 
-  gsl_vector_scale(test.fiberBoundCol, 150);
-  plot2VectorData(test.waveLength, test.fiberBoundCol, "with line title 'bound'", 
-		  test.smoothedLine, "with line lw 3 title 'model'", 
-		  "", "data/temp3.txt", "data/temp3.sh");
+  gsl_vector_scale(fiberBoundCol, maxVal);
+  plot2VectorData(test.rows, fiberBoundCol, "with line title 'bound'", 
+  		  test.smoothedLine, "with line lw 3 title 'model'", 
+  		  "", "data/temp3.txt", "data/temp3.sh");
+
+  gsl_vector_scale(test.rows, maxVal);
+  plot2VectorData(test.rows, fiberBoundCol, "with line title 'bound'", 
+  		  test.binnedLine, "title 'data'", 
+  		  "", "data/temp4.txt", "data/temp4.sh");
+
+  plot2VectorData(test.waveLength, test.chord1, "with line title 'Chord 1'", 
+		  test.chord2, "with line title 'Chord 2'", 
+		  "", "data/temp5.txt", "data/temp5.sh");
   
   std::cout << "Passed All Light Field Tests\n";
 
