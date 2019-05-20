@@ -277,7 +277,8 @@ LightField::LightField(std::string fileNameParam):
   /* Setting the index of the brightess line */
   maxLineIndex = getColMax();
 
-  /* Setting the index of the brightess line */
+  /* Getting a binned vector to find the fiber locations */
+  //binnedLine = getColWithRowSum();
   binnedLine = getBinnedCol(maxLineIndex, 5);
 
   /* Smooth line by applying an FFT */
@@ -317,9 +318,16 @@ LightField::LightField(std::string fileNameParam):
   chord19 = gsl_vector_alloc(xdim);
   chord20 = gsl_vector_alloc(xdim);
 
-  /* Populating all 20 chords */
-  populateChords();
-
+  /* Populating all 20 chords only if there are 20 chords */
+  if ( (numBoundaries == NUM_FIBERS + 1) &&
+       (numFibers == NUM_FIBERS) ) {
+    populateChords();
+  } else {
+    std::cout << "Number of fibers found not equal to pre-determined number. "
+	      << "Number of fibers: " << NUM_FIBERS << "\n"
+	      << "Number of fibers found: " << numFibers << "\n";
+  }
+  
    /*
    * Returning Success
    */
@@ -492,6 +500,34 @@ gsl_vector *LightField::getBinnedCol(int colIndex, int binNum) {
     sum = 0;
     for (jj = -binNum; jj <= binNum; jj++) {
       sum = sum + gsl_matrix_get(image, ii, colIndex+jj);
+    }
+    gsl_vector_set(retVec, ii, sum);
+  }
+
+  return retVec;
+
+}
+
+
+/******************************************************************************
+ * Function: getColWithRowSum
+ * Inputs: 
+ * Returns: gsl_vector *
+ * Description: This will go through the image and sum up all rows, forming
+ * a single column
+ ******************************************************************************/
+
+gsl_vector *LightField::getColWithRowSum() {
+
+  int ii, jj;
+  double sum;
+
+  gsl_vector *retVec = gsl_vector_alloc(ydim);
+  
+  for (ii = 0; ii < ydim; ii++) {
+    sum = 0;
+    for (jj = 0; jj < xdim; jj++) {
+      sum = sum + gsl_matrix_get(image, ii, jj);
     }
     gsl_vector_set(retVec, ii, sum);
   }
@@ -691,21 +727,17 @@ gsl_vector *LightField::getMinima(gsl_vector *vecIn) {
 
 int LightField::populateChords() {
 
-  const int numChords = 20;
+  
 
-  if (numChords != numFibers) {
-    std::cout << "Number of Fibers not 20!\n";
-  }
-
-  gsl_vector *chordMatrix[numChords] = {chord1, chord2, chord3, chord4, chord5, chord6,
-  					chord7, chord8, chord9, chord10, chord11, chord12,
-  					chord13, chord14, chord14, chord16, chord17, chord18,
-  					chord19, chord20};
+  gsl_vector *chordMatrix[NUM_FIBERS] = {chord1, chord2, chord3, chord4, chord5, chord6,
+					 chord7, chord8, chord9, chord10, chord11, chord12,
+					 chord13, chord14, chord14, chord16, chord17, chord18,
+					 chord19, chord20};
 
   int ii, jj, kk, ki, kf;
   double val;
 
-  for (ii = 0; ii < numChords; ii++) {
+  for (ii = 0; ii < NUM_FIBERS; ii++) {
     ki = (int) gsl_vector_get(fiberBoundaries, ii);
     kf = (int) gsl_vector_get(fiberBoundaries, ii+1);
     for (jj = 0; jj < xdim; jj++) {

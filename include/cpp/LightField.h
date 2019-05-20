@@ -38,12 +38,15 @@ class LightField {
   std::string fileName;                          // The file name
   static const int MAX_BUFFER = 1000;            // Used instead of #define directive
   signed int pixelType;                          // The pixel type 32f = 32 bit floating type
+  static const int NUM_FIBERS = 20;              // The number of fibers
   char speFile[100];                             // The SPE fiel anem
   bool xmlParserSPE(std::string fileName,        // Internal function to deal with .xml file
 		    float *dataArray, int dim); 
   int getColMax();                               // Find the max summed column in the image
   gsl_vector *getBinnedCol(int colIndex,         // For the col line index this bins the col 
 			   int binNum);          // +/- 5 pixels around this column
+  gsl_vector *getColWithRowSum();                // Sums all the rows up and puts them into
+                                                 // a single column 
   gsl_vector *smoothVector(gsl_vector *vecIn,    // Smooths passed vector by chopping off
 			   int maxFFTCutoff);    // FFT components below cutoff
   gsl_vector *getMaxima(gsl_vector *vecIn);      // Getting the peaks of the smoothed line
