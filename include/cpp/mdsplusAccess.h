@@ -14,5 +14,9 @@ double readMDSplusDouble(int shotNumber, std::string nodeName, std::string treeN
 int testMDSplusAccess();
 int writeMDSplusDouble(double valIn, int shotNumber, 
 		       std::string nodeName, std::string treeName);
+int writeMDSplusVector(gsl_vector *vecIn, int shotNumber, 
+		       std::string nodeName, std::string treeName);
+int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber, 
+		       std::string nodeName, std::string treeName);
 
 #endif
