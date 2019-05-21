@@ -59,6 +59,7 @@ class LightField {
   int maxLineIndex;                          // The index of the brighted sumed col. This is what
                                              // We will say is the location of the chord we will
                                              // Use to find the fiber centers/boundaries
+  bool chordsOK;                             // True if all the chords were found.
   int xdim;                                  // The width of the frame in pixels
   int ydim;                                  // The height of the frame in pixels
   int frameNum;                              // The Number of frames.

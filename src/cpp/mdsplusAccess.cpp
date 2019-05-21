@@ -470,6 +470,10 @@ int writeMDSplusMatrix(gsl_matrix_ushort *matIn, int shotNumber, std::string nod
    * int dims[2] = {3,2};
    * 3 = number of rows, 2 = number of cols
    * Data *arrD = new Int32Array(arr, 2, dims);
+   * This wrote as [0, 2, 4, ...], when I wrote it,
+   * [[0, 1, 2, ...], [2, 3, 4, ...], ...]
+   * with [1,2,3...] being a row
+   * So it wrote columns first. It seems like it should write the rows first
    */
   unsigned short *dataShort = (unsigned short *)malloc(numRows*numCols * sizeof(short));
   for (ii = 0; ii < numRows; ii++) {
@@ -626,7 +630,7 @@ static int testMDSplusWriteDouble() {
 static int testMDSplusWriteVector() {
   
   int shotNumber = 123456; // Test shot number for FuZE tree
-  std::string nodeName = "\\ICCD_01:RAW";
+  std::string nodeName = "\\ICCD:LAMBDA";
   std::string treeName = "fuze"; 
   int vecSize = 512;
   gsl_vector *vecIn = gsl_vector_alloc(vecSize);
@@ -669,7 +673,7 @@ static int testMDSplusWriteMatrix() {
 
   for (ii = 0; ii < numRows; ii++) {
     for (jj = 0; jj < numCols; jj++) {
-      gsl_matrix_ushort_set(matIn, ii, jj, ii*2+jj);
+      gsl_matrix_ushort_set(matIn, ii, jj, ii);
     }
   }
   

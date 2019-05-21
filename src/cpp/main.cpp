@@ -11,9 +11,9 @@ int main() {
 
   //kiranaImageAnalysis();
 
-  //testLightField();
+  testLightField();
 
-  testMDSplusAccess();
+  //testMDSplusAccess();
 
   return 0;
 

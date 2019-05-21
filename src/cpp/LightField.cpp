@@ -10,6 +10,7 @@
 
 LightField::LightField(std::string fileNameParam):
   pixelType(0),
+  chordsOK(false),
   xdim(0),
   ydim(0),
   frameNum(0),
@@ -318,16 +319,22 @@ LightField::LightField(std::string fileNameParam):
   chord19 = gsl_vector_alloc(xdim);
   chord20 = gsl_vector_alloc(xdim);
 
-  /* Populating all 20 chords only if there are 20 chords */
+  /* If all the fibers were found, write a true to the appropriate boolean */
   if ( (numBoundaries == NUM_FIBERS + 1) &&
        (numFibers == NUM_FIBERS) ) {
-    populateChords();
+    chordsOK = true;
   } else {
     std::cout << "Number of fibers found not equal to pre-determined number. "
 	      << "Number of fibers: " << NUM_FIBERS << "\n"
 	      << "Number of fibers found: " << numFibers << "\n";
+    chordsOK = false;
   }
-  
+
+  /* If all the fibers were found in the image, then populate the chords */
+  if (chordsOK) {
+    populateChords();
+  }
+
    /*
    * Returning Success
    */
