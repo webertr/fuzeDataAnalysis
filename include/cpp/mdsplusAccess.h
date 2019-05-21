@@ -5,6 +5,7 @@
 #include <gsl/gsl_matrix.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <mdsobjects.h>
 
 gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string treeName);
@@ -16,7 +17,8 @@ int writeMDSplusDouble(double valIn, int shotNumber,
 		       std::string nodeName, std::string treeName);
 int writeMDSplusVector(gsl_vector *vecIn, int shotNumber, 
 		       std::string nodeName, std::string treeName);
-int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber, 
+int writeMDSplusMatrix(gsl_matrix_ushort *matIn, int shotNumber, 
 		       std::string nodeName, std::string treeName);
+gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::string treeName);
 
 #endif

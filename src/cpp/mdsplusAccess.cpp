@@ -140,6 +140,92 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
 
 
 /******************************************************************************
+ * Function: readDHIMDSplusMatrix
+ * Inputs: int, char *, char *, char *
+ * Returns: gsl_vector *
+ * Description: 
+ ******************************************************************************/
+
+gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::string treeName) {
+
+  MDSplus::Tree *tree;
+  MDSplus::Data *data;
+  int numElements;
+  int ii, jj;
+  int numRows, numCols;
+  std::string readOnly = "READONLY";
+  gsl_matrix_ushort *nullMat = 0;
+  int numDim;
+  int *shape;
+  unsigned short *ushortArray;
+
+  /*
+   * Trying to open an experiment and shot number
+   */
+  try {
+
+    /*
+     * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
+     */
+    tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
+
+  } catch(MDSplus::MdsException &exc) {
+
+    std::cout << "Cannot open tree " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    return nullMat;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    return nullMat;
+
+  }
+
+  data = MDSplus::execute(nodeName.c_str(), tree);
+
+  /* get shape */
+  shape = data->getShape(&numDim);
+
+  if (numDim != 2) {
+    std::cout << "Error in reading matrix from mdsplus. Data not 2D image\n";
+    return nullMat;
+  }
+
+  numRows = shape[0];
+  numCols = shape[1];
+
+  /* Getting unsigned short integer data */
+  ushortArray = data->getShortUnsignedArray(&numElements);
+
+  /* Breaking down into 2d array */
+  gsl_matrix_ushort *retMat = gsl_matrix_ushort_alloc(numRows, numCols);
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      gsl_matrix_ushort_set(retMat, ii, jj, ushortArray[jj+ii*numCols]);
+    }
+  }
+
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(data);
+
+  // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
+  delete tree;
+
+  // Delete pointer to memory that mdsplus created. Shouldn't already be deleted?
+  delete shape;
+
+  // Should already be freed?
+  free(ushortArray);
+
+  return retMat;
+
+}
+
+
+/******************************************************************************
  * Function: getCurrentPulseNumber
  * Inputs: const char *
  * Returns: int
@@ -358,17 +444,42 @@ int writeMDSplusVector(gsl_vector *vecIn, int shotNumber,
  * Function: writeDHIMDSplusMatrix
  * Inputs: int, char *, char *, char *
  * Returns: gsl_vector *
- * Description: Write matrix to the tree
+ * Description: Write matrix to the tree. Data will get converted or casted
+ * to unsigned short even though it expects doubles
  ******************************************************************************/
 
-int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber, 
-		       std::string nodeName, std::string treeName) {
+int writeMDSplusMatrix(gsl_matrix_ushort *matIn, int shotNumber, std::string nodeName, 
+		       std::string treeName) {
 
   MDSplus::Tree *tree;
   MDSplus::TreeNode *node;
   std::string readOnly = "NORMAL";
-  MDSplus::Float64Array *data = new MDSplus::Float64Array(vecIn->data, 
-							  vecIn->size1, vecIn->size2);
+  int numRows = matIn->size1;
+  int numCols = matIn->size2;
+  int dims[2] = {numRows, numCols};
+  int ii, jj;
+
+  /* 
+   * gsl_matrix_get(m,i,j) -> m->data[i * m->tda + j]
+   * where m->tda is the physical length of a row, or the number of columns with a memory
+   * correction factor?
+   * m->size1 = the number of rows
+   * m->size2 = the number of columns
+   * For mdsplus, 3x2 integer array [[1,2],[11,22],[111,222]]
+   * int arr[6]={1,2,11,22,111,222};
+   * int dims[2] = {3,2};
+   * 3 = number of rows, 2 = number of cols
+   * Data *arrD = new Int32Array(arr, 2, dims);
+   */
+  unsigned short *dataShort = (unsigned short *)malloc(numRows*numCols * sizeof(short));
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      dataShort[jj+ii*numCols] = gsl_matrix_ushort_get(matIn, ii, jj);
+    }
+  }
+
+  MDSplus::Uint16Array *data = new MDSplus::Uint16Array((unsigned short *const)dataShort, 
+							2, dims);
 
   /*
    * Trying to open an experiment and shot number
@@ -383,12 +494,14 @@ int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber,
 
   } catch(MDSplus::MdsException &exc) {
 
+    free(data);
     std::cout << "Cannot open tree " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     return -1;
 
   } catch(...) {
 
+    free(data);
     std::cout << "Default error";
     return -1;
 
@@ -398,6 +511,8 @@ int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber,
   try {
     node = tree->getNode(nodeName.c_str());
   } catch(MDSplus::MdsException &exc) {
+
+    free(data);
     std::cout << "Cannot get node " << treeName  
 	      << " shot " << shotNumber
 	      << " Node " << nodeName << ": " << exc.what() << std::endl;
@@ -405,6 +520,7 @@ int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber,
 
   } catch(...) {
 
+    free(data);
     std::cout << "Default error";
     return -1;
 
@@ -418,6 +534,9 @@ int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber,
 
   // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
   delete tree;
+
+  // Freeing memory
+  free(dataShort);
 
   return 1;
 
@@ -433,6 +552,7 @@ int writeMDSplusMatrix(gsl_matrix *matIn, int shotNumber,
 static int testMDSplusRead();
 static int testMDSplusWriteDouble();
 static int testMDSplusWriteVector();
+static int testMDSplusWriteMatrix();
 
 int testMDSplusAccess() {
 
@@ -448,6 +568,11 @@ int testMDSplusAccess() {
 
   if (!testMDSplusWriteVector()) {
     std::cout << "Write vector test Failed\n";
+    return -1;
+  }
+
+  if (!testMDSplusWriteMatrix()) {
+    std::cout << "Write matrix test Failed\n";
     return -1;
   }
 
@@ -522,6 +647,44 @@ static int testMDSplusWriteVector() {
        (abs(gsl_vector_get(vecIn,12) - gsl_vector_get(vecRet,12)) > 1E-8) ||
        (vecIn->size != vecRet->size) ) {
     std::cout << "Test failed. Vectors not equal\n";
+
+    return 0;
+  }
+
+  return 1;
+  
+}
+
+
+static int testMDSplusWriteMatrix() {
+  
+  int shotNumber = 123456; // Test shot number for FuZE tree
+  std::string nodeName = "\\ICCD:RAW";
+  std::string treeName = "fuze"; 
+  int numRows = 10;
+  int numCols = 15;
+  gsl_matrix_ushort *matIn = gsl_matrix_ushort_alloc(numRows, numCols);
+  gsl_matrix_ushort *matRet;
+  int ii, jj;
+
+  for (ii = 0; ii < numRows; ii++) {
+    for (jj = 0; jj < numCols; jj++) {
+      gsl_matrix_ushort_set(matIn, ii, jj, ii*2+jj);
+    }
+  }
+  
+  writeMDSplusMatrix(matIn, shotNumber, nodeName.c_str(), treeName.c_str());
+
+  matRet = readMDSplusMatrix(shotNumber, nodeName.c_str(), treeName.c_str());
+
+  if ( (gsl_matrix_ushort_get(matIn,0, 1) != gsl_matrix_ushort_get(matRet,0, 1) ) ||
+       (gsl_matrix_ushort_get(matIn,4, 1) != gsl_matrix_ushort_get(matRet,4, 1) ) ||
+       (gsl_matrix_ushort_get(matIn,8, 2) != gsl_matrix_ushort_get(matRet,8,2) ) ||
+       (gsl_matrix_ushort_get(matIn,2, 4) != gsl_matrix_ushort_get(matRet,2, 4) ) ||
+       (matIn->size1 != matRet->size1) ||
+       (matIn->size2 != matRet->size2) ) {
+
+    std::cout << "Test failed. Matrices not equal\n";
 
     return 0;
   }
