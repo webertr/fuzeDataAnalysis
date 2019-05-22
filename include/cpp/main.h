@@ -8,5 +8,6 @@
 #include "cpp/analysis.h"
 #include "cpp/magnetic.h"
 #include "cpp/LightField.h"
+#include "cpp/epicsCA.h"
 
 #endif

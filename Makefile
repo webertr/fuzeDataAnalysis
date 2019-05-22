@@ -8,9 +8,11 @@ LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -lMdsShr -ljpe
 # C++ Definitions
 CCP = g++
 
-INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2
+INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2 -I$(EPICS_BASE)/include \
+	-I$(EPICS_BASE)/include/os/Linux -I$(EPICS_BASE)/include/compiler/gcc
 FLAGS_CPP = -g -Wall
-LIBRY_CPP = -lgsl -lgslcblas -lxml2 -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr
+LIBRY_CPP = -lgsl -lgslcblas -lxml2 -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr \
+	-L$(EPICS_BASE)/lib/$(EPICS_HOST_ARCH) -lCom -lca
 
 
 SRC_DIR = src
@@ -47,6 +49,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/getSVFData.cpp \
 	src/cpp/magnetic.cpp \
 	src/cpp/LightField.cpp \
+	src/cpp/epicsCA.cpp \
 	src/cpp/test.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
@@ -72,7 +75,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INCL_DIR)/%.h
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCL_DIR)/%.h
 	@$(MKDIR) -p $(@D)
-	$(CCP) $(FLAGS) -c $(INCL) -o $@ $< 
+	$(CCP) $(FLAGS) -c $(INCL_CPP) -o $@ $< 
 
 
 clean:

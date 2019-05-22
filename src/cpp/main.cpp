@@ -11,9 +11,11 @@ int main() {
 
   //kiranaImageAnalysis();
 
-  testLightField();
+  //testLightField();
 
   //testMDSplusAccess();
+
+  testEpicsCA();
 
   return 0;
 
