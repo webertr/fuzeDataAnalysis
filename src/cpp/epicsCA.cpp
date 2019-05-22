@@ -22,11 +22,59 @@
  ******************************************************************************/
 
 static int testEpicsCAGet();
+static int testEpicsCAMonitorCallBack();
+
+
+static void printChidInfo(chid chid, std::string message)
+{
+  std::cout << "\n" << message << "\n";
+
+  printf("pv: %s  type(%d) nelements(%ld) host(%s)",
+	 ca_name(chid),ca_field_type(chid),ca_element_count(chid),
+	 ca_host_name(chid));
+  printf(" read(%d) write(%d) state(%d)\n",
+	 ca_read_access(chid),ca_write_access(chid),ca_state(chid));
+
+}
+
+static void exceptionCallback(struct exception_handler_args args) {
+
+  chid	chid = args.chid;
+  long	stat = args.stat; /* Channel access status code*/
+ 
+  std::string noname = "corn dogs";
+  std::string channel;
+  channel = (chid ? ca_name(chid) : noname);
+
+  if(chid) printChidInfo(chid,"exceptionCallback");
+  printf("exceptionCallback stat %s channel %s\n",
+	 ca_message(stat),channel.c_str());
+}
+
+static void eventCallback(struct event_handler_args eha) {
+
+    chid	chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+	printChidInfo(chid,"eventCallback");
+    } else {
+      //char	*pdata = (char *)eha.dbr;
+      //printf("Event Callback: %s = %s\n",ca_name(eha.chid),pdata);
+      long *pdata = (long *)eha.dbr;
+      printf("Event Callback: %s = %ld\n",ca_name(eha.chid),*pdata);
+    }
+}
+
 
 int testEpicsCA() {
 
   if (!testEpicsCAGet()) {
     std::cout << "Test EPICS Caget test Failed\n";
+    return -1;
+  }
+
+  if (!testEpicsCAMonitorCallBack()) {
+    std::cout << "Test EPICS camonitor callback test Failed\n";
     return -1;
   }
 
@@ -44,6 +92,7 @@ static int testEpicsCAGet() {
   chid mychid;
 
   std::string pvName = "FuZE:DataServer:ShotNumber";
+  int priority = 10;
 
   /* 
    * SEVCHK is a macro to check the return status 
@@ -73,13 +122,14 @@ static int testEpicsCAGet() {
    * always use the same number for multiple channels, or you could use more resources
    * PCHID = If successfull, will point to a channel identifier. EPICS data type.
    */
-  SEVCHK(ca_create_channel(pvName.c_str(),NULL,NULL,10,&mychid),"ca_create_channel failure");
+  SEVCHK(ca_create_channel(pvName.c_str(),NULL,NULL,priority,&mychid),"ca_create_channel failure");
 
   /*
    * This function flushes the send buffer and then blocks until outstanding ca_get() requests 
    * complete, and until channels created specifying null connection handler function pointers 
    * connect for the first time.
    * The main argument is Timeout: Specifies the time out interval. 
+   * 0 specifies to wait forever
    * A TIMEOUT interval of zero specifies forever.
    * If no ca_get() or connection state change events are outstanding then ca_pend_io() will 
    * flush the send buffer and return immediately without processing any outstanding channel 
@@ -88,13 +138,16 @@ static int testEpicsCAGet() {
   SEVCHK(ca_pend_io(5.0),"ca_pend_io failure");
 
   /*
-   *
+   * When ca_get() or ca_array_get() are invoked the returned channel value can't be assumed to 
+   * be stable in the application supplied buffer until after ECA_NORMAL is returned from 
+   * ca_pend_io(). If a connection is lost outstanding ca get requests are not automatically 
+   * reissued following reconnect.
    */
   SEVCHK(ca_get(DBR_DOUBLE,mychid,(void *)&data),"ca_get failure");
 
   SEVCHK(ca_pend_io(5.0),"ca_pend_io failure");
 
-  // data should have value
+  // data should have value. Need to do a ca_pend_io first
   std::cout << "Shot number: " << std::setprecision(9) << data << "\n";
 
   if ( false ) {
@@ -103,5 +156,78 @@ static int testEpicsCAGet() {
   }
 
   return 1;
+
+}
+
+
+static int testEpicsCAMonitorCallBack() {
+
+  /*
+   * See the file: 
+   * /usr/local/epics/base-3.15.3/src/template/base/top/caClientApp/caMonitor.c
+   * for details
+   */
+  std::string pvName = "FuZE:DataServer:ShotNumber";
+  chid mychid;
+  int priority = 10;
+  
+  /* Creating channel with no additional threads allowed to join */
+  SEVCHK(ca_context_create(ca_disable_preemptive_callback),"ca_context_create");
+
+  /* Replace the currently installed CA context global exception handler callback. */
+  SEVCHK(ca_add_exception_event(exceptionCallback,NULL),
+	 "ca_add_exception_event");
+
+  /* Creating the channel with no connection call back */
+  SEVCHK(ca_create_channel(pvName.c_str(),NULL,NULL,priority,&mychid),
+	 "ca_create_channel");
+
+  /* 
+   * Register a state change subscription and specify a callback function to be invoked whenever 
+   * the process variable undergoes significant state changes. A significant change can be a 
+   * change in the process variable's value, alarm status, or alarm severity. In the process 
+   * control function block database the deadband field determines the magnitude of a significant 
+   * change for the process variable's value. Each call to this function consumes resources in 
+   * the client library and potentially a CA server until one of ca_clear_channel() or 
+   * ca_clear_subscription() is called.
+   * int ca_create_subscription ( chtype TYPE, unsigned long COUNT,
+   *     chid CHID, unsigned long MASK,
+   *     caEventCallBackFunc USERFUNC, void *USERARG, 
+   *     evid *PEVID );
+   * TYPE = the type of channel (DBR_STRING, DBR_LONG) 
+   * COUNT = The element count to be read
+   * CHID = Channel identifier
+   * MASK = A mask with bits set for each of the event trigger types requested. 
+   * The event trigger mask must be a bitwise or of one or more of the following constants.
+   * DBE_VALUE - Trigger events when the channel value exceeds the monitor dead band
+   * ...
+   * USERFUNC = function that is the callback 
+   * typedef void ( caEventCallBackFunc ) (struct event_handler_args);
+   * USERARG = pointer sized variable retained and passed back to user callback function
+   * PEVID = This is a pointer to user supplied event id which is overwritten if successful. 
+   * This event id can later be used to clear a specific event. This option may be omitted by 
+   * passing a null pointer.
+   */
+  SEVCHK(ca_create_subscription(DBR_LONG,1,mychid, DBE_VALUE,eventCallback,
+				NULL,NULL),
+	 "ca_create_subscription");
+
+  /* 
+   * Should never return from following call. Why? 0 specifies to wait forever.
+   * When ca_pend_event() is invoked the send buffer is flushed and CA background 
+   * activity is processed for TIMEOUT seconds.
+   * The ca_pend_event() function will not return before the specified timeout expires and all 
+   * unfinished channel access labor has been processed, and unlike ca_pend_io() returning from 
+   * the function does not indicate anything about the status of pending IO requests.
+   */
+  SEVCHK(ca_pend_event(0.0),"ca_pend_event");
+
+  if ( false ) {
+    std::cout << "EPICS CA Monitor Callback Test Failed\n";
+    return -1;
+  }
+
+  return 1;
+
 
 }

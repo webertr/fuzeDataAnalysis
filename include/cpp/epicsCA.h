@@ -5,6 +5,9 @@
 #include <iomanip>
 
 #include "cadef.h"
+#include "dbDefs.h"
+#include "epicsString.h"
+#include "cantProceed.h"
 
 int testEpicsCA();
 
