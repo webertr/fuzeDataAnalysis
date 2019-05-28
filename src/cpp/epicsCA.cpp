@@ -14,6 +14,55 @@
  ******************************************************************************/
 
 
+/******************************************************************************
+ * Function: monitorPVsWithCallback
+ * Inputs: int, char *, char *, char *
+ * Returns: gsl_vector *
+ * Description: Monitor a series of PV names passed, and attached callback 
+ * functions with value changes
+ ******************************************************************************/
+
+int monitorLongPVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[],
+			       const int length) {
+
+  int ii;
+
+  chid childArray[length];
+  int priority = 10;
+  
+  /* 
+   * Creating channel with no additional threads allowed to join 
+   * Callled once from each thread prior to making Channel Access calls
+   */
+  SEVCHK(ca_context_create(ca_disable_preemptive_callback),"ca_context_create");
+
+  for (ii = 0; ii < length; ii++) {
+
+    /* 
+     * Creates a CA channel. No connnection callback specified
+     */
+    SEVCHK(ca_create_channel(pvNames[ii].c_str(),NULL,NULL,priority,&childArray[ii]), 
+	   "ca_create_channel");
+
+    std::cout << "Monitoring " << pvNames[ii] << "\n";
+
+    /* 
+     * Registering callback with the created child for a "significant" change
+     * DBR_LONG = channel type. DBE_VALUE = is a mask to for events to select for
+     * significant value changes
+     */ 
+    SEVCHK(ca_create_subscription(DBR_LONG,1,childArray[ii], DBE_VALUE,cbFunc[ii],
+				  NULL,NULL), "ca_create_subscription");
+
+  }
+
+  /* Should never return from this call. Now monitoring PV's */
+  SEVCHK(ca_pend_event(0.0),"ca_pend_event");
+
+  return 1;  
+
+}
+
 
 /******************************************************************************
  *
@@ -23,6 +72,7 @@
 
 static int testEpicsCAGet();
 static int testEpicsCAMonitorCallBack();
+static int testMonitorLongPVsWithCallback();
 
 
 static void printChidInfo(chid chid, std::string message)
@@ -68,6 +118,11 @@ static void eventCallback(struct event_handler_args eha) {
 
 int testEpicsCA() {
 
+  if (!testMonitorLongPVsWithCallback()) {
+    std::cout << "Test EPICS camonitor long callback test Failed\n";
+    return -1;
+  }
+
   if (!testEpicsCAGet()) {
     std::cout << "Test EPICS Caget test Failed\n";
     return -1;
@@ -81,6 +136,21 @@ int testEpicsCA() {
   std::cout << "All epicsCA.cpp tests passed\n";
 
   return 0;
+
+}
+
+static int testMonitorLongPVsWithCallback() {
+
+  const int SIZE = 3;
+  std::string pvNames[SIZE] = {"FuZE:ControlPLC:PSQLError", 
+			       "FuZE:ControlPLC:InnerParkerDial", 
+			       "FuZE:ControlPLC:MDSplusError"};
+
+  epicsCBFuncPointer cbFuncs[SIZE] = {eventCallback, eventCallback, eventCallback};
+
+  monitorLongPVsWithCallback(pvNames, cbFuncs, SIZE);
+
+  return 1;
 
 }
 
