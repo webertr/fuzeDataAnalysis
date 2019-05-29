@@ -5,6 +5,8 @@
 #include <sstream>
 
 #include "epicsCA.h"
+#include "LightField.h"
+#include "mdsplusAccess.h"
 
 int runSpectroscopyMonitor();
 bool testSpectroscopyMonitor();

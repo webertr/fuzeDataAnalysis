@@ -17,9 +17,9 @@ int main() {
 
   //testEpicsCA();
 
-  testSpectroscopyMonitor();
+  //testSpectroscopyMonitor();
 
-  //runSpectroscopyMonitor();
+  runSpectroscopyMonitor();
 
   return 0;
 

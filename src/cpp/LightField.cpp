@@ -16,7 +16,8 @@ LightField::LightField(std::string fileNameParam):
   frameNum(0),
   imageSize(0),
   waveLength(0),
-  image(0) {
+  image(0),
+  imageUShort(0) {
    
   fileName = fileNameParam;
 
@@ -154,19 +155,30 @@ LightField::LightField(std::string fileNameParam):
    * ydim = number of rows
    */
   image = gsl_matrix_alloc(ydim, xdim);
+  imageUShort = gsl_matrix_ushort_alloc(ydim, xdim);
 
   /*
    * Moving data over to matrix
    */
   int ii, jj;
   for (ii = 0; ii < xdim; ii ++) {
-
     for (jj = 0; jj < ydim; jj++) {
 
       gsl_matrix_set(image, jj, ii, (double) data[xdim*jj+ii]);
       
     }
+  }
 
+  /* Converting to a ushort matrix */
+  double minVal = gsl_matrix_min(image);
+  if (minVal > 0) {
+    minVal = 0;
+  }
+  for (ii = 0; ii < xdim; ii++) {
+    for (jj = 0; jj < ydim; jj++) {
+      gsl_matrix_ushort_set(imageUShort, ii, jj,
+			    gsl_matrix_get(image, ii, jj) - minVal);
+    }
   }
 
   /*
@@ -380,6 +392,7 @@ LightField::~LightField() {
   gsl_vector_free(chord20);
 
   gsl_matrix_free(image);
+  gsl_matrix_ushort_free(imageUShort);
 
   return;
 
@@ -768,9 +781,15 @@ int LightField::populateChords() {
 
 static bool testClassCreation();
 static bool testFindColMax();
+static bool testImageUShort();
 
 bool testLightField() {
 
+  if( !testImageUShort() ) {
+    std::cout << "Failed ushort image test\n";
+    return false;
+  }
+  
   if( !testClassCreation() ) {
     std::cout << "Failed Class Creation\n";
     return false;
@@ -861,6 +880,25 @@ static bool testFindColMax() {
     return false;
   }
 
+  return true;
+
+}
+
+
+static bool testImageUShort() {
+
+  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+
+  int ii = 100,
+    jj = 50;
+
+  double minVal = gsl_matrix_min(test.image);
+  ushort val = (ushort) (gsl_matrix_get(test.image, ii, jj) - minVal);
+
+  if ( gsl_matrix_ushort_get(test.imageUShort, ii, jj) != val) {
+    return false;
+  }
+  
   return true;
 
 }

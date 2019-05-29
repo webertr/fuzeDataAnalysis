@@ -22,6 +22,7 @@
 #include <gsl/gsl_fft_real.h>
 #include <gsl/gsl_fft_halfcomplex.h>
 #include <gsl/gsl_sort.h>
+#include <limits>
 
 #include "plot.h"
 
@@ -94,6 +95,7 @@ class LightField {
   gsl_vector *chord19;                       // Chord #19
   gsl_vector *chord20;                       // Chord #20
   gsl_matrix *image;                         // The full image of all 20 fibers
+  gsl_matrix_ushort *imageUShort;            // The full image of all 20 fibers in unsigned int
   
   LightField(std::string fileNameParam);
   ~LightField();
