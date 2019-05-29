@@ -15,7 +15,9 @@ int main() {
 
   //testMDSplusAccess();
 
-  testEpicsCA();
+  //testEpicsCA();
+
+  testSpectroscopyMonitor();
 
   return 0;
 

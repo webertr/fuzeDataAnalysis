@@ -11,13 +11,15 @@
  * Example Usage:
  * https://epics.anl.gov/base/R7-0/1-docs/CAref.html
  *
+ * Also, see tests below.
+ *
  ******************************************************************************/
 
 
 /******************************************************************************
  * Function: monitorPVsWithCallback
- * Inputs: int, char *, char *, char *
- * Returns: gsl_vector *
+ * Inputs: std::string[], epicsCBFuncPointer[]
+ * Returns: int
  * Description: Monitor a series of PV names passed, and attached callback 
  * functions with value changes
  ******************************************************************************/

@@ -9,5 +9,6 @@
 #include "cpp/magnetic.h"
 #include "cpp/LightField.h"
 #include "cpp/epicsCA.h"
+#include "cpp/spectroscopyMonitor.h"
 
 #endif

@@ -50,6 +50,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/magnetic.cpp \
 	src/cpp/LightField.cpp \
 	src/cpp/epicsCA.cpp \
+	src/cpp/spectroscopyMonitor.cpp \
 	src/cpp/test.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
