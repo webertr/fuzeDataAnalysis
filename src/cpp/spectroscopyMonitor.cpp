@@ -107,14 +107,12 @@ static void shotNumberCB(struct event_handler_args eha) {
     chid chid = eha.chid;
 
     if(eha.status!=ECA_NORMAL) {
-
-	printChidInfo(chid,"eventCallback");
-
-    } else {
-      long *pshotNumber = (long *)eha.dbr;
-      shotNumber = *pshotNumber;
-      printf("Shot Number change: %s = %ld\n",ca_name(eha.chid),shotNumber);
+      printChidInfo(chid,"eventCallback");
+      return;
     }
+    
+    long *pshotNumber = (long *)eha.dbr;
+    shotNumber = *pshotNumber;
 
     shotNumberFileName = getFileFromShotNumber(shotNumber);
 
@@ -143,6 +141,12 @@ static void lightFieldCB(struct event_handler_args eha) {
     }
 
     long *plfMDSplus = (long *)eha.dbr;
+
+    /* Exiting because light field push not equal to 1 */
+    if ( (*plfMDSplus) != 1) {
+      return;
+    }
+
     printf("Light Field Upload to MDSPlus: %s = %ld\n",ca_name(eha.chid),*plfMDSplus);
 
     /* Checking to see if there is a file available */

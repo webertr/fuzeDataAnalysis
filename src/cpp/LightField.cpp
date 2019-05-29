@@ -336,7 +336,7 @@ LightField::LightField(std::string fileNameParam):
        (numFibers == NUM_FIBERS) ) {
     chordsOK = true;
   } else {
-    std::cout << "Number of fibers found not equal to pre-determined number. "
+    std::cout << "Number of fibers found not equal to pre-determined number.\n"
 	      << "Number of fibers: " << NUM_FIBERS << "\n"
 	      << "Number of fibers found: " << numFibers << "\n";
     chordsOK = false;
