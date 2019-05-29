@@ -77,8 +77,8 @@ static int testEpicsCAMonitorCallBack();
 static int testMonitorLongPVsWithCallback();
 
 
-static void printChidInfo(chid chid, std::string message)
-{
+static void printChidInfo(chid chid, std::string message) {
+
   std::cout << "\n" << message << "\n";
 
   printf("pv: %s  type(%d) nelements(%ld) host(%s)",

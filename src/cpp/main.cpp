@@ -19,6 +19,8 @@ int main() {
 
   testSpectroscopyMonitor();
 
+  //runSpectroscopyMonitor();
+
   return 0;
 
 }
