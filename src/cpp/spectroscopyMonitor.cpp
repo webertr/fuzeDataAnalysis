@@ -9,8 +9,17 @@
  ******************************************************************************/
 
 /* Static variables to hold the PV values */
-static long shotNumber;
-static std::string shotNumberFileName;
+static long shotNumber;                // FuZE:DataServer:ShotNumber
+static std::string shotNumberFileName; //
+static double iccdCenterWavelength;    // FuZE:ControlPLC:ICCDCenterWavelength
+static double spectrometerZ;           // FuZE:ControlPLC:SpectrometerZPosition
+static short telescopeAngle;           // FuZE:ControlPLC:TelescopeAngle => 1=0 Deg.; 2=45 Deg.;
+                                       // 3 = 0 and 45 Deg.
+static short iccdGrating;              // FuZE:ControlPLC:ICCDGrating => 1 = 3600 g/mm;
+                                       // 2 = 2400 g/mm; 3 = 300 g/mm
+static short iccdActiveSlit;           // FuZE:ControlPLC:ICCDActiveSlit => 1 = Front, Manual;
+                                       // 2 = Side, Manual
+
 
 /* Static local functions */
 static std::string getFileFromShotNumber(long shotNumber);
@@ -116,10 +125,139 @@ static void shotNumberCB(struct event_handler_args eha) {
 
     shotNumberFileName = getFileFromShotNumber(shotNumber);
 
+    std::cout << "Shot number set to: " << shotNumber << "\n";
+
     return;
 
 }
 
+
+/******************************************************************************
+ * Function: iccdCenterWavelengthCB
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a change to the iccdCenterWavelength pv
+ ******************************************************************************/
+
+static void iccdCenterWavelengthCB(struct event_handler_args eha) {
+
+    chid chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+      printChidInfo(chid,"eventCallback");
+      return;
+    }
+    
+    double *piccdCenterWavelength = (double *)eha.dbr;
+    iccdCenterWavelength = *piccdCenterWavelength;
+
+    std::cout << "ICCD center wavelength set to: " << iccdCenterWavelength << "\n";
+
+    return;
+
+}
+
+/******************************************************************************
+ * Function: spectrometerZCB
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a change to the spectrometerZ pv
+ ******************************************************************************/
+
+static void spectrometerZCB(struct event_handler_args eha) {
+
+    chid chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+      printChidInfo(chid,"eventCallback");
+      return;
+    }
+    
+    double *pspectrometerZ = (double *)eha.dbr;
+    spectrometerZ = *pspectrometerZ;
+
+    std::cout << "Spectrometer z set to: " << spectrometerZ << "\n";
+
+    return;
+
+}
+
+
+/******************************************************************************
+ * Function: telescopeAngleCB
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a change to the telescopeAngle pv
+ ******************************************************************************/
+
+static void telescopeAngleCB(struct event_handler_args eha) {
+
+    chid chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+      printChidInfo(chid,"eventCallback");
+      return;
+    }
+    
+    short *ptelescopeAngle = (short *)eha.dbr;
+    telescopeAngle = *ptelescopeAngle;
+
+    std::cout << "Telescope Angle set to: " << telescopeAngle << "\n";
+
+    return;
+
+}
+
+
+/******************************************************************************
+ * Function: iccdGratingCB
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a change to the iccdGrating pv
+ ******************************************************************************/
+
+static void iccdGratingCB(struct event_handler_args eha) {
+
+    chid chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+      printChidInfo(chid,"eventCallback");
+      return;
+    }
+    
+    short *piccdGrating = (short *)eha.dbr;
+    iccdGrating = *piccdGrating;
+
+    std::cout << "ICCD Grating set to: " << iccdGrating << "\n";
+
+    return;
+
+}
+
+/******************************************************************************
+ * Function: iccdActiveSlitCB
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a change to the iccdActiveSlit pv
+ ******************************************************************************/
+
+static void iccdActiveSlitCB(struct event_handler_args eha) {
+
+    chid chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+      printChidInfo(chid,"eventCallback");
+      return;
+    }
+    
+    short *piccdActiveSlit = (short *)eha.dbr;
+    iccdActiveSlit = *piccdActiveSlit;
+
+    std::cout << "ICCD active slit set to: " << iccdActiveSlit << "\n";
+
+    return;
+
+}
 
 /******************************************************************************
  * Function: lightFieldCB
@@ -210,14 +348,24 @@ static void lightFieldCB(struct event_handler_args eha) {
 
 int runSpectroscopyMonitor() {
 
-  const int SIZE = 2;
+  const int SIZE = 7;
 
   std::string pvNames[SIZE] = {"FuZE:DataServer:ShotNumber",
-			       "FuZE:ControlPLC:LightFieldMDSplusUp"};
+			       "FuZE:ControlPLC:LightFieldMDSplusUp",
+			       "FuZE:ControlPLC:ICCDCenterWavelength",
+			       "FuZE:ControlPLC:SpectrometerZPosition",
+			       "FuZE:ControlPLC:TelescopeAngle",
+			       "FuZE:ControlPLC:ICCDGrating",
+			       "FuZE:ControlPLC:ICCDActiveSlit"};
 
-  epicsCBFuncPointer cbFuncs[SIZE] = {shotNumberCB, lightFieldCB};
+  epicsCBFuncPointer cbFuncs[SIZE] = {shotNumberCB, lightFieldCB, iccdCenterWavelengthCB,
+				      spectrometerZCB, telescopeAngleCB, iccdGratingCB,
+				      iccdActiveSlitCB};
 
-  monitorLongPVsWithCallback(pvNames, cbFuncs, SIZE);
+  chtype channelType[SIZE] = {DBR_LONG, DBR_LONG, DBR_DOUBLE, DBR_DOUBLE,
+			      DBR_ENUM, DBR_ENUM, DBR_ENUM};
+
+  monitorPVsWithCallback(pvNames, cbFuncs, channelType, SIZE);
 
   return 0;
 
@@ -282,7 +430,9 @@ static bool testSpectroscopyMonitorBasic() {
 
   epicsCBFuncPointer cbFuncs[SIZE] = {eventCallback, eventCallback, eventCallback};
 
-  monitorLongPVsWithCallback(pvNames, cbFuncs, SIZE);
+  chtype channelType[SIZE] = {DBR_LONG, DBR_LONG, DBR_LONG};
+
+  monitorPVsWithCallback(pvNames, cbFuncs, channelType, SIZE);
 
   return true;
 
