@@ -16,5 +16,9 @@ typedef void(*epicsCBFuncPointer)(struct event_handler_args eha);
 int testEpicsCA();
 int monitorLongPVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[], 
 			       const int length);
+int monitorDoublePVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[],
+				 const int length);
+int monitorEnumPVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[],
+			       const int length);
 
 #endif

@@ -8,6 +8,56 @@
  ******************************************************************************/
 
 /******************************************************************************
+ * Function: monitorEnumPVsWithCallback
+ * Inputs: std::string[], epicsCBFuncPointer[]
+ * Returns: int
+ * Description: Monitor a series of PV (Enum) names passed, and attached callback 
+ * functions with value changes. Enum is 16 bit short.
+ ******************************************************************************/
+
+int monitorEnumPVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[],
+			       const int length) {
+
+  int ii;
+
+  chid childArray[length];
+  int priority = 10;
+  
+  /* 
+   * Creating channel with no additional threads allowed to join 
+   * Callled once from each thread prior to making Channel Access calls
+   */
+  SEVCHK(ca_context_create(ca_disable_preemptive_callback),"ca_context_create");
+
+  for (ii = 0; ii < length; ii++) {
+
+    /* 
+     * Creates a CA channel. No connnection callback specified
+     */
+    SEVCHK(ca_create_channel(pvNames[ii].c_str(),NULL,NULL,priority,&childArray[ii]), 
+	   "ca_create_channel");
+
+    std::cout << "Monitoring " << pvNames[ii] << "\n";
+
+    /* 
+     * Registering callback with the created child for a "significant" change
+     * DBR_LONG = channel type. DBE_VALUE = is a mask to for events to select for
+     * significant value changes
+     */ 
+    SEVCHK(ca_create_subscription(DBR_ENUM,1,childArray[ii], DBE_VALUE,cbFunc[ii],
+				  NULL,NULL), "ca_create_subscription");
+
+  }
+
+  /* Should never return from this call. Now monitoring PV's */
+  SEVCHK(ca_pend_event(0.0),"ca_pend_event");
+
+  return 1;  
+
+}
+
+
+/******************************************************************************
  * Example Usage:
  * https://epics.anl.gov/base/R7-0/1-docs/CAref.html
  *
@@ -15,9 +65,58 @@
  *
  ******************************************************************************/
 
+/******************************************************************************
+ * Function: monitorDoublePVsWithCallback
+ * Inputs: std::string[], epicsCBFuncPointer[]
+ * Returns: int
+ * Description: Monitor a series of PV (Doubles) names passed, and attached callback 
+ * functions with value changes
+ ******************************************************************************/
+
+int monitorDoublePVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[],
+				 const int length) {
+
+  int ii;
+
+  chid childArray[length];
+  int priority = 10;
+  
+  /* 
+   * Creating channel with no additional threads allowed to join 
+   * Callled once from each thread prior to making Channel Access calls
+   */
+  SEVCHK(ca_context_create(ca_disable_preemptive_callback),"ca_context_create");
+
+  for (ii = 0; ii < length; ii++) {
+
+    /* 
+     * Creates a CA channel. No connnection callback specified
+     */
+    SEVCHK(ca_create_channel(pvNames[ii].c_str(),NULL,NULL,priority,&childArray[ii]), 
+	   "ca_create_channel");
+
+    std::cout << "Monitoring " << pvNames[ii] << "\n";
+
+    /* 
+     * Registering callback with the created child for a "significant" change
+     * DBR_LONG = channel type. DBE_VALUE = is a mask to for events to select for
+     * significant value changes
+     */ 
+    SEVCHK(ca_create_subscription(DBR_DOUBLE,1,childArray[ii], DBE_VALUE,cbFunc[ii],
+				  NULL,NULL), "ca_create_subscription");
+
+  }
+
+  /* Should never return from this call. Now monitoring PV's */
+  SEVCHK(ca_pend_event(0.0),"ca_pend_event");
+
+  return 1;  
+
+}
+
 
 /******************************************************************************
- * Function: monitorPVsWithCallback
+ * Function: monitorLongPVsWithCallback
  * Inputs: std::string[], epicsCBFuncPointer[]
  * Returns: int
  * Description: Monitor a series of PV names passed, and attached callback 
@@ -75,6 +174,8 @@ int monitorLongPVsWithCallback(std::string pvNames[], epicsCBFuncPointer cbFunc[
 static int testEpicsCAGet();
 static int testEpicsCAMonitorCallBack();
 static int testMonitorLongPVsWithCallback();
+static int testMonitorDoublePVsWithCallback();
+static int testMonitorEnumPVsWithCallback();
 
 
 static void printChidInfo(chid chid, std::string message) {
@@ -117,8 +218,46 @@ static void eventCallback(struct event_handler_args eha) {
     }
 }
 
+static void eventCallbackDouble(struct event_handler_args eha) {
+
+    chid	chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+	printChidInfo(chid,"eventCallback");
+    } else {
+      //char	*pdata = (char *)eha.dbr;
+      //printf("Event Callback: %s = %s\n",ca_name(eha.chid),pdata);
+      double *pdata = (double *)eha.dbr;
+      printf("Event Callback Double: %s = %f\n",ca_name(eha.chid),*pdata);
+    }
+}
+
+static void eventCallbackEnum(struct event_handler_args eha) {
+
+    chid	chid = eha.chid;
+
+    if(eha.status!=ECA_NORMAL) {
+	printChidInfo(chid,"eventCallback");
+    } else {
+      //char	*pdata = (char *)eha.dbr;
+      //printf("Event Callback: %s = %s\n",ca_name(eha.chid),pdata);
+      short *pdata = (short *)eha.dbr;
+      printf("Event Callback Enum: %s = %d\n",ca_name(eha.chid),*pdata);
+    }
+}
+
 
 int testEpicsCA() {
+
+  if (!testMonitorDoublePVsWithCallback()) {
+    std::cout << "Test EPICS camonitor double callback test Failed\n";
+    return -1;
+  }
+
+  if (!testMonitorEnumPVsWithCallback()) {
+    std::cout << "Test EPICS camonitor double callback test Failed\n";
+    return -1;
+  }
 
   if (!testMonitorLongPVsWithCallback()) {
     std::cout << "Test EPICS camonitor long callback test Failed\n";
@@ -138,6 +277,37 @@ int testEpicsCA() {
   std::cout << "All epicsCA.cpp tests passed\n";
 
   return 0;
+
+}
+
+static int testMonitorDoublePVsWithCallback() {
+
+  const int SIZE = 3;
+  std::string pvNames[SIZE] = {"FuZE:ControlPLC:InnerParkerBatteryVoltage", 
+			       "FuZE:ControlPLC:Holography:Z", 
+			       "FuZE:ControlPLC:Holography:Y"};
+
+  epicsCBFuncPointer cbFuncs[SIZE] = {eventCallbackDouble, 
+				      eventCallbackDouble, eventCallbackDouble};
+
+  monitorDoublePVsWithCallback(pvNames, cbFuncs, SIZE);
+
+  return 1;
+
+}
+
+static int testMonitorEnumPVsWithCallback() {
+
+  const int SIZE = 3;
+  std::string pvNames[SIZE] = {"FuZE:ControlPLC:InnerGasValveType", 
+			       "FuZE:ControlPLC:ThyristorBank:Enabled",
+			       "FuZE:ControlPLC:InnerValveGasType"};
+
+  epicsCBFuncPointer cbFuncs[SIZE] = {eventCallbackEnum, eventCallbackEnum, eventCallbackEnum};
+
+  monitorEnumPVsWithCallback(pvNames, cbFuncs, SIZE);
+
+  return 1;
 
 }
 

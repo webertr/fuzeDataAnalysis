@@ -15,11 +15,11 @@ int main() {
 
   //testMDSplusAccess();
 
-  //testEpicsCA();
+  testEpicsCA();
 
   //testSpectroscopyMonitor();
 
-  runSpectroscopyMonitor();
+  //runSpectroscopyMonitor();
 
   return 0;
 
