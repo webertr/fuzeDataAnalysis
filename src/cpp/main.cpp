@@ -19,7 +19,9 @@ int main() {
 
   //testSpectroscopyMonitor();
 
-  runSpectroscopyMonitor();
+  //runSpectroscopyMonitor();
+
+  testPsqlAccess();
 
   return 0;
 

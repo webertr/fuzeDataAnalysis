@@ -10,5 +10,6 @@
 #include "cpp/LightField.h"
 #include "cpp/epicsCA.h"
 #include "cpp/spectroscopyMonitor.h"
+#include "cpp/psqlAccess.h"
 
 #endif

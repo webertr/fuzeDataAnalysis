@@ -12,7 +12,7 @@ INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2 -I$(EPICS_B
 	-I$(EPICS_BASE)/include/os/Linux -I$(EPICS_BASE)/include/compiler/gcc
 FLAGS_CPP = -g -Wall
 LIBRY_CPP = -lgsl -lgslcblas -lxml2 -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr \
-	-L$(EPICS_BASE)/lib/$(EPICS_HOST_ARCH) -lCom -lca
+	-L$(EPICS_BASE)/lib/$(EPICS_HOST_ARCH) -lCom -lca -lpqxx -lpq
 
 
 SRC_DIR = src
@@ -51,6 +51,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/LightField.cpp \
 	src/cpp/epicsCA.cpp \
 	src/cpp/spectroscopyMonitor.cpp \
+	src/cpp/psqlAccess.cpp \
 	src/cpp/test.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
