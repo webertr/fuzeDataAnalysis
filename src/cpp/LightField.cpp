@@ -304,10 +304,10 @@ LightField::LightField(std::string fileNameParam):
   numFibers = fiberCenters->size;
 
   /* Finding fiber boundaries */
-  fiberBoundaries = getMinima(smoothedLine);
+  fiberEdges = getMinima(smoothedLine);
 
   /* Setting total number of fiber boundaries */
-  numBoundaries = fiberBoundaries->size;
+  numEdges = fiberEdges->size;
 
   /* Allocating all 20 chords */
   chord1 = gsl_vector_alloc(xdim);
@@ -332,7 +332,7 @@ LightField::LightField(std::string fileNameParam):
   chord20 = gsl_vector_alloc(xdim);
 
   /* If all the fibers were found, write a true to the appropriate boolean */
-  if ( (numBoundaries == NUM_FIBERS + 1) &&
+  if ( (numEdges == NUM_FIBERS + 1) &&
        (numFibers == NUM_FIBERS) ) {
     chordsOK = true;
   } else {
@@ -367,7 +367,7 @@ LightField::~LightField() {
   gsl_vector_free(waveLength);
   gsl_vector_free(rows);
   gsl_vector_free(fiberCenters);
-  gsl_vector_free(fiberBoundaries);
+  gsl_vector_free(fiberEdges);
   gsl_vector_free(binnedLine);
   gsl_vector_free(smoothedLine);
   gsl_vector_free(chord1);
@@ -464,6 +464,56 @@ int LightField::plotImage() {
   plotImageData(image, 1, 1, "", "data/plotImageLF.dat", "data/plotImageLF.sh");
 
   return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: setFiberCenters
+ * Inputs: gsl_vector *
+ * Returns: bool
+ * Description: Sets the fiber centers fector
+ ******************************************************************************/
+
+bool LightField::setFiberCenters(gsl_vector *vecIn) {
+
+  int ii, vecSize = vecIn->size;
+
+  if (vecSize != numFibers) {
+    std::cout << "Set Fibers Error. Vectors not the same length\n";
+    return false;
+  }
+
+  for (ii = 0; ii < numFibers; ii++) {
+    gsl_vector_set(fiberCenters, ii, gsl_vector_get(vecIn, ii));
+  }
+
+  return true;
+
+}
+
+
+/******************************************************************************
+ * Function: setFiberEdges
+ * Inputs: gsl_vector *
+ * Returns: bool
+ * Description: Sets the fiber edges vector
+ ******************************************************************************/
+
+bool LightField::setFiberEdges(gsl_vector *vecIn) {
+
+  int ii, vecSize = vecIn->size;
+
+  if (vecSize != numEdges) {
+    std::cout << "Set Fiber Edges. Vectors not the same length\n";
+    return false;
+  }
+
+  for (ii = 0; ii < numEdges; ii++) {
+    gsl_vector_set(fiberEdges, ii, gsl_vector_get(vecIn, ii));
+  }
+
+  return true;
 
 }
 
@@ -758,8 +808,8 @@ int LightField::populateChords() {
   double val;
 
   for (ii = 0; ii < NUM_FIBERS; ii++) {
-    ki = (int) gsl_vector_get(fiberBoundaries, ii);
-    kf = (int) gsl_vector_get(fiberBoundaries, ii+1);
+    ki = (int) gsl_vector_get(fiberEdges, ii);
+    kf = (int) gsl_vector_get(fiberEdges, ii+1);
     for (jj = 0; jj < xdim; jj++) {
       for (kk = ki + 1; kk < kf; kk++) {
 	val = gsl_matrix_get(image, kk, jj) + gsl_vector_get(chordMatrix[ii], jj);
@@ -807,8 +857,8 @@ bool testLightField() {
   /* Populating fiberBoundCol */
   gsl_vector *fiberBoundCol = gsl_vector_alloc(test.smoothedLine->size);
   gsl_vector_set_zero(fiberBoundCol);
-  for (ii = 0; ii < test.numBoundaries; ii++) {
-    gsl_vector_set(fiberBoundCol, (int) gsl_vector_get(test.fiberBoundaries, ii), 1);
+  for (ii = 0; ii < test.numEdges; ii++) {
+    gsl_vector_set(fiberBoundCol, (int) gsl_vector_get(test.fiberEdges, ii), 1);
   }
 
   /* Populating fiberCenterCol */
@@ -820,9 +870,9 @@ bool testLightField() {
 
   double maxVal = gsl_matrix_max(test.image);
   /* Putting into boundary lines to image */
-  for (ii = 0; ii < test.numBoundaries; ii++) {
+  for (ii = 0; ii < test.numEdges; ii++) {
     for (jj = 0; jj < test.xdim; jj++) {
-      gsl_matrix_set(test.image, (int) gsl_vector_get(test.fiberBoundaries, ii), jj, maxVal);
+      gsl_matrix_set(test.image, (int) gsl_vector_get(test.fiberEdges, ii), jj, maxVal);
     }
   }
 

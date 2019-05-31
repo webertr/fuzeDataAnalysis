@@ -52,7 +52,6 @@ class LightField {
 			   int maxFFTCutoff);    // FFT components below cutoff
   gsl_vector *getMaxima(gsl_vector *vecIn);      // Getting the peaks of the smoothed line
   gsl_vector *getMinima(gsl_vector *vecIn);      // Getting the valleys of the smoothed line
-  int populateChords();                          // Populating chords 1-20
 
  public:
 
@@ -66,11 +65,11 @@ class LightField {
   int frameNum;                              // The Number of frames.
   int imageSize;                             // The total number of pixels
   int numFibers;                             // The total number of fibers found
-  int numBoundaries;                         // The total number of fiber boundaries found
+  int numEdges;                              // The total number of fiber boundaries found
   gsl_vector *waveLength;                    // A vector of the wavelengths of the spectrometer
   gsl_vector *rows;                          // A vector of row values 0 -> ydim
   gsl_vector *fiberCenters;                  // A vector of the center values of each fiber
-  gsl_vector *fiberBoundaries;               // The boundaries of all fibers
+  gsl_vector *fiberEdges;                    // The boundaries of all fibers
   gsl_vector *binnedLine;                    // A the primary line summed across +/- 5 pixels
                                              // to account for any doppler shifts in wavelength
   gsl_vector *smoothedLine;                  // Binned line but smoothed with FFT
@@ -100,6 +99,9 @@ class LightField {
   LightField(std::string fileNameParam);
   ~LightField();
   int plotImage();                           // Plots the main image
+  bool setFiberCenters(gsl_vector *vecIn);   // Sets the fiber centers vector
+  bool setFiberEdges(gsl_vector *vecIn);     // Sets the fiber edges vector
+  int populateChords();                      // Populating chords 1-20
 
 };
 
