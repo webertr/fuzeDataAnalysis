@@ -322,8 +322,7 @@ static void lightFieldCB(struct event_handler_args eha) {
       fiberCenters = readMDSplusVector(lastShotNumber, "\\ICCD:FIBERCENTERS", "fuze");
       fiberEdges = readMDSplusVector(lastShotNumber, "\\ICCD:FIBEREDGES", "fuze");
 
-      if ( (fiberCenters != 0) && (fiberEdges != 0) &&
-	   (fiberCenters->size != 0) && (fiberEdges->size != 0)) {
+      if ( (fiberCenters != 0) && (fiberEdges != 0) ) {
 	break;
       }
 
@@ -342,12 +341,12 @@ static void lightFieldCB(struct event_handler_args eha) {
     }
 
     if (lfObject.setFiberCenters(fiberCenters)) {
-      std::cout << "Not uploading mdsplus data\n";
+      std::cout << "Not uploading mdsplus data. Couldn't set fiber centers.\n";
       return;
     }
       
     if( lfObject.setFiberEdges(fiberEdges)) {
-      std::cout << "Not uploading mdsplus data\n";
+      std::cout << "Not uploading mdsplus data. Couldn't set fiber centers\n";
       return;
     }
 

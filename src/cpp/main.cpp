@@ -19,9 +19,9 @@ int main() {
 
   //testSpectroscopyMonitor();
 
-  //runSpectroscopyMonitor();
+  runSpectroscopyMonitor();
 
-  testPsqlAccess();
+  //testPsqlAccess();
 
   return 0;
 

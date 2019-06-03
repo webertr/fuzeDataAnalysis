@@ -13,13 +13,15 @@
  * Inputs: int
  * Returns: gsl_vector *
  * Description: Get the most recent shot numbers and return them as a
- * gsl vector
+ * gsl vector long in descending order
  ******************************************************************************/
 
 gsl_vector_long *getRecentShotNumbers(int shotNums) {
 
   gsl_vector_long *nullVec = 0;
   gsl_vector_long *shotNumbers = gsl_vector_long_alloc(shotNums);
+  std::ostringstream oss;
+  int numRet;
 
   const std::string PSQL_CONNINFO = "dbname = fuzelogbook "
     "hostaddr = 10.10.10.240 "
@@ -38,23 +40,29 @@ gsl_vector_long *getRecentShotNumbers(int shotNums) {
     }
 
     /* Create SQL statement */
-    std::string sql = "SELECT shotnumber FROM shots";
+    oss << "SELECT shotnumber FROM shots ORDER BY shotnumber DESC LIMIT " << shotNums;
+    std::string sql = oss.str();
 
     /* Create a non-transactional object. */
     pqxx::nontransaction nonTran(conn);
       
     /* Execute SQL query */
     pqxx::result res(nonTran.exec(sql));
-      
+    
+    /* Make sure there are enough entries */
+    numRet = res.end() - res.begin();
+
+    if (shotNums > numRet ) {
+      shotNums = numRet;
+    }
+
     /* List down all the records */
     for (pqxx::result::const_iterator cIter = res.begin(); 
-	 (cIter-res.begin()) != shotNums; ++cIter) {
-      std::cout << "ShotNumber = " << cIter[0].as<int>() << std::endl;
+	 cIter-res.begin() != shotNums ; ++cIter) {
       gsl_vector_long_set(shotNumbers, cIter-res.begin(), cIter[0].as<int>());
     }
-    std::cout << "Operation done successfully" << std::endl;
 
-    conn.disconnect ();
+    conn.disconnect();
 
   } catch (const std::exception &exp) {
     std::cerr << exp.what() << std::endl;
@@ -78,21 +86,14 @@ static bool testGetRecentShotNumbers();
 
 int testPsqlAccess() {
 
-  int lastShotNumber = 190531006;
-  gsl_vector* test = readMDSplusVector(lastShotNumber, "\\ICCD:FIBEREDGES", "fuze");
-
-  if (test == 0) {
-    std::cout << "Zero passed\n";
-  }
-
-  if (!testPsqlGetShotNumbers()) {
-    std::cout << "Get shotnumber psql test Failed\n";
-    return -1;
-  }
-
   if (!testGetRecentShotNumbers()) {
     std::cout << "Get recent shotnumber psql test Failed\n";
     return -1;
+  }
+
+  /* This avoids the warning */
+  if (0) {
+    testPsqlGetShotNumbers();
   }
 
   std::cout << "All Psql tests passed\n";
@@ -158,15 +159,12 @@ static bool testPsqlGetShotNumbers() {
 static bool testGetRecentShotNumbers() {
 
   int num = 20;
-
   gsl_vector_long *test = getRecentShotNumbers(num);
 
-  int ii;
-
-  for (ii = 0; ii < num; ii++) {
-    std::cout << "Num: " << ii << " " << gsl_vector_long_get(test, ii) << "\n";
+  if (num == (int) (test->size)) {
+    return true;
+  } else {
+    return false;
   }
-
-  return true;
 
 }

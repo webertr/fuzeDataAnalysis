@@ -32,6 +32,7 @@ gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string 
     /*
      * The tree name has to match the path environment variable xxx_path
      * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
+     * If not data in tree, %TREE-E-NODATA
      */
     tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
 
@@ -48,7 +49,17 @@ gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string 
 
   }
 
-  data = MDSplus::execute(nodeName.c_str(), tree);
+  try {
+    
+    data = MDSplus::execute(nodeName.c_str(), tree);
+
+  } catch (MDSplus::MdsException &exc) {
+      
+    std::cout << "Error in executing " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    return nullVec;
+
+  }
 
   doubleArray = data->getDoubleArray(&numElements);
 
@@ -114,7 +125,18 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
   }
 
   snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName.c_str());
-  data = MDSplus::execute(buf, tree);
+
+  try {
+    
+    data = MDSplus::execute(buf, tree);
+
+  } catch (MDSplus::MdsException &exc) {
+      
+    std::cout << "Error in executing " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    return nullVec;
+
+  }
 
   doubleArray = data->getDoubleArray(&numElements);
 
@@ -183,7 +205,17 @@ gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::
 
   }
 
-  data = MDSplus::execute(nodeName.c_str(), tree);
+  try {
+    
+    data = MDSplus::execute(nodeName.c_str(), tree);
+
+  } catch (MDSplus::MdsException &exc) {
+      
+    std::cout << "Error in executing " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    return nullMat;
+
+  }
 
   /* get shape */
   shape = data->getShape(&numDim);
@@ -288,7 +320,18 @@ double readMDSplusDouble(int shotNumber, std::string nodeName, std::string treeN
 
   }
 
-  data = MDSplus::execute(nodeName.c_str(), tree);
+  try {
+    
+    data = MDSplus::execute(nodeName.c_str(), tree);
+
+  } catch (MDSplus::MdsException &exc) {
+      
+    std::cout << "Error in executing " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    return -1;
+
+  }
+
   doubleValue = data->getDouble();
   
   // Data objects must be freed via routine deleteData()
