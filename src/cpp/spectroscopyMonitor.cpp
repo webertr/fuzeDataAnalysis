@@ -271,7 +271,7 @@ static void lightFieldCB(struct event_handler_args eha) {
   gsl_vector *fiberCenters;
   gsl_vector *fiberEdges;
 
-  int lastShotNumber;
+  long lastShotNumber;
 
   chid  chid = eha.chid;
 
@@ -312,10 +312,22 @@ static void lightFieldCB(struct event_handler_args eha) {
     std::cout << "Fiber centers not found. Looking for previous fiber centers\n";
 
     /* Find the last shot number with Spectroscopy data */
-    lastShotNumber = shotNumber - 1;
+    /* Get last 100 shot numbers */
+    const int nShotNumbers = 100;
+    gsl_vector_long *recentShotNumbers = gsl_vector_long_alloc(nShotNumbers);
+    int ii;
+    for (ii = 0; ii < nShotNumbers; ii++) {
+      
+      lastShotNumber = gsl_vector_long_get(recentShotNumbers, ii);
+      fiberCenters = readMDSplusVector(lastShotNumber, "\\ICCD:FIBERCENTERS", "fuze");
+      fiberEdges = readMDSplusVector(lastShotNumber, "\\ICCD:FIBEREDGES", "fuze");
 
-    fiberCenters = readMDSplusVector(lastShotNumber, "\\ICCD:FIBERCENTERS", "fuze");
-    fiberEdges = readMDSplusVector(lastShotNumber, "\\ICCD:FIBEREDGES", "fuze");
+      if ( (fiberCenters != 0) && (fiberEdges != 0) &&
+	   (fiberCenters->size != 0) && (fiberEdges->size != 0)) {
+	break;
+      }
+
+    }
 
     if (fiberCenters == 0) {
       std::cout << "Previous fiber centers not found\n"

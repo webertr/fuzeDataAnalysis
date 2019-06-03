@@ -8,6 +8,64 @@
  ******************************************************************************/
 
 
+/******************************************************************************
+ * Function: getRecentShotNumbers
+ * Inputs: int
+ * Returns: gsl_vector *
+ * Description: Get the most recent shot numbers and return them as a
+ * gsl vector
+ ******************************************************************************/
+
+gsl_vector_long *getRecentShotNumbers(int shotNums) {
+
+  gsl_vector_long *nullVec = 0;
+  gsl_vector_long *shotNumbers = gsl_vector_long_alloc(shotNums);
+
+  const std::string PSQL_CONNINFO = "dbname = fuzelogbook "
+    "hostaddr = 10.10.10.240 "
+    "user = csa "
+    "password = csapsql";
+
+  try {
+
+    pqxx::connection conn(PSQL_CONNINFO);
+
+    if (conn.is_open()) {
+      std::cout << "Opened database successfully: " << conn.dbname() << std::endl;
+    } else {
+      std::cout << "Can't open database" << std::endl;
+      return nullVec;
+    }
+
+    /* Create SQL statement */
+    std::string sql = "SELECT shotnumber FROM shots";
+
+    /* Create a non-transactional object. */
+    pqxx::nontransaction nonTran(conn);
+      
+    /* Execute SQL query */
+    pqxx::result res(nonTran.exec(sql));
+      
+    /* List down all the records */
+    for (pqxx::result::const_iterator cIter = res.begin(); 
+	 (cIter-res.begin()) != shotNums; ++cIter) {
+      std::cout << "ShotNumber = " << cIter[0].as<int>() << std::endl;
+      gsl_vector_long_set(shotNumbers, cIter-res.begin(), cIter[0].as<int>());
+    }
+    std::cout << "Operation done successfully" << std::endl;
+
+    conn.disconnect ();
+
+  } catch (const std::exception &exp) {
+    std::cerr << exp.what() << std::endl;
+    return nullVec;
+  }
+
+  
+  return shotNumbers;
+
+}
+
 
 /******************************************************************************
  *
@@ -16,11 +74,24 @@
  ******************************************************************************/
 
 static bool testPsqlGetShotNumbers();
+static bool testGetRecentShotNumbers();
 
 int testPsqlAccess() {
 
+  int lastShotNumber = 190531006;
+  gsl_vector* test = readMDSplusVector(lastShotNumber, "\\ICCD:FIBEREDGES", "fuze");
+
+  if (test == 0) {
+    std::cout << "Zero passed\n";
+  }
+
   if (!testPsqlGetShotNumbers()) {
     std::cout << "Get shotnumber psql test Failed\n";
+    return -1;
+  }
+
+  if (!testGetRecentShotNumbers()) {
+    std::cout << "Get recent shotnumber psql test Failed\n";
     return -1;
   }
 
@@ -49,7 +120,8 @@ static bool testPsqlGetShotNumbers() {
     }
 
     /* Create SQL statement */
-    std::string sql = "SELECT shotnumber FROM shots WHERE shotnumber>190528001";
+    std::string sql = "SELECT shotnumber FROM shots WHERE shotnumber>190528001 " 
+      "AND spectroscopyenabled=1";
 
     /* Create a non-transactional object. */
     pqxx::nontransaction nonTran(conn);
@@ -71,6 +143,30 @@ static bool testPsqlGetShotNumbers() {
   }
 
   
+  return true;
+
+}
+
+/******************************************************************************
+ * Function: getRecentShotNumbers
+ * Inputs: int
+ * Returns: gsl_vector *
+ * Description: Get the most recent shot numbers and return them as a
+ * gsl vector
+ ******************************************************************************/
+
+static bool testGetRecentShotNumbers() {
+
+  int num = 20;
+
+  gsl_vector_long *test = getRecentShotNumbers(num);
+
+  int ii;
+
+  for (ii = 0; ii < num; ii++) {
+    std::cout << "Num: " << ii << " " << gsl_vector_long_get(test, ii) << "\n";
+  }
+
   return true;
 
 }

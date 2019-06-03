@@ -6,6 +6,9 @@
 #include <pqxx/pqxx>
 #include <iostream>
 
+#include "mdsplusAccess.h"
+
+gsl_vector_long *getRecentShotNumbers(int shotNums);
 int testPsqlAccess();
 
 #endif
