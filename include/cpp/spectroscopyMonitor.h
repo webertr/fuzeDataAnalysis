@@ -7,6 +7,7 @@
 #include "epicsCA.h"
 #include "LightField.h"
 #include "mdsplusAccess.h"
+#include "psqlAccess.h"
 
 int runSpectroscopyMonitor();
 bool testSpectroscopyMonitor();

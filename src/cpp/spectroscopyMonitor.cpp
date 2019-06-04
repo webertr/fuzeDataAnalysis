@@ -314,9 +314,11 @@ static void lightFieldCB(struct event_handler_args eha) {
     /* Find the last shot number with Spectroscopy data */
     /* Get last 100 shot numbers */
     const int nShotNumbers = 100;
-    gsl_vector_long *recentShotNumbers = gsl_vector_long_alloc(nShotNumbers);
+    gsl_vector_long *recentShotNumbers = getRecentShotNumbers(nShotNumbers);
+
+    /* Iterating through 100 shot numbers to try and find fiber center and edge data */
     int ii;
-    for (ii = 0; ii < nShotNumbers; ii++) {
+    for (ii = 0; ii < (int) recentShotNumbers->size; ii++) {
       
       lastShotNumber = gsl_vector_long_get(recentShotNumbers, ii);
       fiberCenters = readMDSplusVector(lastShotNumber, "\\ICCD:FIBERCENTERS", "fuze");
@@ -328,25 +330,29 @@ static void lightFieldCB(struct event_handler_args eha) {
 
     }
 
+    /* vector point = 0 means there was not data in the mdsplus tree for any of the 100 shots */
     if (fiberCenters == 0) {
       std::cout << "Previous fiber centers not found\n"
 		<< "Not uploading mdsplus data\n";
       return;
     }
 
+    /* vector point = 0 means there was not data in the mdsplus tree for any of the 100 shots */
     if (fiberEdges == 0) {
       std::cout << "Previous fiber edges not found\n"
 		<< "Not uploading mdsplus data\n";
       return;
     }
 
+    /* Setting fiber Centers from mdsplus data to current lf object */
     if (lfObject.setFiberCenters(fiberCenters)) {
       std::cout << "Not uploading mdsplus data. Couldn't set fiber centers.\n";
       return;
     }
-      
+
+    /* Setting fiber edges from mdsplus data to current lf object */      
     if( lfObject.setFiberEdges(fiberEdges)) {
-      std::cout << "Not uploading mdsplus data. Couldn't set fiber centers\n";
+      std::cout << "Not uploading mdsplus data. Couldn't set fiber edges\n";
       return;
     }
 
