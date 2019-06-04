@@ -23,6 +23,7 @@
 #include <gsl/gsl_fft_halfcomplex.h>
 #include <gsl/gsl_sort.h>
 #include <limits>
+#include <stdexcept>
 
 #include "plot.h"
 

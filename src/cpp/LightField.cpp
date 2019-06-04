@@ -40,6 +40,13 @@ LightField::LightField(std::string fileNameParam):
    */
   fp = fopen(fileName.c_str(), "r");
 
+  /* Checking if file exists */
+  if (!fp) {
+    throw std::invalid_argument("File " + fileNameParam + " does not exists\n");
+    //throw std::invalid_argument("File does not exists\n");
+    return;
+  }
+    
   /*
    * Pulling the 42th byte to get the width of the frame in pixels
    */

@@ -325,6 +325,7 @@ static void lightFieldCB(struct event_handler_args eha) {
       fiberEdges = readMDSplusVector(lastShotNumber, "\\ICCD:FIBEREDGES", "fuze");
 
       if ( (fiberCenters != 0) && (fiberEdges != 0) ) {
+	std::cout << "Found data for shot number " << lastShotNumber << "\n";
 	break;
       }
 
@@ -488,13 +489,30 @@ static bool testSpectroscopyMonitorBasic() {
 
   chtype channelType[SIZE] = {DBR_LONG, DBR_LONG, DBR_LONG};
 
-  monitorPVsWithCallback(pvNames, cbFuncs, channelType, SIZE);
+  if (0) {
+    monitorPVsWithCallback(pvNames, cbFuncs, channelType, SIZE);
+  }
 
   return true;
 
 }
 
 static bool testCheckFileExists() {
+
+  /*
+   * Error with this:
+   * Shot number set to: 190604001
+   * ICCD center wavelength set to: 420
+   * Spectrometer z set to: 0.15
+   * Telescope Angle set to: 3 
+   * ICCD Grating set to: 3
+   * ICCD active slit set to: 1
+   * Light Field Upload to MDSPlus: FuZE:ControlPLC:LightFieldMDSplusUp = 1
+   * Error reading SPE file for frame width
+   * fuze@ops:~/Spectroscopy/Data/190604$ ls
+   * 190604002-raw.spe  190604002.spe  190604003-raw.spe  190604003.spe  
+   * 190604004-raw.spe  190604004.spe
+   */
 
   /* Should exists */
   //std::string fileNameExists = 
@@ -505,6 +523,8 @@ static bool testCheckFileExists() {
   //std::string fileNameNoExists = 
   //"/mnt/nas/Fuze Data/Spectroscopy (NAS)/Data/190521/190521010.spe";
   std::string fileNameNoExists = "/home/fuze/SpectroscopyData/190521/190521010.spe";
+
+  std::cout << checkFileExists("/home/fuze/SpectroscopyData/190604/190604002.spe") << "\n";
 
   if ( checkFileExists(fileNameExists) &&
        !checkFileExists(fileNameNoExists) ) {
