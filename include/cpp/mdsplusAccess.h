@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <mdsobjects.h>
+#include <math.h>
 
 gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string treeName);
 gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::string treeName);

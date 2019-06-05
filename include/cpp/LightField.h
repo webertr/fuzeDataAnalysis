@@ -73,7 +73,6 @@ class LightField {
   gsl_vector *fiberEdges;                    // The boundaries of all fibers
   gsl_vector *binnedLine;                    // A the primary line summed across +/- 5 pixels
                                              // to account for any doppler shifts in wavelength
-  gsl_vector *smoothedLine;                  // Binned line but smoothed with FFT
   gsl_vector *chord1;                        // Chord #1
   gsl_vector *chord2;                        // Chord #2
   gsl_vector *chord3;                        // Chord #3

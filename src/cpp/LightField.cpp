@@ -1,6 +1,5 @@
 #include "cpp/LightField.h"
 
-
 /******************************************************************************
  * Function: LightField
  * Inputs: 
@@ -297,25 +296,19 @@ LightField::LightField(std::string fileNameParam):
   maxLineIndex = getColMax();
 
   /* Getting a binned vector to find the fiber locations */
-  //binnedLine = getColWithRowSum();
-  binnedLine = getBinnedCol(maxLineIndex, 10);
+  binnedLine = getColWithRowSum();
+  //binnedLine = getBinnedCol(maxLineIndex, 10);
 
   /* Smooth line by binning */
   binVector(binnedLine, 5);
 
-  /* Smooth line by applying an FFT */
-  //smoothedLine = smoothVector(binnedLine, 4);
-
   /* Getting the peaks of the smoothed line */
-  //fiberCenters = getMaxima(smoothedLine);
   fiberCenters = getMaxima(binnedLine);
   
   /* Setting total number of fibers */
   numFibers = fiberCenters->size;
 
   /* Finding fiber boundaries */
-  //fiberEdges = getMinima(smoothedLine);
-  //fiberEdges = getMinima(binnedLine);
   fiberEdges = getFiberEdges();
 
   /* Setting total number of fiber boundaries */
@@ -347,6 +340,8 @@ LightField::LightField(std::string fileNameParam):
   if ( (numEdges == NUM_FIBERS + 1) &&
        (numFibers == NUM_FIBERS) ) {
     chordsOK = true;
+    std::cout << "Found correct number of edges (" << NUM_FIBERS+1
+	      << ") and fibers (" << NUM_FIBERS << ")\n";
   } else {
     std::cout << "Number of fibers found not equal to pre-determined number.\n"
 	      << "Number of fibers: " << NUM_FIBERS << "\n"
@@ -383,7 +378,6 @@ LightField::~LightField() {
   gsl_vector_free(fiberCenters);
   gsl_vector_free(fiberEdges);
   gsl_vector_free(binnedLine);
-  gsl_vector_free(smoothedLine);
   gsl_vector_free(chord1);
   gsl_vector_free(chord2);
   gsl_vector_free(chord3);
@@ -491,27 +485,19 @@ int LightField::plotImage() {
 
 gsl_vector *LightField::getFiberEdges() {
 
-  int fiberCenterMin,
-    fiberCenterMax,
-    fiberDistance,
-    fiberCenterAvgDist,
-    ii;
+  int ii;
   
   gsl_vector *fiberEdgesRet = gsl_vector_alloc(numFibers + 1);
+  gsl_vector_set(fiberEdgesRet, 0, 0);
+  gsl_vector_set(fiberEdgesRet, numFibers, ydim-1);
 
-  fiberCenterMin = gsl_vector_get(fiberCenters, 0);
-  fiberCenterMax = gsl_vector_get(fiberCenters, numFibers-1);
-
-  fiberDistance = fiberCenterMax - fiberCenterMin;
-  
-  fiberCenterAvgDist = fiberDistance / numFibers;
-
-  for (ii = 0; ii < numFibers; ii++) {
-    gsl_vector_set(fiberEdgesRet, ii, 
-		   (int) gsl_vector_get(fiberCenters, ii) - fiberCenterAvgDist);
+  int halfDist,
+    fibE;
+  for (ii = 1; ii < numFibers; ii++) {
+    halfDist = (int) (gsl_vector_get(fiberCenters, ii) - gsl_vector_get(fiberCenters, ii-1)) / 2;
+    fibE = (int) gsl_vector_get(fiberCenters, ii) - halfDist;
+    gsl_vector_set(fiberEdgesRet, ii, fibE);
   }
-  gsl_vector_set(fiberEdgesRet, numFibers, 
-		 gsl_vector_get(fiberCenters, numFibers-1) + fiberCenterAvgDist);
 
   return fiberEdgesRet;
 
@@ -927,7 +913,7 @@ static bool testFibersFind();
 bool testLightField() {
 
   if (!testFibersFind()) {
-    
+    std::cout << "Failed fibers find test\n";
   }
 
   if( !testImageUShort() ) {
@@ -945,63 +931,6 @@ bool testLightField() {
     return false;
   }
 
-
-  return true;
-
-  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
-
-  int ii, jj;
-
-  /* Populating fiberBoundCol */
-  gsl_vector *fiberBoundCol = gsl_vector_alloc(test.smoothedLine->size);
-  gsl_vector_set_zero(fiberBoundCol);
-  for (ii = 0; ii < test.numEdges; ii++) {
-    gsl_vector_set(fiberBoundCol, (int) gsl_vector_get(test.fiberEdges, ii), 1);
-  }
-
-  /* Populating fiberCenterCol */
-  gsl_vector *fiberCenterCol = gsl_vector_alloc(test.smoothedLine->size);
-  gsl_vector_set_zero(fiberCenterCol);
-  for (ii = 0; ii < test.numFibers; ii++) {
-    gsl_vector_set(fiberCenterCol, (int) gsl_vector_get(test.fiberCenters, ii), 1);
-  }
-
-  double maxVal = gsl_matrix_max(test.image);
-  /* Putting into boundary lines to image */
-  for (ii = 0; ii < test.numEdges; ii++) {
-    for (jj = 0; jj < test.xdim; jj++) {
-      gsl_matrix_set(test.image, (int) gsl_vector_get(test.fiberEdges, ii), jj, maxVal);
-    }
-  }
-
-  test.plotImage();
-
-  plotVectorData(test.rows, test.binnedLine, 
-  		 "", "", "data/splTest.dat", "data/splTest.sh");
-
-  plot2VectorData(test.rows, test.binnedLine, "title 'data'", 
-  		  test.smoothedLine, "with line lw 3 title 'model'", 
-  		  "", "data/temp1.txt", "data/temp1.sh");
-
-  gsl_vector_scale(fiberCenterCol, maxVal);
-  plot2VectorData(test.rows, fiberCenterCol, "with line title 'centers'", 
-  		  test.smoothedLine, "with line lw 3 title 'model'", 
-  		  "", "data/temp2.txt", "data/temp2.sh");
-
-  gsl_vector_scale(fiberBoundCol, maxVal);
-  plot2VectorData(test.rows, fiberBoundCol, "with line title 'bound'", 
-  		  test.smoothedLine, "with line lw 3 title 'model'", 
-  		  "", "data/temp3.txt", "data/temp3.sh");
-
-  gsl_vector_scale(test.rows, maxVal);
-  plot2VectorData(test.rows, fiberBoundCol, "with line title 'bound'", 
-  		  test.binnedLine, "title 'data'", 
-  		  "", "data/temp4.txt", "data/temp4.sh");
-
-  plot2VectorData(test.waveLength, test.chord1, "with line title 'Chord 1'", 
-		  test.chord2, "with line title 'Chord 2'", 
-		  "", "data/temp5.txt", "data/temp5.sh");
-  
   std::cout << "Passed All Light Field Tests\n";
 
   return true;
@@ -1011,7 +940,7 @@ bool testLightField() {
 
 static bool testClassCreation() {
 
-  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+  LightField test = LightField("/home/webertr/SpectroscopyData/171212/171212  020.spe");
 
   return true;
 
@@ -1020,7 +949,7 @@ static bool testClassCreation() {
 
 static bool testFindColMax() {
 
-  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+  LightField test = LightField("/home/webertr/SpectroscopyData/171212/171212  020.spe");
 
   int colMax = test.maxLineIndex;
 
@@ -1035,7 +964,7 @@ static bool testFindColMax() {
 
 static bool testImageUShort() {
 
-  LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
+  LightField test = LightField("/home/webertr/SpectroscopyData/171212/171212  020.spe");
 
   int ii = 100,
     jj = 50;
@@ -1054,7 +983,7 @@ static bool testImageUShort() {
 
 static bool testFibersFind() {
 
-  std::string shotNumberFileName = "/home/fuze/SpectroscopyData/190604/190604020.spe";
+  std::string shotNumberFileName = "/home/webertr/SpectroscopyData/190604/190604020.spe";
 
   LightField lfObject = LightField(shotNumberFileName);
 
@@ -1062,32 +991,42 @@ static bool testFibersFind() {
   		 "", "", "data/splTest.dat", "data/splTest.sh");
 
   double maxVal = gsl_matrix_max(lfObject.image);
+  
   /* Putting into boundary lines to image */
+  bool center = false;
+  bool edge = true;
   int ii, jj;
-  for (ii = 0; ii < lfObject.numFibers; ii++) {
-    std::cout << "Fiber Center " << ii+1 << " : " << 
-      gsl_vector_get(lfObject.fiberCenters, ii) << "\n";
-  }
-
-  for (ii = 0; ii < lfObject.numEdges; ii++) {
-    std::cout << "Fiber Edge " << ii+1 << " : " << 
-      gsl_vector_get(lfObject.fiberEdges, ii) << "\n";
-  }
-
-  for (ii = 0; ii < lfObject.numEdges; ii++) {
-    for (jj = 0; jj < lfObject.xdim; jj++) {
-      std::cout << ii << " " << (int) gsl_vector_get(lfObject.fiberEdges, ii)+1 << "\n";
-      gsl_matrix_set(lfObject.image, 
-		     (int) gsl_vector_get(lfObject.fiberEdges, ii)+1, jj, maxVal);
-      std::cout << "first" << "\n";
-      gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberEdges, ii), jj, maxVal);
-      std::cout << "first" << "\n";
-      gsl_matrix_set(lfObject.image, 
-		     (int) gsl_vector_get(lfObject.fiberEdges, ii)-1, jj, maxVal);
-      std::cout << "third" << "\n";
+  if (center) {
+    for (ii = 0; ii < lfObject.numFibers; ii++) {
+      for (jj = 0; jj < lfObject.xdim; jj++) {
+	gsl_matrix_set(lfObject.image, 
+		       (int) gsl_vector_get(lfObject.fiberCenters, ii)+1, jj, maxVal);
+	gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberCenters, ii), jj, maxVal);
+	gsl_matrix_set(lfObject.image, 
+		       (int) gsl_vector_get(lfObject.fiberCenters, ii)-1, jj, maxVal);
+      }
     }
-  }
+  } else if (edge) {
+    for (ii = 1; ii < (lfObject.numEdges-1); ii++) {
+      for (jj = 0; jj < lfObject.xdim; jj++) {
+	gsl_matrix_set(lfObject.image,
+		       (int) gsl_vector_get(lfObject.fiberEdges, ii) + 1, jj, maxVal);
+	gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberEdges, ii), jj, maxVal);
+	gsl_matrix_set(lfObject.image,
+		       (int) gsl_vector_get(lfObject.fiberEdges, ii) - 1, jj, maxVal);
+      }
+    }
 
+    for (jj = 0; jj < lfObject.xdim; jj++) {
+      	gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberEdges, 0), jj, maxVal);
+    }
+
+    for (jj = 0; jj < lfObject.xdim; jj++) {
+      	gsl_matrix_set(lfObject.image,
+		       (int) gsl_vector_get(lfObject.fiberEdges, lfObject.numFibers-1), jj, maxVal);
+    }
+    
+  }
   
   lfObject.plotImage();
 
