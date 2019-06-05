@@ -11,7 +11,7 @@ int main() {
 
   //kiranaImageAnalysis();
 
-  //testLightField();
+  testLightField();
 
   //testMDSplusAccess();
 
@@ -19,7 +19,7 @@ int main() {
 
   //testSpectroscopyMonitor();
 
-  runSpectroscopyMonitor();
+  //runSpectroscopyMonitor();
 
   //testPsqlAccess();
 

@@ -43,7 +43,6 @@ LightField::LightField(std::string fileNameParam):
   /* Checking if file exists */
   if (!fp) {
     throw std::invalid_argument("File " + fileNameParam + " does not exists\n");
-    //throw std::invalid_argument("File does not exists\n");
     return;
   }
     
@@ -299,19 +298,25 @@ LightField::LightField(std::string fileNameParam):
 
   /* Getting a binned vector to find the fiber locations */
   //binnedLine = getColWithRowSum();
-  binnedLine = getBinnedCol(maxLineIndex, 5);
+  binnedLine = getBinnedCol(maxLineIndex, 10);
+
+  /* Smooth line by binning */
+  binVector(binnedLine, 5);
 
   /* Smooth line by applying an FFT */
-  smoothedLine = smoothVector(binnedLine, 4);
+  //smoothedLine = smoothVector(binnedLine, 4);
 
   /* Getting the peaks of the smoothed line */
-  fiberCenters = getMaxima(smoothedLine);
-
+  //fiberCenters = getMaxima(smoothedLine);
+  fiberCenters = getMaxima(binnedLine);
+  
   /* Setting total number of fibers */
   numFibers = fiberCenters->size;
 
   /* Finding fiber boundaries */
-  fiberEdges = getMinima(smoothedLine);
+  //fiberEdges = getMinima(smoothedLine);
+  //fiberEdges = getMinima(binnedLine);
+  fiberEdges = getFiberEdges();
 
   /* Setting total number of fiber boundaries */
   numEdges = fiberEdges->size;
@@ -478,6 +483,42 @@ int LightField::plotImage() {
 
 
 /******************************************************************************
+ * Function: getFiberEdges
+ * Inputs: void
+ * Returns: gsl_vector *
+ * Description: Figures out the fiber edges from the fiber centers
+ ******************************************************************************/
+
+gsl_vector *LightField::getFiberEdges() {
+
+  int fiberCenterMin,
+    fiberCenterMax,
+    fiberDistance,
+    fiberCenterAvgDist,
+    ii;
+  
+  gsl_vector *fiberEdgesRet = gsl_vector_alloc(numFibers + 1);
+
+  fiberCenterMin = gsl_vector_get(fiberCenters, 0);
+  fiberCenterMax = gsl_vector_get(fiberCenters, numFibers-1);
+
+  fiberDistance = fiberCenterMax - fiberCenterMin;
+  
+  fiberCenterAvgDist = fiberDistance / numFibers;
+
+  for (ii = 0; ii < numFibers; ii++) {
+    gsl_vector_set(fiberEdgesRet, ii, 
+		   (int) gsl_vector_get(fiberCenters, ii) - fiberCenterAvgDist);
+  }
+  gsl_vector_set(fiberEdgesRet, numFibers, 
+		 gsl_vector_get(fiberCenters, numFibers-1) + fiberCenterAvgDist);
+
+  return fiberEdgesRet;
+
+}
+
+
+/******************************************************************************
  * Function: setFiberCenters
  * Inputs: gsl_vector *
  * Returns: bool
@@ -498,6 +539,46 @@ bool LightField::setFiberCenters(gsl_vector *vecIn) {
   }
 
   return true;
+
+}
+
+
+/******************************************************************************
+ * Function: binVector
+ * Inputs: gsl_vector *, int
+ * Returns: void
+ * Description: Bins the passed vector
+ ******************************************************************************/
+
+void LightField::binVector(gsl_vector *vecIn, int binSize) {
+
+  int ii, jj, vecSize = vecIn->size;
+  double sum;
+
+  gsl_vector *temp = gsl_vector_alloc(vecSize);
+
+  for (ii = binSize; ii < (vecSize - binSize); ii++) {
+    sum = 0;
+    for (jj = -binSize; jj < binSize; jj++) {
+      sum = sum + gsl_vector_get(vecIn, ii+jj);
+    }
+    gsl_vector_set(temp, ii, sum); 
+  }
+
+  for (ii = 0; ii < binSize; ii++) {
+    gsl_vector_set(temp, ii, gsl_vector_get(vecIn, ii));
+  }
+
+  for (ii = vecSize-binSize; ii < vecSize; ii++) {
+    gsl_vector_set(temp, ii, gsl_vector_get(vecIn, ii));
+  }
+
+  /* Copying temporary vector over */
+  gsl_vector_memcpy(vecIn, temp);
+
+  gsl_vector_free(temp);
+
+  return;
 
 }
 
@@ -841,8 +922,13 @@ int LightField::populateChords() {
 static bool testClassCreation();
 static bool testFindColMax();
 static bool testImageUShort();
+static bool testFibersFind();
 
 bool testLightField() {
+
+  if (!testFibersFind()) {
+    
+  }
 
   if( !testImageUShort() ) {
     std::cout << "Failed ushort image test\n";
@@ -858,6 +944,9 @@ bool testLightField() {
     std::cout << "Failed Find Column Max\n";
     return false;
   }
+
+
+  return true;
 
   LightField test = LightField("/home/fuze/Spectroscopy/Data/171212/171212  020.spe");
 
@@ -958,6 +1047,50 @@ static bool testImageUShort() {
     return false;
   }
   
+  return true;
+
+}
+
+
+static bool testFibersFind() {
+
+  std::string shotNumberFileName = "/home/fuze/SpectroscopyData/190604/190604020.spe";
+
+  LightField lfObject = LightField(shotNumberFileName);
+
+  plotVectorData(lfObject.waveLength, lfObject.binnedLine, 
+  		 "", "", "data/splTest.dat", "data/splTest.sh");
+
+  double maxVal = gsl_matrix_max(lfObject.image);
+  /* Putting into boundary lines to image */
+  int ii, jj;
+  for (ii = 0; ii < lfObject.numFibers; ii++) {
+    std::cout << "Fiber Center " << ii+1 << " : " << 
+      gsl_vector_get(lfObject.fiberCenters, ii) << "\n";
+  }
+
+  for (ii = 0; ii < lfObject.numEdges; ii++) {
+    std::cout << "Fiber Edge " << ii+1 << " : " << 
+      gsl_vector_get(lfObject.fiberEdges, ii) << "\n";
+  }
+
+  for (ii = 0; ii < lfObject.numEdges; ii++) {
+    for (jj = 0; jj < lfObject.xdim; jj++) {
+      std::cout << ii << " " << (int) gsl_vector_get(lfObject.fiberEdges, ii)+1 << "\n";
+      gsl_matrix_set(lfObject.image, 
+		     (int) gsl_vector_get(lfObject.fiberEdges, ii)+1, jj, maxVal);
+      std::cout << "first" << "\n";
+      gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberEdges, ii), jj, maxVal);
+      std::cout << "first" << "\n";
+      gsl_matrix_set(lfObject.image, 
+		     (int) gsl_vector_get(lfObject.fiberEdges, ii)-1, jj, maxVal);
+      std::cout << "third" << "\n";
+    }
+  }
+
+  
+  lfObject.plotImage();
+
   return true;
 
 }
