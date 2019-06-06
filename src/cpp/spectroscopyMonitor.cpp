@@ -369,15 +369,15 @@ static void lightFieldCB(struct event_handler_args eha) {
   writeMDSplusVector(lfObject.fiberEdges, shotNumber, "\\ICCD:FIBEREDGES", "fuze");
 
   /* Uploading chords to mdsplus */
-  writeMDSplusVector(lfObject.chord1, shotNumber, "\\ICCD_1:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord2, shotNumber, "\\ICCD_2:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord3, shotNumber, "\\ICCD_3:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord4, shotNumber, "\\ICCD_4:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord5, shotNumber, "\\ICCD_5:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord6, shotNumber, "\\ICCD_6:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord7, shotNumber, "\\ICCD_7:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord8, shotNumber, "\\ICCD_8:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord9, shotNumber, "\\ICCD_9:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord1, shotNumber, "\\ICCD_01:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord2, shotNumber, "\\ICCD_02:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord3, shotNumber, "\\ICCD_03:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord4, shotNumber, "\\ICCD_04:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord5, shotNumber, "\\ICCD_05:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord6, shotNumber, "\\ICCD_06:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord7, shotNumber, "\\ICCD_07:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord8, shotNumber, "\\ICCD_08:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord9, shotNumber, "\\ICCD_09:RAW", "fuze");
   writeMDSplusVector(lfObject.chord10, shotNumber, "\\ICCD_10:RAW", "fuze");
   writeMDSplusVector(lfObject.chord11, shotNumber, "\\ICCD_11:RAW", "fuze");
   writeMDSplusVector(lfObject.chord12, shotNumber, "\\ICCD_12:RAW", "fuze");

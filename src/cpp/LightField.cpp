@@ -865,6 +865,56 @@ gsl_vector *LightField::getMinima(gsl_vector *vecIn) {
 
 
 /******************************************************************************
+ * Function: uploadToMDSplus
+ * Inputs: 
+ * Returns: void
+ * Description: 
+ ******************************************************************************/
+
+void LightField::uploadToMDSplus(int shotNumber) {
+
+
+  if (!chordsOK) {
+    std::cout << "Fiber centers not found. Not uploading to mdsplus\n";
+    return;
+  }
+
+  std::cout << "Uploading data to mdsplus\n";
+
+  /* Uploading LF data to mdsplus */
+  writeMDSplusMatrix(imageUShort, shotNumber, "\\ICCD:RAW", "fuze");
+  writeMDSplusVector(waveLength, shotNumber, "\\ICCD:LAMBDA", "fuze");
+  writeMDSplusVector(rows, shotNumber, "\\ICCD:ROWS", "fuze");
+  writeMDSplusVector(fiberCenters, shotNumber, "\\ICCD:FIBERCENTERS", "fuze");
+  writeMDSplusVector(fiberEdges, shotNumber, "\\ICCD:FIBEREDGES", "fuze");
+
+  /* Uploading chords to mdsplus */
+  writeMDSplusVector(chord1, shotNumber, "\\ICCD_01:RAW", "fuze");
+  writeMDSplusVector(chord2, shotNumber, "\\ICCD_02:RAW", "fuze");
+  writeMDSplusVector(chord3, shotNumber, "\\ICCD_03:RAW", "fuze");
+  writeMDSplusVector(chord4, shotNumber, "\\ICCD_04:RAW", "fuze");
+  writeMDSplusVector(chord5, shotNumber, "\\ICCD_05:RAW", "fuze");
+  writeMDSplusVector(chord6, shotNumber, "\\ICCD_06:RAW", "fuze");
+  writeMDSplusVector(chord7, shotNumber, "\\ICCD_07:RAW", "fuze");
+  writeMDSplusVector(chord8, shotNumber, "\\ICCD_08:RAW", "fuze");
+  writeMDSplusVector(chord9, shotNumber, "\\ICCD_09:RAW", "fuze");
+  writeMDSplusVector(chord10, shotNumber, "\\ICCD_10:RAW", "fuze");
+  writeMDSplusVector(chord11, shotNumber, "\\ICCD_11:RAW", "fuze");
+  writeMDSplusVector(chord12, shotNumber, "\\ICCD_12:RAW", "fuze");
+  writeMDSplusVector(chord13, shotNumber, "\\ICCD_13:RAW", "fuze");
+  writeMDSplusVector(chord14, shotNumber, "\\ICCD_14:RAW", "fuze");
+  writeMDSplusVector(chord15, shotNumber, "\\ICCD_15:RAW", "fuze");
+  writeMDSplusVector(chord16, shotNumber, "\\ICCD_16:RAW", "fuze");
+  writeMDSplusVector(chord17, shotNumber, "\\ICCD_17:RAW", "fuze");
+  writeMDSplusVector(chord18, shotNumber, "\\ICCD_18:RAW", "fuze");
+  writeMDSplusVector(chord19, shotNumber, "\\ICCD_19:RAW", "fuze");
+  writeMDSplusVector(chord20, shotNumber, "\\ICCD_20:RAW", "fuze");
+
+  return;
+
+}
+
+/******************************************************************************
  * Function: populateChords
  * Inputs: 
  * Returns: gsl_vector *
@@ -872,8 +922,6 @@ gsl_vector *LightField::getMinima(gsl_vector *vecIn) {
  ******************************************************************************/
 
 int LightField::populateChords() {
-
-  
 
   gsl_vector *chordMatrix[NUM_FIBERS] = {chord1, chord2, chord3, chord4, chord5, chord6,
 					 chord7, chord8, chord9, chord10, chord11, chord12,
@@ -887,10 +935,11 @@ int LightField::populateChords() {
     ki = (int) gsl_vector_get(fiberEdges, ii);
     kf = (int) gsl_vector_get(fiberEdges, ii+1);
     for (jj = 0; jj < xdim; jj++) {
-      for (kk = ki + 1; kk < kf; kk++) {
-	val = gsl_matrix_get(image, kk, jj) + gsl_vector_get(chordMatrix[ii], jj);
-	gsl_vector_set(chordMatrix[ii], jj, val);
+      val = 0;
+      for (kk = ki; kk < kf; kk++) {
+	val = gsl_matrix_get(image, kk, jj) + val;
       }
+      gsl_vector_set(chordMatrix[ii], jj, val);
     }
   }
 
@@ -940,7 +989,7 @@ bool testLightField() {
 
 static bool testClassCreation() {
 
-  LightField test = LightField("/home/webertr/SpectroscopyData/171212/171212  020.spe");
+  LightField test = LightField("/home/fuze/SpectroscopyData/171212/171212  020.spe");
 
   return true;
 
@@ -949,7 +998,7 @@ static bool testClassCreation() {
 
 static bool testFindColMax() {
 
-  LightField test = LightField("/home/webertr/SpectroscopyData/171212/171212  020.spe");
+  LightField test = LightField("/home/fuze/SpectroscopyData/171212/171212  020.spe");
 
   int colMax = test.maxLineIndex;
 
@@ -964,7 +1013,7 @@ static bool testFindColMax() {
 
 static bool testImageUShort() {
 
-  LightField test = LightField("/home/webertr/SpectroscopyData/171212/171212  020.spe");
+  LightField test = LightField("/home/fuze/SpectroscopyData/171212/171212  020.spe");
 
   int ii = 100,
     jj = 50;
@@ -983,9 +1032,12 @@ static bool testImageUShort() {
 
 static bool testFibersFind() {
 
-  std::string shotNumberFileName = "/home/webertr/SpectroscopyData/190604/190604020.spe";
+  int shotNumber = 190604020;
+  std::string shotNumberFileName = "/home/fuze/SpectroscopyData/190604/190604020.spe";
 
   LightField lfObject = LightField(shotNumberFileName);
+
+  lfObject.uploadToMDSplus(shotNumber);
 
   plotVectorData(lfObject.waveLength, lfObject.binnedLine, 
   		 "", "", "data/splTest.dat", "data/splTest.sh");
@@ -1001,7 +1053,8 @@ static bool testFibersFind() {
       for (jj = 0; jj < lfObject.xdim; jj++) {
 	gsl_matrix_set(lfObject.image, 
 		       (int) gsl_vector_get(lfObject.fiberCenters, ii)+1, jj, maxVal);
-	gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberCenters, ii), jj, maxVal);
+	gsl_matrix_set(lfObject.image, 
+		       (int) gsl_vector_get(lfObject.fiberCenters, ii), jj, maxVal);
 	gsl_matrix_set(lfObject.image, 
 		       (int) gsl_vector_get(lfObject.fiberCenters, ii)-1, jj, maxVal);
       }
@@ -1011,7 +1064,8 @@ static bool testFibersFind() {
       for (jj = 0; jj < lfObject.xdim; jj++) {
 	gsl_matrix_set(lfObject.image,
 		       (int) gsl_vector_get(lfObject.fiberEdges, ii) + 1, jj, maxVal);
-	gsl_matrix_set(lfObject.image, (int) gsl_vector_get(lfObject.fiberEdges, ii), jj, maxVal);
+	gsl_matrix_set(lfObject.image, 
+		       (int) gsl_vector_get(lfObject.fiberEdges, ii), jj, maxVal);
 	gsl_matrix_set(lfObject.image,
 		       (int) gsl_vector_get(lfObject.fiberEdges, ii) - 1, jj, maxVal);
       }
@@ -1023,7 +1077,8 @@ static bool testFibersFind() {
 
     for (jj = 0; jj < lfObject.xdim; jj++) {
       	gsl_matrix_set(lfObject.image,
-		       (int) gsl_vector_get(lfObject.fiberEdges, lfObject.numFibers-1), jj, maxVal);
+		       (int) gsl_vector_get(lfObject.fiberEdges, lfObject.numFibers-1), 
+		       jj, maxVal);
     }
     
   }

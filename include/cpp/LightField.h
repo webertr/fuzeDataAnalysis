@@ -25,7 +25,8 @@
 #include <limits>
 #include <stdexcept>
 
-#include "plot.h"
+#include "cpp/plot.h"
+#include "cpp/mdsplusAccess.h"
 
 /******************************************************************************
  * Class: LightField
@@ -104,6 +105,7 @@ class LightField {
   int populateChords();                      // Populating chords 1-20
   gsl_vector *getColWithRowSum();            // Sums all the rows up and puts them into
                                              // a single column 
+  void uploadToMDSplus(int shotNumber);      // Upload data to mdsplus
 
 };
 
