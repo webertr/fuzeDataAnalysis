@@ -7,5 +7,4 @@ This is a collection of source code in C and C++ that I have used on the FuZE ex
 
 ## Spectroscopy Monitor (spectroscopyMonitor.cpp)
 
-This is a file that will supply functions to monitor the FuZE Control System, and upload spectroscoy data from Princeton Instruments software, Light Field, to an MDSplus data. Details of this analysis are found here:
-[Spectroscopy Monitor](src/cpp/spectroscopyMonitor.md)
+This is a file that will supply functions to monitor the FuZE Control System, and upload spectroscoy data from Princeton Instruments software, Light Field, to an MDSplus data.
