@@ -1085,6 +1085,10 @@ static bool testFibersFind() {
   
   lfObject.plotImage();
 
-  return true;
+  if (lfObject.chordsOK) {
+    return true;
+  }
+
+  return false;
 
 }
