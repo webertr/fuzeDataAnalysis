@@ -17,10 +17,6 @@ int main() {
 
   //testEpicsCA();
 
-  //testSpectroscopyMonitor();
-
-  runSpectroscopyMonitor();
-
   //testPsqlAccess();
 
   return 0;

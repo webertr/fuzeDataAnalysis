@@ -27,6 +27,26 @@ static bool checkFileExists(std::string fileName);
 static void printChidInfo(chid chid, std::string message);
 static void shotNumberCB(struct event_handler_args eha);
 
+
+/******************************************************************************
+ * Function: 
+ * Inputs: 
+ * Returns: 
+ * Description: main function to execut program
+ ******************************************************************************/
+
+int main() {
+
+  /* Run spectroscopy monitor program */
+  runSpectroscopyMonitor();
+
+  /* Test spectroscopy monitor program */
+  //testSpectroscopyMonitor();
+
+  return 0;
+
+}
+
 /******************************************************************************
  * Function: getFileFromShotNumber
  * Inputs: 
