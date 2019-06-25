@@ -95,11 +95,15 @@ static std::string getFileFromShotNumber(long shotNumber) {
 
 static bool checkFileExists(std::string fileName) {
 
+  std::cout << "Checking to see if " << fileName << " exists\n";
+
   std::ifstream ifile(fileName.c_str(), std::ifstream::in);
 
   if (ifile.is_open()) {
+    std::cout << fileName << " exists\n";
     return true;
   } else {
+    std::cout << fileName << " does not exists\n";
     return false;
   }
 
@@ -366,13 +370,13 @@ static void lightFieldCB(struct event_handler_args eha) {
     }
 
     /* Setting fiber Centers from mdsplus data to current lf object */
-    if (lfObject.setFiberCenters(fiberCenters)) {
+    if (!lfObject.setFiberCenters(fiberCenters)) {
       std::cout << "Not uploading mdsplus data. Couldn't set fiber centers.\n";
       return;
     }
 
     /* Setting fiber edges from mdsplus data to current lf object */      
-    if( lfObject.setFiberEdges(fiberEdges)) {
+    if(!lfObject.setFiberEdges(fiberEdges)) {
       std::cout << "Not uploading mdsplus data. Couldn't set fiber edges\n";
       return;
     }

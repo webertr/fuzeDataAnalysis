@@ -516,7 +516,7 @@ bool LightField::setFiberCenters(gsl_vector *vecIn) {
   int ii, vecSize = vecIn->size;
 
   if (vecSize != numFibers) {
-    std::cout << "Set Fibers Error. Vectors not the same length\n";
+    std::cout << "Set Fiber Centers Error. Vectors not the same length\n";
     return false;
   }
 
@@ -581,7 +581,7 @@ bool LightField::setFiberEdges(gsl_vector *vecIn) {
   int ii, vecSize = vecIn->size;
 
   if (vecSize != numEdges) {
-    std::cout << "Set Fiber Edges. Vectors not the same length\n";
+    std::cout << "Set Fiber Edges Error. Vectors not the same length\n";
     return false;
   }
 
