@@ -966,7 +966,7 @@ int LightField::populateChords() {
 
   gsl_vector *chordMatrix[NUM_FIBERS] = {chord1, chord2, chord3, chord4, chord5, chord6,
 					 chord7, chord8, chord9, chord10, chord11, chord12,
-					 chord13, chord14, chord14, chord16, chord17, chord18,
+					 chord13, chord14, chord15, chord16, chord17, chord18,
 					 chord19, chord20};
 
   int ii, jj, kk, ki, kf;

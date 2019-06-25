@@ -350,13 +350,13 @@ static void lightFieldCB(struct event_handler_args eha) {
 
       if ( (fiberCenters != 0) && (fiberEdges != 0) ) {
 	std::cout << "Found data for shot number " << lastShotNumber << "\n";
+	lfObject.setNumFibers(fiberCenters->size);
+	lfObject.setNumEdges(fiberEdges->size);
 	break;
       }
 
     }
 
-    lfObject.setNumFibers(fiberCenters->size);
-    lfObject.setNumEdges(fiberEdges->size);
 
     /* vector point = 0 means there was not data in the mdsplus tree for any of the 100 shots */
     if (fiberCenters == 0) {
