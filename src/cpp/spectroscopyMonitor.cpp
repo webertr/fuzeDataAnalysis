@@ -342,7 +342,7 @@ static void lightFieldCB(struct event_handler_args eha) {
 
     /* Iterating through 100 shot numbers to try and find fiber center and edge data */
     int ii;
-    for (ii = 0; ii < (int) recentShotNumbers->size; ii++) {
+    for (ii = 1; ii < (int) recentShotNumbers->size; ii++) {
       
       lastShotNumber = gsl_vector_long_get(recentShotNumbers, ii);
       fiberCenters = readMDSplusVector(lastShotNumber, "\\ICCD:FIBERCENTERS", "fuze");
