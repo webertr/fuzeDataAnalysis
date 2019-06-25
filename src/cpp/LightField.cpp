@@ -37,12 +37,15 @@ LightField::LightField(std::string fileNameParam):
   /* 
    * Opening the file
    */
+  std::cout << "Opening file for LF object creation\n";
   fp = fopen(fileName.c_str(), "r");
 
   /* Checking if file exists */
   if (!fp) {
     throw std::invalid_argument("File " + fileNameParam + " does not exists\n");
     return;
+  } else {
+    std::cout << "LF object filed opened successfully\n";
   }
     
   /*
@@ -505,6 +508,36 @@ gsl_vector *LightField::getFiberEdges() {
 
 
 /******************************************************************************
+ * Function: setNumFibers
+ * Inputs: gsl_vector *
+ * Returns: bool
+ * Description: Sets the fiber centers fector
+ ******************************************************************************/
+
+bool LightField::setNumFibers(int numFibersIn) {
+
+  numFibers = numFibersIn;
+
+  return true;
+
+}
+
+/******************************************************************************
+ * Function: setNumEdges
+ * Inputs: gsl_vector *
+ * Returns: bool
+ * Description: Sets the fiber centers fector
+ ******************************************************************************/
+
+bool LightField::setNumEdges(int numEdgesIn) {
+
+  numEdges = numEdgesIn;
+
+  return true;
+
+}
+
+/******************************************************************************
  * Function: setFiberCenters
  * Inputs: gsl_vector *
  * Returns: bool
@@ -519,6 +552,10 @@ bool LightField::setFiberCenters(gsl_vector *vecIn) {
     std::cout << "Set Fiber Centers Error. Vectors not the same length\n";
     return false;
   }
+
+  /* Freeing old fiber centers and allocating new one */
+  gsl_vector_free(fiberCenters);
+  fiberCenters = gsl_vector_alloc(numFibers);
 
   for (ii = 0; ii < numFibers; ii++) {
     gsl_vector_set(fiberCenters, ii, gsl_vector_get(vecIn, ii));
@@ -584,6 +621,10 @@ bool LightField::setFiberEdges(gsl_vector *vecIn) {
     std::cout << "Set Fiber Edges Error. Vectors not the same length\n";
     return false;
   }
+
+  /* Freeing old fiber centers and allocating new one */
+  gsl_vector_free(fiberEdges);
+  fiberEdges = gsl_vector_alloc(numEdges);
 
   for (ii = 0; ii < numEdges; ii++) {
     gsl_vector_set(fiberEdges, ii, gsl_vector_get(vecIn, ii));

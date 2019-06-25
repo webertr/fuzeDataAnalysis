@@ -106,7 +106,9 @@ class LightField {
   gsl_vector *getColWithRowSum();            // Sums all the rows up and puts them into
                                              // a single column 
   void uploadToMDSplus(int shotNumber);      // Upload data to mdsplus
-
+  bool setNumEdges(int numEdgesIn);          // Set number of edges
+  bool setNumFibers(int numFibersIn);        // set number of fibers
+  
 };
 
 
