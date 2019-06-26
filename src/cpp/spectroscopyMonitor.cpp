@@ -28,8 +28,7 @@ static bool checkFileExists(std::string fileName);
 static void printChidInfo(chid chid, std::string message);
 static void shotNumberCB(struct event_handler_args eha);
 static void updateLastShotsCB(struct event_handler_args eha);
-static bool lightFieldUpdate(std::string shotNumberFileNameIn);
-
+static bool lightFieldUpdate(long shotNumberIn);
 
 /******************************************************************************
  * Function: 
@@ -172,6 +171,7 @@ static void updateLastShotsCB(struct event_handler_args eha) {
   int ii;
   long nextShotNumber;
   chid chid = eha.chid;
+  std::string fileNameTemp;
 
   if(eha.status!=ECA_NORMAL) {
     printChidInfo(chid,"eventCallback");
@@ -199,10 +199,11 @@ static void updateLastShotsCB(struct event_handler_args eha) {
 
     // Passing string of file name to use
     nextShotNumber = gsl_vector_long_get(recentShotNumbers, ii);
-    if (lightFieldUpdate(getFileFromShotNumber(nextShotNumber))) {
-      std::cout << "Successfully updated file " << shotNumberFileName << "\n";
+    fileNameTemp = getFileFromShotNumber(nextShotNumber);
+    if (lightFieldUpdate(nextShotNumber)) {
+      std::cout << "Successfully updated file " << fileNameTemp << "\n";
     } else {
-      std::cout << "Failed to update file " << shotNumberFileName << "\n";
+      std::cout << "Failed to update file " << fileNameTemp << "\n";
     }
     
   }
@@ -370,7 +371,7 @@ static void lightFieldCB(struct event_handler_args eha) {
 
   printf("Light Field Upload to MDSPlus: %s = %ld\n",ca_name(eha.chid),*plfMDSplus);
 
-  if (lightFieldUpdate(shotNumberFileName)) {
+  if (lightFieldUpdate(shotNumber)) {
     std::cout << "Successfully updated file " << shotNumberFileName << "\n";
     return;
   }
@@ -389,8 +390,9 @@ static void lightFieldCB(struct event_handler_args eha) {
  * Description: The callback for a download the light field data
  ******************************************************************************/
 
-static bool lightFieldUpdate(std::string shotNumberFileNameIn) {
+static bool lightFieldUpdate(long shotNumberIn) {
 
+  std::string shotNumberFileNameIn = getFileFromShotNumber(shotNumberIn);
   gsl_vector *fiberCenters;
   gsl_vector *fiberEdges;
 
@@ -399,7 +401,7 @@ static bool lightFieldUpdate(std::string shotNumberFileNameIn) {
   /* Checking to see if there is a file available */
   if ( !checkFileExists(shotNumberFileNameIn)) {
     std::cout << "No light field file available for shot number "
-	      << shotNumber << "\n";
+	      << shotNumberIn << "\n";
     return false;
   }
         
@@ -409,7 +411,7 @@ static bool lightFieldUpdate(std::string shotNumberFileNameIn) {
   /* Checking to see if the fiber centers were found. if not, abort */
   if (lfObject.chordsOK) {
     std::cout << "Fiber centers found. Uploading data for shot number "
-	      << shotNumber << "\n";
+	      << shotNumberIn << "\n";
   } else {
 
     /* Use the fiber centers and fiber edges from the previous shot */
@@ -418,7 +420,7 @@ static bool lightFieldUpdate(std::string shotNumberFileNameIn) {
     /* Find the last shot number with Spectroscopy data */
     /* Get last 100 shot numbers */
     const int nShotNumbers = 100;
-    gsl_vector_long *recentShotNumbers = getRecentShotNumbers(nShotNumbers);
+    gsl_vector_long *recentShotNumbers = getShotNumbersBeforePulse(nShotNumbers, shotNumberIn);
 
     /* Iterating through 100 shot numbers to try and find fiber center and edge data */
     int ii;
@@ -469,33 +471,33 @@ static bool lightFieldUpdate(std::string shotNumberFileNameIn) {
   }
 
   /* Uploading LF data to mdsplus */
-  writeMDSplusMatrix(lfObject.imageUShort, shotNumber, "\\ICCD:RAW", "fuze");
-  writeMDSplusVector(lfObject.waveLength, shotNumber, "\\ICCD:LAMBDA", "fuze");
-  writeMDSplusVector(lfObject.rows, shotNumber, "\\ICCD:ROWS", "fuze");
-  writeMDSplusVector(lfObject.fiberCenters, shotNumber, "\\ICCD:FIBERCENTERS", "fuze");
-  writeMDSplusVector(lfObject.fiberEdges, shotNumber, "\\ICCD:FIBEREDGES", "fuze");
+  writeMDSplusMatrix(lfObject.imageUShort, shotNumberIn, "\\ICCD:RAW", "fuze");
+  writeMDSplusVector(lfObject.waveLength, shotNumberIn, "\\ICCD:LAMBDA", "fuze");
+  writeMDSplusVector(lfObject.rows, shotNumberIn, "\\ICCD:ROWS", "fuze");
+  writeMDSplusVector(lfObject.fiberCenters, shotNumberIn, "\\ICCD:FIBERCENTERS", "fuze");
+  writeMDSplusVector(lfObject.fiberEdges, shotNumberIn, "\\ICCD:FIBEREDGES", "fuze");
 
   /* Uploading chords to mdsplus */
-  writeMDSplusVector(lfObject.chord1, shotNumber, "\\ICCD_01:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord2, shotNumber, "\\ICCD_02:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord3, shotNumber, "\\ICCD_03:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord4, shotNumber, "\\ICCD_04:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord5, shotNumber, "\\ICCD_05:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord6, shotNumber, "\\ICCD_06:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord7, shotNumber, "\\ICCD_07:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord8, shotNumber, "\\ICCD_08:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord9, shotNumber, "\\ICCD_09:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord10, shotNumber, "\\ICCD_10:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord11, shotNumber, "\\ICCD_11:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord12, shotNumber, "\\ICCD_12:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord13, shotNumber, "\\ICCD_13:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord14, shotNumber, "\\ICCD_14:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord15, shotNumber, "\\ICCD_15:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord16, shotNumber, "\\ICCD_16:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord17, shotNumber, "\\ICCD_17:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord18, shotNumber, "\\ICCD_18:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord19, shotNumber, "\\ICCD_19:RAW", "fuze");
-  writeMDSplusVector(lfObject.chord20, shotNumber, "\\ICCD_20:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord1, shotNumberIn, "\\ICCD_01:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord2, shotNumberIn, "\\ICCD_02:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord3, shotNumberIn, "\\ICCD_03:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord4, shotNumberIn, "\\ICCD_04:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord5, shotNumberIn, "\\ICCD_05:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord6, shotNumberIn, "\\ICCD_06:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord7, shotNumberIn, "\\ICCD_07:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord8, shotNumberIn, "\\ICCD_08:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord9, shotNumberIn, "\\ICCD_09:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord10, shotNumberIn, "\\ICCD_10:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord11, shotNumberIn, "\\ICCD_11:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord12, shotNumberIn, "\\ICCD_12:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord13, shotNumberIn, "\\ICCD_13:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord14, shotNumberIn, "\\ICCD_14:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord15, shotNumberIn, "\\ICCD_15:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord16, shotNumberIn, "\\ICCD_16:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord17, shotNumberIn, "\\ICCD_17:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord18, shotNumberIn, "\\ICCD_18:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord19, shotNumberIn, "\\ICCD_19:RAW", "fuze");
+  writeMDSplusVector(lfObject.chord20, shotNumberIn, "\\ICCD_20:RAW", "fuze");
   
   return true;
 

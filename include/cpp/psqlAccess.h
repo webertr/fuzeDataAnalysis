@@ -9,6 +9,7 @@
 #include "mdsplusAccess.h"
 
 gsl_vector_long *getRecentShotNumbers(int shotNums);
+gsl_vector_long *getShotNumbersBeforePulse(int shotNums, long shotNumber);
 int testPsqlAccess();
 
 #endif
