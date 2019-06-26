@@ -10,6 +10,7 @@
 
 /* Static variables to hold the PV values */
 static long shotNumber;                // FuZE:DataServer:ShotNumber
+static long updateLastShots;           // FuZE:ControlPLC:UpdateLightFieldShots
 static std::string shotNumberFileName; //
 static double iccdCenterWavelength;    // FuZE:ControlPLC:ICCDCenterWavelength
 static double spectrometerZ;           // FuZE:ControlPLC:SpectrometerZPosition
@@ -26,6 +27,8 @@ static std::string getFileFromShotNumber(long shotNumber);
 static bool checkFileExists(std::string fileName);
 static void printChidInfo(chid chid, std::string message);
 static void shotNumberCB(struct event_handler_args eha);
+static void updateLastShotsCB(struct event_handler_args eha);
+static bool lightFieldUpdate(std::string shotNumberFileNameIn);
 
 
 /******************************************************************************
@@ -137,21 +140,71 @@ static void printChidInfo(chid chid, std::string message) {
 
 static void shotNumberCB(struct event_handler_args eha) {
 
-    chid chid = eha.chid;
+  chid chid = eha.chid;
 
-    if(eha.status!=ECA_NORMAL) {
-      printChidInfo(chid,"eventCallback");
-      return;
+  if(eha.status!=ECA_NORMAL) {
+    printChidInfo(chid,"eventCallback");
+    return;
+  }
+    
+  long *pshotNumber = (long *)eha.dbr;
+  shotNumber = *pshotNumber;
+  
+  shotNumberFileName = getFileFromShotNumber(shotNumber);
+  
+  std::cout << "Shot number set to: " << shotNumber << "\n";
+
+  return;
+
+}
+
+
+/******************************************************************************
+ * Function: updateLastShotsCB
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a change to the update last number of pulses
+ * for light field data PV
+ ******************************************************************************/
+
+static void updateLastShotsCB(struct event_handler_args eha) {
+
+  int ii;
+  long nextShotNumber;
+  chid chid = eha.chid;
+
+  if(eha.status!=ECA_NORMAL) {
+    printChidInfo(chid,"eventCallback");
+    return;
+  }
+  
+  long *pupdateShotNumber = (long *)eha.dbr;
+  updateLastShots = *pupdateShotNumber;
+
+  printf("Updating last %ld pulses of Light Field data: %s\n",
+	 updateLastShots, ca_name(eha.chid));
+    
+  /* Getting recent shot numbers */
+  gsl_vector_long *recentShotNumbers = getRecentShotNumbers(updateLastShots);
+  
+  /* 
+   * Iterate through shot numbers starting with earliest, and update in light field data in mdsplus
+   */
+  for (ii = (recentShotNumbers->size-1); ii >= 0; ii--) {
+
+    // Passing string of file name to use
+    nextShotNumber = gsl_vector_long_get(recentShotNumbers, ii);
+    if (lightFieldUpdate(getFileFromShotNumber(nextShotNumber))) {
+      std::cout << "Successfully updated file " << shotNumberFileName << "\n";
+    } else {
+      std::cout << "Failed to update file " << shotNumberFileName << "\n";
     }
     
-    long *pshotNumber = (long *)eha.dbr;
-    shotNumber = *pshotNumber;
+  }
 
-    shotNumberFileName = getFileFromShotNumber(shotNumber);
-
-    std::cout << "Shot number set to: " << shotNumber << "\n";
-
-    return;
+  std::cout << "Finished updating " << updateLastShots << " number of shots in mdsplus\n";
+  
+  return;
 
 }
 
@@ -283,6 +336,7 @@ static void iccdActiveSlitCB(struct event_handler_args eha) {
 
 }
 
+
 /******************************************************************************
  * Function: lightFieldCB
  * Inputs: 
@@ -291,11 +345,6 @@ static void iccdActiveSlitCB(struct event_handler_args eha) {
  ******************************************************************************/
 
 static void lightFieldCB(struct event_handler_args eha) {
-
-  gsl_vector *fiberCenters;
-  gsl_vector *fiberEdges;
-
-  long lastShotNumber;
 
   chid  chid = eha.chid;
 
@@ -316,15 +365,41 @@ static void lightFieldCB(struct event_handler_args eha) {
 
   printf("Light Field Upload to MDSPlus: %s = %ld\n",ca_name(eha.chid),*plfMDSplus);
 
+  if (lightFieldUpdate(shotNumberFileName)) {
+    std::cout << "Successfully updated file " << shotNumberFileName << "\n";
+    return;
+  }
+
+  std::cout << "Failed to update file " << shotNumberFileName << "\n";
+
+  return;
+  
+}
+
+
+/******************************************************************************
+ * Function: lightFieldUpdate
+ * Inputs: 
+ * Returns: int
+ * Description: The callback for a download the light field data
+ ******************************************************************************/
+
+static bool lightFieldUpdate(std::string shotNumberFileNameIn) {
+
+  gsl_vector *fiberCenters;
+  gsl_vector *fiberEdges;
+
+  long lastShotNumber;
+
   /* Checking to see if there is a file available */
-  if ( !checkFileExists(shotNumberFileName)) {
+  if ( !checkFileExists(shotNumberFileNameIn)) {
     std::cout << "No light field file available for shot number "
 	      << shotNumber << "\n";
-    return;
+    return false;
   }
         
   /* Getting light field .spe file data from current shot */
-  LightField lfObject = LightField(shotNumberFileName);
+  LightField lfObject = LightField(shotNumberFileNameIn);
     
   /* Checking to see if the fiber centers were found. if not, abort */
   if (lfObject.chordsOK) {
@@ -362,26 +437,26 @@ static void lightFieldCB(struct event_handler_args eha) {
     if (fiberCenters == 0) {
       std::cout << "Previous fiber centers not found\n"
 		<< "Not uploading mdsplus data\n";
-      return;
+      return false;
     }
 
     /* vector point = 0 means there was not data in the mdsplus tree for any of the 100 shots */
     if (fiberEdges == 0) {
       std::cout << "Previous fiber edges not found\n"
 		<< "Not uploading mdsplus data\n";
-      return;
+      return false;
     }
 
     /* Setting fiber Centers from mdsplus data to current lf object */
     if (!lfObject.setFiberCenters(fiberCenters)) {
       std::cout << "Not uploading mdsplus data. Couldn't set fiber centers.\n";
-      return;
+      return false;
     }
 
     /* Setting fiber edges from mdsplus data to current lf object */      
     if(!lfObject.setFiberEdges(fiberEdges)) {
       std::cout << "Not uploading mdsplus data. Couldn't set fiber edges\n";
-      return;
+      return false;
     }
 
     lfObject.populateChords();
@@ -417,7 +492,7 @@ static void lightFieldCB(struct event_handler_args eha) {
   writeMDSplusVector(lfObject.chord19, shotNumber, "\\ICCD_19:RAW", "fuze");
   writeMDSplusVector(lfObject.chord20, shotNumber, "\\ICCD_20:RAW", "fuze");
   
-  return;
+  return true;
 
 }
 
@@ -432,7 +507,7 @@ static void lightFieldCB(struct event_handler_args eha) {
 
 int runSpectroscopyMonitor() {
 
-  const int SIZE = 7;
+  const int SIZE = 8;
 
   std::string pvNames[SIZE] = {"FuZE:DataServer:ShotNumber",
 			       "FuZE:ControlPLC:LightFieldMDSplusUp",
@@ -440,14 +515,15 @@ int runSpectroscopyMonitor() {
 			       "FuZE:ControlPLC:SpectrometerZPosition",
 			       "FuZE:ControlPLC:TelescopeAngle",
 			       "FuZE:ControlPLC:ICCDGrating",
-			       "FuZE:ControlPLC:ICCDActiveSlit"};
+			       "FuZE:ControlPLC:ICCDActiveSlit",
+			       "FuZE:ControlPLC:UpdateLightFieldShots"};
 
   epicsCBFuncPointer cbFuncs[SIZE] = {shotNumberCB, lightFieldCB, iccdCenterWavelengthCB,
 				      spectrometerZCB, telescopeAngleCB, iccdGratingCB,
-				      iccdActiveSlitCB};
+				      iccdActiveSlitCB, updateLastShotsCB};
 
   chtype channelType[SIZE] = {DBR_LONG, DBR_LONG, DBR_DOUBLE, DBR_DOUBLE,
-			      DBR_ENUM, DBR_ENUM, DBR_ENUM};
+			      DBR_ENUM, DBR_ENUM, DBR_ENUM, DBR_LONG};
 
   monitorPVsWithCallback(pvNames, cbFuncs, channelType, SIZE);
 
