@@ -181,6 +181,11 @@ static void updateLastShotsCB(struct event_handler_args eha) {
   long *pupdateShotNumber = (long *)eha.dbr;
   updateLastShots = *pupdateShotNumber;
 
+  /* If 0, just exist */
+  if (updateLastShots == 0) {
+    return;
+  }
+  
   printf("Updating last %ld pulses of Light Field data: %s\n",
 	 updateLastShots, ca_name(eha.chid));
     
