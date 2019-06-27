@@ -393,8 +393,8 @@ static void lightFieldCB(struct event_handler_args eha) {
 static bool lightFieldUpdate(long shotNumberIn) {
 
   std::string shotNumberFileNameIn = getFileFromShotNumber(shotNumberIn);
-  gsl_vector *fiberCenters;
-  gsl_vector *fiberEdges;
+  gsl_vector *fiberCenters = 0;
+  gsl_vector *fiberEdges = 0 ;
 
   long lastShotNumber;
 

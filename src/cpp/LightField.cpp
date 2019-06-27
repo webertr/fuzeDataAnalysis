@@ -420,7 +420,7 @@ LightField::~LightField() {
 bool LightField::xmlParserSPE(std::string fileName, float *dataArray, int dim) {
   
   xmlDoc *document;
-  xmlNode *root, *first_child, *node, *calibration, *wavelengthMapping, *wavelength;
+  xmlNode *root, *first_child, *node, *calibration, *wavelengthMapping, *wavelength = 0;
   xmlChar *data;
     
   document = xmlReadFile(fileName.c_str(), NULL, 0);
