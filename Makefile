@@ -51,6 +51,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/LightField.cpp \
 	src/cpp/epicsCA.cpp \
 	src/cpp/psqlAccess.cpp \
+	src/cpp/interferometry.cpp \
 	src/cpp/test.cpp
 
 SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \

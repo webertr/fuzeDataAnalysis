@@ -137,3 +137,35 @@ if ( !checkFileExists(shotNumberFileName)) {
 }
 
 but it did not. The "checkFileExists" function was tested and it worked. I had been seeing issues with the network attached storage drive on which the data resides. Basically, the computer would not recongize that the nas was attached. After running an "ls" command, you would get an error, then the NAS would be visible and accessible again. Not sure if that had something to do with it.
+
+
+* Interferometry Analysis
+
+** Description
+
+He-Ne Interferometer is a multi-chord (8), heterodyne, quadrature, Mach-Zehnder interferometer.
+
+There are two beams, a scene and a reference beam. The reference beam has an acousto-optical modulator frequency of 80 MHz, meaning it's frequency is shifted up by 80 MHz. The scene beam passes through the plasma, and the reference beam passes over the plasma. The two beams recombine on the detector. Because of the photodetector's time response, the optical frequency (632 nm line, and 473 THz, He-Ne laser) is averaged over by the detector output. The final signal is a DC offset term and a sinusoid:
+
+I_{Detector} = 0.5 *(AS^2 + AR^2) + AS * AR * cos(phi(t) - w_{AOM} * t)
+
+with phi(t) the time varying phase shift in the scene beam from the plasma, and w_{AOM} the frequency offset induced by the acousto-optical modulator. Filtering off the DC term leaves,
+
+A = AS*AR*cos(phi(t) - w_{AOM}*t)
+
+This signal is this split into two components: one replica of the original signal, and one phase shifted by pi/2 radians. This results in two signals:
+
+AC = AS*AR*cos(phi(t) - w_{AOM}*t)
+AS = AS*AR*sin(phi(t) - w_{AOM}*t)
+
+At this point, both signals are multiplied (a type of frequency mixing) by the original reference signal that is driving the acousto-optical modulator (AB = Ab*cos(w_{AOM}*t)):
+
+Acos = AC * AB
+Asin = AS * AB
+
+Then, these two signals are filtered by 10MHz low pass frequency filters to remove two the frequency components at w_{AOM} and 2*w_{AOM}. Then, the two signals are simply:
+
+Acos = A * cos(phi(t))
+Asin = A * sin(phi(t))
+
+The process of Heterodyning is to create a new frequency by mixing two frequencies. In this case, the heterodyne process is adding the small frequency offset to the reference signal, and then recombining the scene and reference beam to produce two frequencies: a fast frequency with a slower beat frequency superimposed over it. The slower beat frequency is the different in the two mixed frequencies. This heterodyne process imposes a beating frequency over the interference pattern. The phase shifting signal is embedded in this beating oscillation. 

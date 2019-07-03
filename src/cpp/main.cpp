@@ -7,7 +7,7 @@ int main() {
 
   //testMDSplusAccess();
   
-  plotPostShotAnalysis();
+  //plotPostShotAnalysis();
 
   //kiranaImageAnalysis();
 
@@ -18,6 +18,8 @@ int main() {
   //testEpicsCA();
 
   //testPsqlAccess();
+
+  testInterferometry();
 
   return 0;
 

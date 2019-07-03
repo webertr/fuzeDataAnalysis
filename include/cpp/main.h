@@ -11,5 +11,6 @@
 #include "cpp/epicsCA.h"
 #include "cpp/spectroscopyMonitor.h"
 #include "cpp/psqlAccess.h"
+#include "cpp/interferometry.h"
 
 #endif
