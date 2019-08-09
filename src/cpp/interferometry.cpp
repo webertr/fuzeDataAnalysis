@@ -20,7 +20,11 @@
 
 static std::string getIFData(long shotNumber) {
 
+  gsl_vector *cos1 = readMDSplusVector(shotNumber, "\\TOP.SIGNALS.DENSITY.HENE_IF:NE_1:COS1", "fuze");
+  gsl_vector *sin1 = readMDSplusVector(shotNumber, "\\TOP.SIGNALS.DENSITY.HENE_IF:NE_1:SIN1", "fuze");
 
+  return "";
+  
 }
 
 
@@ -48,6 +52,8 @@ bool testInterferometry() {
 
 bool testGetIFData() { 
 
+  getIFData(190416004);
+  
   return true;
 
 }
