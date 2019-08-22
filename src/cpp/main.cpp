@@ -2,12 +2,11 @@
 
 int main() {
 
-
   //testMagnetic();
 
   //testMDSplusAccess();
   
-  //plotPostShotAnalysis();
+  plotPostShotAnalysis();
 
   //kiranaImageAnalysis();
 
@@ -19,7 +18,7 @@ int main() {
 
   //testPsqlAccess();
 
-  testInterferometry();
+  //testInterferometry();
 
   return 0;
 

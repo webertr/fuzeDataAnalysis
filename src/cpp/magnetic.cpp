@@ -215,7 +215,7 @@ gsl_vector *getM0Mode(int shotNumber, std::string nodeName) {
  * Function: getM1Mode
  * Inputs: int, std::string
  * Returns: gsl_vector *
- * Description: Will return the m=0 mode for the 0 degree azimuthal probe
+ * Description: Will return the m=1 mode for the 0 degree azimuthal probe
  * passed to it.
  ******************************************************************************/
 

@@ -59,9 +59,11 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotNeutron(shotNumber, "\\neutron_1_s", "data/neutron5.txt", "data/neutron5.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
+    plotNeutron(shotNumber, "\\neutron_4_s", "data/neutron6.txt", "data/neutron6.sh");
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -149,7 +151,7 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
   oss.str("");
 
   std::string keyWords = "set title 'I_{P}'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Current (kA)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set key left top\n"
@@ -204,7 +206,7 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
   oss.str("");
 
   std::string keyWords = "set title 'V_{GAP}'\n"
-    "set xrange[0:100]\n"
+    "set xrange[0:50]\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set key left top\n"
@@ -268,7 +270,7 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   oss.str("");
 
   oss << "set title 'm=0 at different z values for " << shotNumber << "'\n"
-      << "set xrange[0:100]\n"
+      << "set xrange[0:50]\n"
       << "set ylabel 'Current (kA)'\n"
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
       << "set yrange[:]\n"
@@ -311,27 +313,27 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
   gsl_vector_scale(time, 1E6);
 
   p5 = getM1Mode(shotNumber, "\\b_p5_000");
-  oss << "with line lw 3 lc rgb 'black' title 'M_0 at P5'";
+  oss << "with line lw 3 lc rgb 'black' title 'm=1 at P5'";
   p5Label = oss.str();
   oss.str("");
 
   p15 = getM1Mode(shotNumber, "\\b_p15_000");
-  oss << "with line lw 3 lc rgb 'red' title 'M_0 at P15'";
+  oss << "with line lw 3 lc rgb 'red' title 'm=1 at P15'";
   p15Label = oss.str();
   oss.str("");
 
   p35 = getM1Mode(shotNumber, "\\b_p35_000");
-  oss << "with line lw 3 lc rgb 'green' title 'M_0 at P35'";
+  oss << "with line lw 3 lc rgb 'green' title 'm=1 at P35'";
   p35Label = oss.str();
   oss.str("");
 
   p45 = getM1Mode(shotNumber, "\\b_p45_000");
-  oss << "with line lw 3 lc rgb 'blue' title 'M_0 at P45'";
+  oss << "with line lw 3 lc rgb 'blue' title 'm=1 at P45'";
   p45Label = oss.str();
   oss.str("");
 
   oss << "set title 'm=1 at different z values for " << shotNumber << "'\n"
-      << "set xrange[0:100]\n"
+      << "set xrange[0:50]\n"
       << "set ylabel 'Normalized mode'\n"
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
       << "set yrange[0:1]\n"
