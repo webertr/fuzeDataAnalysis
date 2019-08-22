@@ -6,15 +6,22 @@
  *
  ******************************************************************************/
 
-static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
-static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
-static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
+static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		  int tLow, int tHigh);
+static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		    int tLow, int tHigh);
+static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+			   int tLow, int tHigh);
 static int plotNeutron(int shotNumber, std::string neutronNode,
-		       std::string tempDataFile, std::string tempScriptFile);
+		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh);
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
-			      std::string tempDataFile, std::string tempScriptFile);
-static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile);
+			      std::string tempDataFile, std::string tempScriptFile, 
+			      int tLow, int tHigh);
+static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		      int tLow, int tHigh);
 
+#define TLOW 20
+#define THIGH 60
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
@@ -43,27 +50,29 @@ int plotPostShotAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
+    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
+    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
+    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh");
+    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotNeutron(shotNumber, "\\neutron_1_s", "data/neutron5.txt", "data/neutron5.sh");
+    plotNeutron(shotNumber, "\\neutron_1_s", "data/neutron5.txt", "data/neutron5.sh",
+		TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotNeutron(shotNumber, "\\neutron_4_s", "data/neutron6.txt", "data/neutron6.sh");
+    plotNeutron(shotNumber, "\\neutron_4_s", "data/neutron6.txt", "data/neutron6.sh",
+		TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -74,11 +83,13 @@ int plotPostShotAnalysis() {
   }
 
   if (0) {
-    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh");
-    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh");
-    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh");
-    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh");
-    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh");
+    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh", TLOW,
+		THIGH);
+    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
+    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
+    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
+    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh",
+		       TLOW, THIGH);
   }
 
   return 0;
@@ -118,7 +129,8 @@ int kiranaImageAnalysis() {
  * the post shot analysis
  ******************************************************************************/
 
-static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScriptFile) {
+static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		  int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -128,6 +140,7 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
   std::string ip1Label;
   std::string ip2Label;
   std::string ip3Label;
+  std::string rangeLabel;
 
   time = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
   gsl_vector_scale(time, 1E6);
@@ -150,13 +163,18 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
   ip3Label = oss.str();
   oss.str("");
 
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
   std::string keyWords = "set title 'I_{P}'\n"
-    "set xrange[0:50]\n"
     "set ylabel 'Current (kA)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set key left top\n"
-    "set yrange[:]";
-  
+    "set yrange[:]\n";
+
+  keyWords.append(rangeLabel);
+
   plot3VectorData(time, ip1, ip1Label, ip2, ip2Label, ip3, ip3Label,
 		  keyWords, tempDataFile, tempScriptFile);
 
@@ -173,7 +191,8 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
  * the post shot analysis
  ******************************************************************************/
 
-static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile) {
+static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		    int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -183,6 +202,7 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
   std::string vgap1Label;
   std::string vgap2Label;
   std::string vgap3Label;
+  std::string rangeLabel;
 
   time = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
   gsl_vector_scale(time, 1E6);
@@ -205,13 +225,18 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
   vgap3Label = oss.str();
   oss.str("");
 
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
   std::string keyWords = "set title 'V_{GAP}'\n"
-    "set xrange[0:50]\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set key left top\n"
-    "set yrange[:]";
+    "set yrange[:]\n";
   
+  keyWords.append(rangeLabel);
+
   plot3VectorData(time, vgap1, vgap1Label, vgap2, vgap2Label, vgap3, vgap3Label,
 		  keyWords, tempDataFile, tempScriptFile);
 
@@ -228,7 +253,8 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
  * the post shot analysis
  ******************************************************************************/
 
-static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile) {
+static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+			   int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -241,6 +267,7 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   std::string p35Label;
   std::string p45Label;
   std::string keyWords;
+  std::string rangeLabel;
 
   time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
   gsl_vector_scale(time, 1E6);
@@ -269,15 +296,20 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   p45Label = oss.str();
   oss.str("");
 
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
   oss << "set title 'm=0 at different z values for " << shotNumber << "'\n"
-      << "set xrange[0:50]\n"
       << "set ylabel 'Current (kA)'\n"
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
       << "set yrange[:]\n"
-      << "set key left top";
+      << "set key left top\n";
 
   keyWords = oss.str();
   oss.str("");
+
+  keyWords.append(rangeLabel);
   
   plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
 		  keyWords, tempDataFile, tempScriptFile);
@@ -295,7 +327,8 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
  * the post shot analysis
  ******************************************************************************/
 
-static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile) {
+static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		      int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -308,6 +341,7 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
   std::string p35Label;
   std::string p45Label;
   std::string keyWords;
+  std::string rangeLabel;
 
   time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
   gsl_vector_scale(time, 1E6);
@@ -332,15 +366,20 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
   p45Label = oss.str();
   oss.str("");
 
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
   oss << "set title 'm=1 at different z values for " << shotNumber << "'\n"
-      << "set xrange[0:50]\n"
       << "set ylabel 'Normalized mode'\n"
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
       << "set yrange[0:1]\n"
-      << "set key right top";
+      << "set key right top\n";
 
   keyWords = oss.str();
   oss.str("");
+
+  keyWords.append(rangeLabel);
   
   plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
 		  keyWords, tempDataFile, tempScriptFile);
@@ -359,7 +398,8 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
  ******************************************************************************/
 
 static int plotNeutron(int shotNumber, std::string neutronNode,
-		       std::string tempDataFile, std::string tempScriptFile) {
+		       std::string tempDataFile, std::string tempScriptFile,
+		       int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -369,6 +409,7 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
   std::string neutron1Label;
   std::string neutron2Label;
   std::string neutron3Label;
+  std::string rangeLabel;
 
   time = readMDSplusVectorDim(shotNumber, neutronNode, "fuze");
   gsl_vector_scale(time, 1E6);
@@ -388,12 +429,17 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
   neutron3Label = oss.str();
   oss.str("");
 
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
   std::string keyWords = "set title 'Neutron Detectors'\n"
-    "set xrange[0:100]\n"
     "set ylabel 'Signal (V)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
     "set key left bottom\n"
-    "set yrange[:]";
+    "set yrange[:]\n";
+
+  keyWords.append(rangeLabel);
   
   plot3VectorData(time, neutron1, neutron1Label, neutron2, neutron2Label, neutron3, neutron3Label,
 		  keyWords, tempDataFile, tempScriptFile);
@@ -412,7 +458,8 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
  ******************************************************************************/
 
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
-			      std::string tempDataFile, std::string tempScriptFile) {
+			      std::string tempDataFile, std::string tempScriptFile,
+			      int tLow, int tHigh) {
 
   std::ostringstream oss;
   std::string p_000Label,
@@ -423,6 +470,8 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
     p_225Label,
     p_270Label,
     p_315Label;
+
+  std::string rangeLabel;
 
   gsl_matrix *azimuthalArray = get8AzimuthalArray(shotNumber, nodeName);  
 
@@ -481,14 +530,19 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
   p_315Label = oss.str();
   oss.str("");
 
-  std::string plotOptions = "set title 'Azimuthal Array'\n"
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Azimuthal Array'\n"
     "set xlabel 'Time ({/Symbol m}sec)\n"
-    "set xrange[0:100]\n"
     "set key left top\n"; 
+
+  keyWords.append(rangeLabel);
 
   plot8VectorData(time, p_000, p_000Label, p_045, p_045Label, p_090, p_090Label, 
 		  p_135, p_135Label, p_180, p_180Label, p_225, p_225Label, p_270, p_270Label,
-		  p_315, p_315Label, plotOptions, tempDataFile, tempScriptFile);
+		  p_315, p_315Label, keyWords, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
   gsl_vector_free(p_000);
