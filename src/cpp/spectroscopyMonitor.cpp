@@ -40,11 +40,14 @@ static bool lightFieldUpdate(long shotNumberIn);
 int main() {
 
   /* Run spectroscopy monitor program */
-  runSpectroscopyMonitor();
+  //runSpectroscopyMonitor();
 
   /* Test spectroscopy monitor program */
   //testSpectroscopyMonitor();
 
+  /* Test Light Field Class */
+  testLightField();
+  
   return 0;
 
 }

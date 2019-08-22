@@ -118,9 +118,25 @@ LightField::LightField(std::string fileNameParam):
 
   /*
    * Pulling the 108th byte to get the pixel type. 0 means 32f = 32 bit floating type
+   * 3 = uint16, 1 = int32, 2 = int16
    */
   fseek(fp, 108, SEEK_SET);
   fb = fread((void *) &pixelType, (size_t) 2, (size_t) 1, fp);
+
+  int dataSize;
+  if (pixelType == 0) {
+    dataSize = 4;
+  } else if (pixelType == 1) {
+    dataSize = 4;
+  } else if (pixelType == 2) {
+    dataSize = 2;
+  } else if (pixelType == 3) {
+    dataSize = 2;
+  } else if (pixelType == 4) {
+    dataSize = 2;
+  } else {
+    dataSize = 4;
+  }
 
   /*
    * Verifying the read occurred correctly
@@ -139,11 +155,17 @@ LightField::LightField(std::string fileNameParam):
   fseek(fp, 0, SEEK_SET);
   
   /*
-   * Pulling the 410th byte to get the binary image.
+   * Pulling the 4100th byte to get the binary image.
    */
   data = (float *)malloc(xdim * ydim * sizeof(float));
   fseek(fp, 4100, SEEK_SET);
-  fb = fread((void *) data, (size_t) 4, (size_t) (imageSize), fp);
+  fb = fread((void *) data, (size_t) dataSize, (size_t) (imageSize), fp);
+
+  printf("Image size: %d\n", imageSize);
+  printf("Read Back: %d\n", (int) fb);
+  printf("X-dimension: %d\n", xdim);
+  printf("Y-dimension: %d\n", ydim);
+  printf("Pixel Type: %d\n", pixelType);
 
   /*
    * Verifying the read occurred correctly
@@ -152,6 +174,11 @@ LightField::LightField(std::string fileNameParam):
 
     free(data);
     printf("Error reading SPE file for image:\n");
+    printf("Image size: %d\n", imageSize);
+    printf("Read Back: %d\n", (int) fb);
+    printf("X-dimension: %d\n", xdim);
+    printf("Y-dimension: %d\n", ydim);
+    printf("Pixel Type: %d\n", pixelType);
     fclose(fp);
     exit(1);
 
@@ -221,7 +248,8 @@ LightField::LightField(std::string fileNameParam):
   fseek(fp, 0L, SEEK_END);
   int sz = ftell(fp);
   
-  std::string xmlTempFile = "data/xmlTemp.xml";
+  std::string xmlTempFile = "xmlTemp.xml";
+
   /* Removing file in case it exists */
   remove(xmlTempFile.c_str());
 
@@ -999,8 +1027,13 @@ static bool testClassCreation();
 static bool testFindColMax();
 static bool testImageUShort();
 static bool testFibersFind();
+static bool testImageRead();
 
 bool testLightField() {
+
+  if (!testImageRead()) {
+    std::cout << "Failed image read test\n";
+  }
 
   if (!testFibersFind()) {
     std::cout << "Failed fibers find test\n";
@@ -1031,6 +1064,15 @@ bool testLightField() {
 static bool testClassCreation() {
 
   LightField test = LightField("/home/fuze/SpectroscopyData/171212/171212  020.spe");
+
+  return true;
+
+}
+
+static bool testImageRead() {
+
+  //LightField test = LightField("/home/fuze/SpectroscopyData/171212/171212  020.spe");
+  LightField test = LightField("/home/fuze/SpectroscopyData/190821/190821012.spe");
 
   return true;
 
