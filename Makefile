@@ -46,7 +46,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/plot.cpp \
 	src/cpp/mdsplusAccess.cpp \
 	src/cpp/analysis.cpp \
-	src/cpp/getSVFData.cpp \
+	src/cpp/Kirana.cpp \
 	src/cpp/magnetic.cpp \
 	src/cpp/LightField.cpp \
 	src/cpp/epicsCA.cpp \

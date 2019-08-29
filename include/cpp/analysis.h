@@ -12,7 +12,7 @@
 
 #include <cpp/plot.h>
 #include <cpp/mdsplusAccess.h>
-#include <cpp/getSVFData.h>
+#include <cpp/Kirana.h>
 #include <cpp/magnetic.h>
 
 int plotPostShotAnalysis();
