@@ -1,4 +1,4 @@
-#include "cpp/getSVFData.h"
+#include "cpp/Kirana.h"
 
 /******************************************************************************
  * Function: Kirana
@@ -335,5 +335,69 @@ void Kirana::setCropCol(int colLow, int colHigh) {
   cropColHigh = colHigh;
 
   return;
+
+}
+
+
+
+/******************************************************************************
+ *
+ * TESTING SECTION
+ *
+ ******************************************************************************/
+
+static bool testClassCreation();
+static bool testPlotImage();
+
+
+bool testKirana() {
+
+  std::cout << "Starting Kirana tests.\n";
+
+  std::cout << "Kirana Class Creation Test...";
+  std::cout.flush();
+  if( !testClassCreation() ) {
+    std::cout << "FAILED\nGood bye\n";
+    return false;
+  }
+  std::cout << "PASSED\n";
+
+  std::cout << "Kirana Plot Image Test...";
+  std::cout.flush();
+  if( !testPlotImage() ) {
+    std::cout << "FAILED\nGood bye\n";    
+    return false;
+  }
+  std::cout << "PASSED\n";
+
+  std::cout << "Passed All Kirana Tests\n";
+
+  return true;
+
+}
+
+
+static bool testClassCreation() {
+
+  Kirana test = Kirana("/home/fuze/webertrNAS/kiranaVideo/170915068.SVF");
+
+  return true;
+
+}
+
+
+static bool testPlotImage() {
+
+  Kirana kirana = Kirana("/home/fuze/webertrNAS/kiranaVideo/170915068.SVF");
+
+  //kirana.setCropRow(315, 410);
+  //kirana.saveImage(0, "data/kiranaImage.dat");
+  
+  gsl_matrix *image = kirana.getImage(1);
+
+  std::string keywords = "set palette gray\nset title 'corn'"; 
+  plotImageData(image, 1, 1, keywords, "data/temp.dat", "data/temp.sh");
+
+  return true;
 
 }

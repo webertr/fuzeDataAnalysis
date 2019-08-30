@@ -6,7 +6,7 @@ int main() {
 
   //testMDSplusAccess();
   
-  plotPostShotAnalysis();
+  //plotPostShotAnalysis();
 
   //kiranaImageAnalysis();
 
@@ -20,6 +20,8 @@ int main() {
 
   //testInterferometry();
 
+  testKirana();
+  
   return 0;
 
 }

@@ -15,6 +15,7 @@
 #include <byteswap.h>
 #include <iostream>
 
+#include "cpp/plot.h"
 
 /******************************************************************************
  * Class: Kirana
@@ -76,5 +77,9 @@ class Kirana {
   void setCropCol(int colLow, int colHigh);
 
 };
+
+
+/* Testing function */
+bool testKirana();
 
 #endif
