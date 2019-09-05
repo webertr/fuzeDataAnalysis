@@ -18,9 +18,9 @@ int main() {
 
   //testPsqlAccess();
 
-  //testInterferometry();
+  testInterferometry();
 
-  testKirana();
+  //testKirana();
   
   return 0;
 
