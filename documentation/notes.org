@@ -169,3 +169,14 @@ Acos = A * cos(phi(t))
 Asin = A * sin(phi(t))
 
 The process of Heterodyning is to create a new frequency by mixing two frequencies. In this case, the heterodyne process is adding the small frequency offset to the reference signal, and then recombining the scene and reference beam to produce two frequencies: a fast frequency with a slower beat frequency superimposed over it. The slower beat frequency is the different in the two mixed frequencies. This heterodyne process imposes a beating frequency over the interference pattern. The phase shifting signal is embedded in this beating oscillation. 
+
+
+For the analysis, we start by taking the baseline data, which would be data from when the laser light was blocked. This data is the cos and sin of the phase shift. Because the laser was blocked, there will be no intereference pattern, and the data should just be clustered around a point, representing the offset in the electronics. By calculating the average value for the cos and sin data, we get the offsets to apply to the interference data.
+
+Once we obtain those offsets, we can apply them to the actual cos and sin data of the phase shift. Once these offsets get applied, we find the initial phase of the signal. This is determined by simply taking the arctangent of the sin/cos of the phase shift at time t = 0.
+
+Then, you take this phase offset, and apply a 2D rotation to the sin (Y) and cos (X) data. This rotation is simply, 
+X' = X x cos(initPhase) + Y * sin(initPhase)
+Y' = -X x sin(initPhase) + Y * cos(initPhase)
+
+Once that rotation has been applied, 
