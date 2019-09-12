@@ -41,7 +41,6 @@ gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string 
     std::cout << "Cannot open tree " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     delete doubleArray;
     return nullVec;
 
@@ -49,7 +48,6 @@ gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string 
 
     std::cout << "Default error";
     delete tree;
-    MDSplus::deleteData(data);
     delete doubleArray;
     return nullVec;
 
@@ -64,7 +62,6 @@ gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string 
     std::cout << "Error in executing " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     delete doubleArray;
     return nullVec;
 
@@ -126,7 +123,6 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
     std::cout << "Cannot open tree " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     delete doubleArray;
     return nullVec;
 
@@ -134,7 +130,6 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
 
     std::cout << "Default error";
     delete tree;
-    MDSplus::deleteData(data);
     delete doubleArray;
     return nullVec;
   }
@@ -150,7 +145,6 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
     std::cout << "Error in executing " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     delete doubleArray;
     return nullVec;
 
@@ -215,7 +209,6 @@ gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::
     std::cout << "Cannot open tree " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     delete shape;
     free(ushortArray);
     return nullMat;
@@ -224,7 +217,6 @@ gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::
 
     std::cout << "Default error";
     delete tree;
-    MDSplus::deleteData(data);
     delete shape;
     free(ushortArray);
     return nullMat;
@@ -241,7 +233,6 @@ gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
 
     delete tree;
-    MDSplus::deleteData(data);
     delete shape;
     free(ushortArray);
     return nullMat;
@@ -343,14 +334,12 @@ double readMDSplusDouble(int shotNumber, std::string nodeName, std::string treeN
     std::cout << "Cannot open tree " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     return -1;
 
   } catch(...) {
 
     std::cout << "Default error";
     delete tree;
-    MDSplus::deleteData(data);
     return -1;
 
   }
@@ -364,7 +353,6 @@ double readMDSplusDouble(int shotNumber, std::string nodeName, std::string treeN
     std::cout << "Error in executing " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     return -1;
 
   }
@@ -413,7 +401,6 @@ int writeMDSplusDouble(double valIn, int shotNumber,
     std::cout << "Cannot open tree " << treeName  
 	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
     delete tree;
-    MDSplus::deleteData(data);
     delete node;
     return -1;
 
@@ -421,7 +408,6 @@ int writeMDSplusDouble(double valIn, int shotNumber,
 
     std::cout << "Default error";
     delete tree;
-    MDSplus::deleteData(data);
     delete node;
     return -1;
 
