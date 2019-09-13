@@ -19,6 +19,7 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      int tLow, int tHigh);
 static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
 		      int tLow, int tHigh);
+static int kiranaImageAnalysis();
 
 #define TLOW 20
 #define THIGH 60
@@ -32,6 +33,8 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
  ******************************************************************************/
 
 int plotPostShotAnalysis() {
+
+  return 1;
 
   int shotNumber,
     currShotNumber = getCurrentPulseNumber();
@@ -90,6 +93,7 @@ int plotPostShotAnalysis() {
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
     plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh",
 		       TLOW, THIGH);
+    kiranaImageAnalysis();
   }
 
   return 0;
@@ -104,7 +108,7 @@ int plotPostShotAnalysis() {
  * Description: This will analyze images from the kirana
  ******************************************************************************/
 
-int kiranaImageAnalysis() {
+static int kiranaImageAnalysis() {
 
   Kirana kirana("/home/fuze/webertrNAS/kiranaVideo/170915068.SVF");
   

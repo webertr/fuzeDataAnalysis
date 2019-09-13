@@ -8,8 +8,6 @@ int main() {
   
   plotPostShotAnalysis();
 
-  //kiranaImageAnalysis();
-
   //testLightField();
 
   //testMDSplusAccess();

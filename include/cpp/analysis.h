@@ -16,6 +16,5 @@
 #include <cpp/magnetic.h>
 
 int plotPostShotAnalysis();
-int kiranaImageAnalysis();
 
 #endif
