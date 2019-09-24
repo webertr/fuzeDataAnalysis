@@ -34,8 +34,6 @@ static int kiranaImageAnalysis();
 
 int plotPostShotAnalysis() {
 
-  return 1;
-
   int shotNumber,
     currShotNumber = getCurrentPulseNumber();
   
