@@ -179,4 +179,6 @@ Then, you take this phase offset, and apply a 2D rotation to the sin (Y) and cos
 X' = X x cos(initPhase) + Y * sin(initPhase)
 Y' = -X x sin(initPhase) + Y * cos(initPhase)
 
-Once that rotation has been applied, 
+Once that rotation has been applied, smooth the two signals using a box car averge (for now).
+
+

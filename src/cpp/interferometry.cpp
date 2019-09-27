@@ -12,6 +12,7 @@ static double getInitialPhase(gsl_vector *cosVec, gsl_vector *sinVec);
 static void rotate2DSignal(gsl_vector **xVec, gsl_vector **yVec, double phase);
 static gsl_vector *getCosData(long shotNumber, int chordNum);
 static gsl_vector *getSinData(long shotNumber, int chordNum);
+static void boxCarSmooth(gsl_vector *xVec, int width);
 
 
 /******************************************************************************
@@ -172,6 +173,54 @@ static void rotate2DSignal(gsl_vector **xVec, gsl_vector **yVec, double phase) {
 
 
 /******************************************************************************
+ * Function: boxCarSmooth
+ * Inputs: 
+ * Returns: void
+ * Description: Runs a box car smoothing procedure. Returns the same size
+ * vector with the ends as duplicates of first and last smoothed point
+ ******************************************************************************/
+
+static void boxCarSmooth(gsl_vector *xVec, int width) {
+  
+  double sum;
+  int ii, jj,
+    sizeVec = xVec->size;
+
+  /* Temp vector to hold box car */
+  gsl_vector *xVecTemp = gsl_vector_alloc(sizeVec);
+
+  /* Doing box car average. */
+  for (ii = width; ii < (sizeVec - width); ii++) {
+    
+    sum = 0;
+    for (jj = 0; jj < (2*width+1); jj++) {
+      sum = sum + gsl_vector_get(xVec, ii - width + jj);
+    }
+    gsl_vector_set(xVecTemp, ii, sum/(2*width+1));
+
+  }
+	 
+  /* Filling in begining and end */
+  for (ii = 0; ii < width; ii++) {
+    gsl_vector_set(xVecTemp, ii, gsl_vector_get(xVecTemp, width));
+  } 
+
+  for (ii = (sizeVec-width); ii < sizeVec; ii++) {
+    gsl_vector_set(xVecTemp, ii, gsl_vector_get(xVecTemp, sizeVec-width-1));
+  } 
+
+  /* Copying vector over */
+  gsl_vector_memcpy(xVec, xVecTemp);
+
+  /* Removing temp vector */
+  gsl_vector_free(xVecTemp);
+
+  return;
+
+}
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *
@@ -180,6 +229,7 @@ static void rotate2DSignal(gsl_vector **xVec, gsl_vector **yVec, double phase) {
 static bool testGetOffset();
 static bool testGetInitialPhase();
 static bool testRotate2DSignal();
+static bool testBoxCarSmooth();
 
 bool testInterferometry() {
 
@@ -195,6 +245,11 @@ bool testInterferometry() {
 
   if (!testRotate2DSignal()) {
     std::cout << "Test interferometry.cpp rotate 2D signal FAILED\n";
+    return false;
+  }
+
+  if (!testBoxCarSmooth()) {
+    std::cout << "Test interferometry.cpp box car smooth signal FAILED\n";
     return false;
   }
 
@@ -271,5 +326,41 @@ bool testRotate2DSignal() {
   } else {
     return false;
   }
+
+}
+
+
+bool testBoxCarSmooth() { 
+
+  int ii;
+
+  gsl_vector *xVecTest = gsl_vector_alloc(100);
+  gsl_vector *yVecTest1 = gsl_vector_alloc(100);
+  gsl_vector *yVecTest2 = gsl_vector_alloc(100);
+
+  for (ii = 0; ii < 100; ii++) {
+    gsl_vector_set(xVecTest, ii, ii);
+    
+    if (ii % 2 == 0) {
+      gsl_vector_set(yVecTest1, ii, ii+10);
+      gsl_vector_set(yVecTest2, ii, ii+10);
+    } else {
+      gsl_vector_set(yVecTest1, ii, ii-10);
+      gsl_vector_set(yVecTest2, ii, ii-10);
+    }
+
+  }
+
+  boxCarSmooth(yVecTest2, 10);
+
+  double testVal = gsl_vector_get(yVecTest2, 50);
+  if ( (testVal < 55) && (testVal > 45) ) {
+    return true;
+  }
+
+  plot2VectorData(xVecTest, yVecTest1, "title 'Non-smooth'", yVecTest2, "title 'Smooth'", "",
+		  "data/temp.txt", "data/temp.sh");
+
+  return false;
 
 }
