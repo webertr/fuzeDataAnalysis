@@ -16,6 +16,7 @@ static void boxCarSmooth(gsl_vector *xVec, int width);
 static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec);
 static gsl_vector *convertPhase(gsl_vector *phaseVec);
 static gsl_vector *getRadius(gsl_vector *cosVec, gsl_vector *sinVec);
+static gsl_vector *unwrapPhase(gsl_vector *phase, gsl_vector *radius);
 
 
 /******************************************************************************
@@ -258,6 +259,62 @@ static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec) {
 
 
 /******************************************************************************
+ * Function: unwrapPhase
+ * Inputs: 
+ * Returns: void
+ * Description: These simply unwraps the phase from the phase vector 
+ ******************************************************************************/
+
+static gsl_vector *unwrapPhase(gsl_vector *phase, gsl_vector *radius) {
+
+  double dp,
+    sizeVec = phase->size,
+    thresh = M_PI*1.0,
+    p1, p2, rad;
+
+  int ii, jj;
+
+  gsl_vector *vecRet = gsl_vector_alloc(sizeVec);
+
+  gsl_vector_memcpy(vecRet, phase);
+
+  /* Unwrapping the rows, eliminate changes > pi */
+  for (ii = 1; ii < sizeVec; ii++) {
+
+    rad = gsl_vector_get(radius, ii);
+
+    /* Skip if the radius is too small */
+    if ( rad < 0.01) {
+      continue;
+    }
+
+    p1 = gsl_vector_get(vecRet, ii-1);
+    p2 = gsl_vector_get(vecRet, ii);
+
+    dp = p2 - p1;
+
+    /* Jump greater then pi means likely it rolled over from -pi */
+    if ( dp > thresh) {
+      for (jj = ii; jj < sizeVec; jj++) {
+	gsl_vector_set(vecRet, jj, gsl_vector_get(vecRet, jj) - 2.0*M_PI);
+      }
+    }
+
+    /* Jump less then -pi means likely it rolled over from +pi */
+    if ( dp < -thresh) {
+      for (jj = ii; jj < sizeVec; jj++) {
+	gsl_vector_set(vecRet, jj, gsl_vector_get(vecRet, jj) + 2.0*M_PI);
+      }
+    }
+     
+  }
+
+  return vecRet;
+
+}
+
+
+/******************************************************************************
  * Function: getRadius
  * Inputs: 
  * Returns: void
@@ -320,6 +377,37 @@ static gsl_vector *convertPhase(gsl_vector *phaseVec) {
 }
 
 
+/******************************************************************************
+ * Function: getIFDensity 
+ * Inputs: 
+ * Returns: void
+ * Description: This will return the line integrated density for the passed
+ * chords with the given shot number and reference shot number
+ ******************************************************************************/
+
+gsl_vector *getIFDensity(int shotNumber, int shotNumberRef, int chordNum) {
+
+  double cosOffset, sinOffset;
+
+  cosOffset = getCosOffset(shotNumberRef, chordNum);
+  sinOffset = getSinOffset(shotNumberRef, chordNum);
+
+  gsl_vector *cosVec = getCosData(shotNumber, chordNum);
+  gsl_vector *sinVec = getSinData(shotNumber, chordNum);
+
+  /* Delete these */
+  (void) cosOffset;
+  (void) sinOffset;
+
+  gsl_vector *retVec = gsl_vector_alloc((int) cosVec->size);
+
+  gsl_vector_free(cosVec);
+  gsl_vector_free(sinVec);
+
+  return retVec;
+
+}
+
 
 /******************************************************************************
  *
@@ -334,6 +422,7 @@ static bool testBoxCarSmooth();
 static bool testGetPhase();
 static bool testConvertPhase();
 static bool testGetRadius();
+static bool testUnwrapPhase();
 
 bool testInterferometry() {
 
@@ -369,6 +458,11 @@ bool testInterferometry() {
 
   if (!testGetRadius()) {
     std::cout << "Test interferometry.cpp getRadius FAILED\n";
+    return false;
+  }
+
+  if (!testUnwrapPhase()) {
+    std::cout << "Test interferometry.cpp unwrapPhase FAILED\n";
     return false;
   }
 
@@ -411,6 +505,9 @@ bool testGetInitialPhase() {
 
   initPhase = getInitialPhase(cosVec, sinVec);
 
+  gsl_vector_free(cosVec);
+  gsl_vector_free(sinVec);
+
   if ( (initPhase > 1.4) && (initPhase < 1.5) ) {
     return true;
   } else {
@@ -439,6 +536,9 @@ bool testRotate2DSignal() {
   rotate2DSignal(&cosVec, &sinVec, initPhase);
 
   initPhase = getInitialPhase(cosVec, sinVec);
+
+  gsl_vector_free(cosVec);
+  gsl_vector_free(sinVec);
   
   if ( (initPhase > -0.01) && (initPhase < 0.01) ) {
     return true;
@@ -473,6 +573,11 @@ bool testBoxCarSmooth() {
   boxCarSmooth(yVecTest2, 10);
 
   double testVal = gsl_vector_get(yVecTest2, 50);
+
+  gsl_vector_free(xVecTest);
+  gsl_vector_free(yVecTest1);
+  gsl_vector_free(yVecTest2);
+
   if ( (testVal < 55) && (testVal > 45) ) {
     return true;
   }
@@ -494,6 +599,10 @@ bool testGetPhase() {
 
   double testVal = gsl_vector_get(phase, 50);
 
+  gsl_vector_free(cosVec);
+  gsl_vector_free(sinVec);
+  gsl_vector_free(phase);
+
   if ( (testVal < 1.13) && (testVal > 1.1) ) {
     return true;
   }
@@ -513,6 +622,11 @@ bool testConvertPhase() {
 
   double testVal = gsl_vector_get(density, 50);
 
+  gsl_vector_free(sinVec);
+  gsl_vector_free(cosVec);
+  gsl_vector_free(phase);
+  gsl_vector_free(density);
+
   if ( (testVal < 6.4E20) && (testVal > 6.3E20) ) {
     return true;
   }
@@ -531,11 +645,60 @@ bool testGetRadius() {
 
   double testVal = gsl_vector_get(radius, 50);
 
-  std::cout << "Radius is: " << testVal << "\n";
+  gsl_vector_free(sinVec);
+  gsl_vector_free(cosVec);
+  gsl_vector_free(radius);
 
   if ( (testVal < 0.04) && (testVal > 0.03) ) {
     return true;
   }
+
+  return false;
+
+}
+
+
+bool testUnwrapPhase() { 
+
+  int ii, jj;
+  double phase;
+  
+  gsl_vector *testTime = gsl_vector_alloc(100);
+  gsl_vector *testPhase = gsl_vector_alloc(100);
+  gsl_vector *unwrapped = gsl_vector_alloc(100);
+  gsl_vector *radius = gsl_vector_alloc(100);
+
+  for (ii = 0; ii < 100; ii++) {
+    gsl_vector_set(testTime, ii, ii);
+    gsl_vector_set(radius, ii, 0.1);
+    gsl_vector_set(testPhase, ii, ii/10.0);
+  }
+
+  for (ii = 0; ii < 100; ii++) {
+    phase = gsl_vector_get(testPhase, ii); 
+    if ( phase > (2*M_PI) ) {
+      for (jj = ii; jj < 100; jj++) {
+	gsl_vector_set(testPhase, jj, gsl_vector_get(testPhase, jj) - 2*M_PI);
+      }
+    }
+    
+  }
+
+  unwrapped = unwrapPhase(testPhase, radius);
+
+  double testVal = gsl_vector_get(unwrapped, 75);
+
+  gsl_vector_free(testTime);
+  gsl_vector_free(testPhase);
+  gsl_vector_free(unwrapped);
+  gsl_vector_free(radius);
+
+  if ( (testVal < 7.6) && (testVal > 7.4) ) {
+    return true;
+  }
+
+  plot2VectorData(testTime, testPhase, "title 'wrapped'", unwrapped, "title 'unwrapped'", "",
+		 "data/temp.txt", "data/temp.sh");
 
   return false;
 

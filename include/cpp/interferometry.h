@@ -9,6 +9,7 @@
 #include "mdsplusAccess.h"
 #include "plot.h"
 
+gsl_vector *getIFDensity(int shotNumber, int shotNumberRef, int chordNum);
 bool testInterferometry();
 
 #endif

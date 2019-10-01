@@ -183,8 +183,8 @@ Once that rotation has been applied, smooth the two signals using a box car aver
 
 After smoothing, you get the phase by simply taking, atan(sin/cos).
 
-The next step is to convert from the phase angle to line integrated density.
-
 Then, you calculate the radius of the lisajou. This is just the square root of the sum of the squares of the cos and sin.
 
-Now, it will go through and do an "unwrapping" procedure, where. 
+Now, it will go through and do an "unwrapping" procedure, where we ignore any points where the radius is less then 0.01. For all other points, it will first check to see if there has been a phase jump of more then PI. If there has, that point, and all subsequent point, will have 2*pi subtracted from it. Similarly, if there has been a jump of less then -PI, that point and all subsequent points will have 2*pi added to it.
+
+The final step is to convert from the unwrapped phase angle to line integrated density. This is muliplying by a factor, 5.61*1E20 for the 632.8 nm laser wavelength.
