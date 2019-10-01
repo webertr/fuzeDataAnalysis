@@ -181,4 +181,6 @@ Y' = -X x sin(initPhase) + Y * cos(initPhase)
 
 Once that rotation has been applied, smooth the two signals using a box car averge (for now).
 
+After smoothing, you get the phase by simply taking, atan(sin/cos).
 
+The next step is to convert from the phase angle to line integrated density.

@@ -13,6 +13,8 @@ static void rotate2DSignal(gsl_vector **xVec, gsl_vector **yVec, double phase);
 static gsl_vector *getCosData(long shotNumber, int chordNum);
 static gsl_vector *getSinData(long shotNumber, int chordNum);
 static void boxCarSmooth(gsl_vector *xVec, int width);
+static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec);
+static gsl_vector *convertPhase(gsl_vector *phaseVec);
 
 
 /******************************************************************************
@@ -221,6 +223,70 @@ static void boxCarSmooth(gsl_vector *xVec, int width) {
 
 
 /******************************************************************************
+ * Function: getPhase
+ * Inputs: 
+ * Returns: void
+ * Description: Simply gets the phase by calculating the atan(sin/cos).
+ ******************************************************************************/
+
+static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec) {
+
+  int ii,
+    vecLen = (int) cosVec->size;
+
+  double tempCos,
+    tempSin,
+    tempPhase;
+
+  gsl_vector *retVec = gsl_vector_alloc(vecLen);
+
+  for (ii = 0; ii < vecLen; ii++) {
+
+    tempCos = gsl_vector_get(cosVec, ii);
+    tempSin = gsl_vector_get(sinVec, ii);
+
+    tempPhase = atan2(tempSin, tempCos);
+
+    gsl_vector_set(retVec, ii, tempPhase);
+
+  }
+
+  return retVec;
+
+}
+
+
+/******************************************************************************
+ * Function: convertPhase
+ * Inputs: 
+ * Returns: void
+ * Description: Convert the phase to line integrated density
+ ******************************************************************************/
+
+static gsl_vector *convertPhase(gsl_vector *phaseVec) {
+
+  int ii,
+    vecLen = (int) phaseVec->size;
+
+  double tempPhase,
+    conversion = 5.61 * 1E20; // Converstion using 632.8 nm for laser wavelength
+
+  gsl_vector *retVec = gsl_vector_alloc(vecLen);
+
+  for (ii = 0; ii < vecLen; ii++) {
+
+    tempPhase = gsl_vector_get(phaseVec, ii);
+    gsl_vector_set(retVec, ii, tempPhase*conversion);
+
+  }
+
+  return retVec;
+
+}
+
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *
@@ -230,6 +296,8 @@ static bool testGetOffset();
 static bool testGetInitialPhase();
 static bool testRotate2DSignal();
 static bool testBoxCarSmooth();
+static bool testGetPhase();
+static bool testConvertPhase();
 
 bool testInterferometry() {
 
@@ -250,6 +318,16 @@ bool testInterferometry() {
 
   if (!testBoxCarSmooth()) {
     std::cout << "Test interferometry.cpp box car smooth signal FAILED\n";
+    return false;
+  }
+
+  if (!testGetPhase()) {
+    std::cout << "Test interferometry.cpp getPhase FAILED\n";
+    return false;
+  }
+
+  if (!testConvertPhase()) {
+    std::cout << "Test interferometry.cpp getPhase FAILED\n";
     return false;
   }
 
@@ -360,6 +438,43 @@ bool testBoxCarSmooth() {
 
   plot2VectorData(xVecTest, yVecTest1, "title 'Non-smooth'", yVecTest2, "title 'Smooth'", "",
 		  "data/temp.txt", "data/temp.sh");
+
+  return false;
+
+}
+
+
+bool testGetPhase() { 
+
+  gsl_vector *cosVec = getCosData(190903007, 1);
+  gsl_vector *sinVec = getSinData(190903007, 1);
+
+  gsl_vector *phase = getPhase(cosVec, sinVec);
+
+  double testVal = gsl_vector_get(phase, 50);
+
+  if ( (testVal < 1.13) && (testVal > 1.1) ) {
+    return true;
+  }
+
+  return false;
+
+}
+
+
+bool testConvertPhase() { 
+
+  gsl_vector *cosVec = getCosData(190903007, 1);
+  gsl_vector *sinVec = getSinData(190903007, 1);
+
+  gsl_vector *phase = getPhase(cosVec, sinVec);
+  gsl_vector *density = convertPhase(phase);
+
+  double testVal = gsl_vector_get(density, 50);
+
+  if ( (testVal < 6.4E20) && (testVal > 6.3E20) ) {
+    return true;
+  }
 
   return false;
 
