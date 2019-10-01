@@ -184,3 +184,7 @@ Once that rotation has been applied, smooth the two signals using a box car aver
 After smoothing, you get the phase by simply taking, atan(sin/cos).
 
 The next step is to convert from the phase angle to line integrated density.
+
+Then, you calculate the radius of the lisajou. This is just the square root of the sum of the squares of the cos and sin.
+
+Now, it will go through and do an "unwrapping" procedure, where. 

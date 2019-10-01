@@ -15,6 +15,7 @@ static gsl_vector *getSinData(long shotNumber, int chordNum);
 static void boxCarSmooth(gsl_vector *xVec, int width);
 static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec);
 static gsl_vector *convertPhase(gsl_vector *phaseVec);
+static gsl_vector *getRadius(gsl_vector *cosVec, gsl_vector *sinVec);
 
 
 /******************************************************************************
@@ -257,6 +258,40 @@ static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec) {
 
 
 /******************************************************************************
+ * Function: getRadius
+ * Inputs: 
+ * Returns: void
+ * Description: Simplys calculates the radius by sqrt(cos^2+sin^2)
+ ******************************************************************************/
+
+static gsl_vector *getRadius(gsl_vector *cosVec, gsl_vector *sinVec) {
+
+  int ii,
+    vecLen = (int) cosVec->size;
+
+  double tempCos,
+    tempSin,
+    tempRadius;
+
+  gsl_vector *retVec = gsl_vector_alloc(vecLen);
+
+  for (ii = 0; ii < vecLen; ii++) {
+
+    tempCos = gsl_vector_get(cosVec, ii);
+    tempSin = gsl_vector_get(sinVec, ii);
+
+    tempRadius = sqrt(tempCos*tempCos+tempSin*tempSin);
+
+    gsl_vector_set(retVec, ii, tempRadius);
+
+  }
+
+  return retVec;
+
+}
+
+
+/******************************************************************************
  * Function: convertPhase
  * Inputs: 
  * Returns: void
@@ -298,6 +333,7 @@ static bool testRotate2DSignal();
 static bool testBoxCarSmooth();
 static bool testGetPhase();
 static bool testConvertPhase();
+static bool testGetRadius();
 
 bool testInterferometry() {
 
@@ -328,6 +364,11 @@ bool testInterferometry() {
 
   if (!testConvertPhase()) {
     std::cout << "Test interferometry.cpp getPhase FAILED\n";
+    return false;
+  }
+
+  if (!testGetRadius()) {
+    std::cout << "Test interferometry.cpp getRadius FAILED\n";
     return false;
   }
 
@@ -473,6 +514,26 @@ bool testConvertPhase() {
   double testVal = gsl_vector_get(density, 50);
 
   if ( (testVal < 6.4E20) && (testVal > 6.3E20) ) {
+    return true;
+  }
+
+  return false;
+
+}
+
+
+bool testGetRadius() { 
+
+  gsl_vector *cosVec = getCosData(190903007, 1);
+  gsl_vector *sinVec = getSinData(190903007, 1);
+
+  gsl_vector *radius = getRadius(cosVec, sinVec);
+
+  double testVal = gsl_vector_get(radius, 50);
+
+  std::cout << "Radius is: " << testVal << "\n";
+
+  if ( (testVal < 0.04) && (testVal > 0.03) ) {
     return true;
   }
 
