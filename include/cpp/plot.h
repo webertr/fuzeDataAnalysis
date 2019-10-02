@@ -8,6 +8,8 @@
 #include <string>
 
 
+int plot1DVectorData(gsl_vector *yVecIn, std::string yLabel, std::string plotOptions, 
+		     std::string tempDataFile, std::string tempScriptFile);
 int plotVectorData(gsl_vector *xVecIn, gsl_vector *yVecIn, std::string yLabel,
 		   std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
 int plot2VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label,

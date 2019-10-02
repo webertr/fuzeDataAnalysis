@@ -6,6 +6,75 @@
  *
  ******************************************************************************/
 
+/******************************************************************************
+ * Function: plot1DVectorData
+ * Inputs: gsl_vector*
+ * Returns: int
+ * Description: This will use popen to fork a process, execute a shell command
+ * then attach a pipe between that shell command and a stream
+ ******************************************************************************/
+
+int plot1DVectorData(gsl_vector *yVecIn, std::string yLabel, std::string plotOptions, 
+		     std::string tempDataFile, std::string tempScriptFile) {
+
+  int ii, len = yVecIn->size;
+
+  
+  /* Writing file to hold data */
+  remove(tempDataFile.c_str());
+  remove(tempScriptFile.c_str());
+
+  FILE *fpData = fopen(tempDataFile.c_str(), "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  for (ii = 0; ii < len; ii++) {
+
+    fprintf(fpData, "%d\t%g\n", ii, gsl_vector_get(yVecIn, ii));
+
+  }
+
+  fclose(fpData);
+
+  
+  FILE *fpScript = fopen(tempScriptFile.c_str(), "w");
+  
+  if ( (fpScript == NULL) ) {
+
+    printf("Error opening files gnuplot file!\n");
+    exit(1);
+
+  }
+
+  fprintf(fpScript, "#!/usr/bin/env gnuplot\n");
+
+  fprintf(fpScript, "%s\n", plotOptions.c_str());
+  
+  fprintf(fpScript, "plot '%s' using 1:2 %s\n", tempDataFile.c_str(), yLabel.c_str());
+  fprintf(fpScript, "pause -1\n");
+  
+  fclose(fpScript);
+
+  chmod(tempScriptFile.c_str(), S_IRWXG);
+  chmod(tempScriptFile.c_str(), S_IRWXO);
+  chmod(tempScriptFile.c_str(), S_IRWXU);
+
+  char pathBuf[100];
+  char *realPath = realpath(tempScriptFile.c_str(), pathBuf);
+  
+  system(realPath);    
+ 
+  /* Pausing so user can look at plot */
+  printf("\nPress any key, then ENTER to continue> \n");
+  getchar();
+
+  return 0;
+
+}
+
 
 /******************************************************************************
  * Function: plotVectorData

@@ -387,24 +387,46 @@ static gsl_vector *convertPhase(gsl_vector *phaseVec) {
 
 gsl_vector *getIFDensity(int shotNumber, int shotNumberRef, int chordNum) {
 
-  double cosOffset, sinOffset;
+  double cosOffset, sinOffset, initPhase;
 
+  int boxCarSmoothParam = 10;
+
+  /* Getting baseline offset */
   cosOffset = getCosOffset(shotNumberRef, chordNum);
   sinOffset = getSinOffset(shotNumberRef, chordNum);
 
+  /* Getting cos and sin data */
   gsl_vector *cosVec = getCosData(shotNumber, chordNum);
   gsl_vector *sinVec = getSinData(shotNumber, chordNum);
 
-  /* Delete these */
-  (void) cosOffset;
-  (void) sinOffset;
+  /* Subtracting offset */
+  gsl_vector_add_constant(cosVec, -cosOffset);
+  gsl_vector_add_constant(sinVec, -sinOffset);
 
-  gsl_vector *retVec = gsl_vector_alloc((int) cosVec->size);
+  initPhase = getInitialPhase(cosVec, sinVec);
+
+  std::cout << "Initial phase: " << initPhase << "\n";
+
+  rotate2DSignal(&cosVec, &sinVec, initPhase);
+
+  gsl_vector *phase = getPhase(cosVec, sinVec);
+
+  gsl_vector *radius = getRadius(cosVec, sinVec);
+
+  gsl_vector *unwrapped = unwrapPhase(phase, radius);
+
+  boxCarSmooth(unwrapped, boxCarSmoothParam);
+  boxCarSmooth(phase, boxCarSmoothParam);
+  
+  gsl_vector *density = convertPhase(unwrapped);
 
   gsl_vector_free(cosVec);
   gsl_vector_free(sinVec);
+  gsl_vector_free(phase);
+  gsl_vector_free(radius);
+  gsl_vector_free(unwrapped);
 
-  return retVec;
+  return density;
 
 }
 
@@ -423,6 +445,7 @@ static bool testGetPhase();
 static bool testConvertPhase();
 static bool testGetRadius();
 static bool testUnwrapPhase();
+static bool testGetIFDensity();
 
 bool testInterferometry() {
 
@@ -463,6 +486,11 @@ bool testInterferometry() {
 
   if (!testUnwrapPhase()) {
     std::cout << "Test interferometry.cpp unwrapPhase FAILED\n";
+    return false;
+  }
+
+  if (!testGetIFDensity()) {
+    std::cout << "Test interferometry.cpp getIFDensity FAILED\n";
     return false;
   }
 
@@ -699,6 +727,38 @@ bool testUnwrapPhase() {
 
   plot2VectorData(testTime, testPhase, "title 'wrapped'", unwrapped, "title 'unwrapped'", "",
 		 "data/temp.txt", "data/temp.sh");
+
+  return false;
+
+}
+
+
+bool testGetIFDensity() { 
+
+  int shotNumber = 190419013;
+  int shotNumberRef = 190419001;
+  int baseLineShotNumber = readMDSplusDouble(shotNumber, "\\NE_1:BASELINE", "fuze");
+  std::string tag = "\\NE_2";
+
+  gsl_vector *density = getIFDensity(shotNumber, baseLineShotNumber, 2);
+  gsl_vector_scale(density, -1.0);
+
+  gsl_vector *time = readMDSplusVectorDim(shotNumber, tag, "fuze");
+  gsl_vector *densityMDSplus = readMDSplusVector(shotNumber, tag, "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  std::cout << "Baseline shotnumber: " << baseLineShotNumber << "\n";
+  std::cout << "Reference shotnumber: " << shotNumberRef << "\n";
+  std::cout << "Shotnumber: " << shotNumber << "\n";
+
+  plot2VectorData(time, density, "title 'Density'", densityMDSplus, "title 'Density MDSplus'", 
+		 "set xrange[-1320:100]\n", "data/temp.txt", "data/temp.sh");
+
+  double testVal = 0.035;
+
+  if ( (testVal < 0.04) && (testVal > 0.03) ) {
+    return true;
+  }
 
   return false;
 
