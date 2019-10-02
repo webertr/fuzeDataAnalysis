@@ -405,14 +405,10 @@ gsl_vector *getIFDensity(int shotNumber, int shotNumberRef, int chordNum) {
 
   initPhase = getInitialPhase(cosVec, sinVec);
 
-  std::cout << "Initial phase: " << initPhase << "\n";
-
   rotate2DSignal(&cosVec, &sinVec, initPhase);
 
   gsl_vector *phase = getPhase(cosVec, sinVec);
-
   gsl_vector *radius = getRadius(cosVec, sinVec);
-
   gsl_vector *unwrapped = unwrapPhase(phase, radius);
 
   boxCarSmooth(unwrapped, boxCarSmoothParam);
@@ -735,12 +731,15 @@ bool testUnwrapPhase() {
 
 bool testGetIFDensity() { 
 
+  int chordNum = 2;
   int shotNumber = 190419013;
   int shotNumberRef = 190419001;
   int baseLineShotNumber = readMDSplusDouble(shotNumber, "\\NE_1:BASELINE", "fuze");
   std::string tag = "\\NE_2";
 
-  gsl_vector *density = getIFDensity(shotNumber, baseLineShotNumber, 2);
+  //baseLineShotNumber = shotNumberRef;
+
+  gsl_vector *density = getIFDensity(shotNumber, baseLineShotNumber, chordNum);
   gsl_vector_scale(density, -1.0);
 
   gsl_vector *time = readMDSplusVectorDim(shotNumber, tag, "fuze");
@@ -751,8 +750,22 @@ bool testGetIFDensity() {
   std::cout << "Reference shotnumber: " << shotNumberRef << "\n";
   std::cout << "Shotnumber: " << shotNumber << "\n";
 
-  plot2VectorData(time, density, "title 'Density'", densityMDSplus, "title 'Density MDSplus'", 
-		 "set xrange[-1320:100]\n", "data/temp.txt", "data/temp.sh");
+  std::string plotOptions = "set xrange[-1320:100]\n"
+    //"set terminal png\n"
+    //"set output '/home/fuze/Downloads/candleFlame.png'\n"
+    "set ylabel 'n_{e} (cm^{-3})'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set title 'IF density test baseline=190416001' font 'Times Bold,14'\n";
+
+
+  plot2VectorData(time, density, "title 'Toby-N_{E}'", densityMDSplus, "title 'MDSplus-N_{E}'", 
+		 plotOptions, "data/temp.txt", "data/temp.sh");
+
+  //double cosOffset = readMDSplusDouble(baseLineShotNumber, "\\COS_2:COS_OFF", "fuze");
+  //double sinOffset = readMDSplusDouble(baseLineShotNumber, "\\SIN_2:SIN_OFF", "fuze");
+
+  //std::cout << "Cosine offset in MDSplus: " << cosOffset << "\n";
+  //std::cout << "Sine offset in MDSplus: " << sinOffset << "\n";
 
   double testVal = 0.035;
 
