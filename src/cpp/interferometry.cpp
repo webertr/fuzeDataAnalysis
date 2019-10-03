@@ -17,6 +17,7 @@ static gsl_vector *getPhase(gsl_vector *cosVec, gsl_vector *sinVec);
 static gsl_vector *convertPhase(gsl_vector *phaseVec);
 static gsl_vector *getRadius(gsl_vector *cosVec, gsl_vector *sinVec);
 static gsl_vector *unwrapPhase(gsl_vector *phase, gsl_vector *radius);
+static gsl_vector *getTimeBase(long shotNumber, int chordNum);
 
 
 /******************************************************************************
@@ -426,6 +427,27 @@ gsl_vector *getIFDensity(int shotNumber, int shotNumberRef, int chordNum) {
 
 }
 
+/******************************************************************************
+ * Function: getTimeBase
+ * Inputs: 
+ * Returns: boolean
+ * Description: Gets the time value for the raw data for the give nchord
+ ******************************************************************************/
+
+static gsl_vector *getTimeBase(long shotNumber, int chordNum) {
+  
+  std::string cNode;
+  std::ostringstream oss;
+
+  oss << "\\TOP.SIGNALS.DENSITY.HENE_IF:NE_" << chordNum << ":COS" << chordNum;
+  cNode = oss.str();
+  oss.str("");
+
+  gsl_vector *time = readMDSplusVectorDim(shotNumber, cNode, "fuze");
+
+  return time;
+  
+}
 
 /******************************************************************************
  *
@@ -441,9 +463,13 @@ static bool testGetPhase();
 static bool testConvertPhase();
 static bool testGetRadius();
 static bool testUnwrapPhase();
-static bool testGetIFDensity();
+static bool testGetIFDensityForAPS();
 
 bool testInterferometry() {
+
+  if (0) {
+    testGetIFDensityForAPS();
+  }
 
   if (!testGetOffset()) {
     std::cout << "Test interferometry.cpp get offset FAILED\n";
@@ -482,11 +508,6 @@ bool testInterferometry() {
 
   if (!testUnwrapPhase()) {
     std::cout << "Test interferometry.cpp unwrapPhase FAILED\n";
-    return false;
-  }
-
-  if (!testGetIFDensity()) {
-    std::cout << "Test interferometry.cpp getIFDensity FAILED\n";
     return false;
   }
 
@@ -729,43 +750,56 @@ bool testUnwrapPhase() {
 }
 
 
-bool testGetIFDensity() { 
+bool testGetIFDensityForAPS() { 
 
-  int chordNum = 2;
-  int shotNumber = 190419013;
-  int shotNumberRef = 190419001;
-  int baseLineShotNumber = readMDSplusDouble(shotNumber, "\\NE_1:BASELINE", "fuze");
-  std::string tag = "\\NE_2";
+  int shotNumber = 190416004;
+  int shotNumberRef = 190416001;
 
-  //baseLineShotNumber = shotNumberRef;
+  gsl_vector *density5 = getIFDensity(shotNumber, shotNumberRef, 5);
+  gsl_vector *density8 = getIFDensity(shotNumber, shotNumberRef, 8);
+  gsl_vector_scale(density8, -1.0);
+  //gsl_vector_scale(density5, -1.0);
 
-  gsl_vector *density = getIFDensity(shotNumber, baseLineShotNumber, chordNum);
-  gsl_vector_scale(density, -1.0);
-
-  gsl_vector *time = readMDSplusVectorDim(shotNumber, tag, "fuze");
-  gsl_vector *densityMDSplus = readMDSplusVector(shotNumber, tag, "fuze");
+  gsl_vector *time = getTimeBase(shotNumber, 5);
   gsl_vector_scale(time, 1E6);
 
-  std::cout << "Baseline shotnumber: " << baseLineShotNumber << "\n";
-  std::cout << "Reference shotnumber: " << shotNumberRef << "\n";
-  std::cout << "Shotnumber: " << shotNumber << "\n";
+  std::string plotOptions = "set xrange[20:35]\n"
+    "set yrange[-1E21:]\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/if_density_190416004.png'\n"
+    "set grid\n"
+    "set key left top\n"
+    "set ylabel 'n_{e} (cm^{-3})' font ',16' offset 0,0\n"
+    "set xlabel 'Time ({/Symbol m}sec)' font ',16' offset 0,0\n"
+    "set title 'Line-integrated density in acceleration region' "
+    "font 'Times Bold,16'\n"
+    "set label '#190416004' at graph 0.02,0.83 font 'Times Bold, 14'\n";
 
-  std::string plotOptions = "set xrange[-1320:100]\n"
-    //"set terminal png\n"
-    //"set output '/home/fuze/Downloads/candleFlame.png'\n"
-    "set ylabel 'n_{e} (cm^{-3})'\n"
-    "set xlabel 'Time ({/Symbol m}sec)'\n"
-    "set title 'IF density test baseline=190416001' font 'Times Bold,14'\n";
 
+  plot2VectorData(time, density5, "title 'z=-40 cm'", density8, "title 'z=-10 cm'", 
+  		  plotOptions, "data/temp.txt", "data/temp.sh");
 
-  plot2VectorData(time, density, "title 'Toby-N_{E}'", densityMDSplus, "title 'MDSplus-N_{E}'", 
-		 plotOptions, "data/temp.txt", "data/temp.sh");
+  gsl_vector *timeB = readMDSplusVectorDim(shotNumber, "\\b_n40_0", "fuze");
+  gsl_vector *b_n40 = readMDSplusVector(shotNumber, "\\b_n40_0", "fuze");
+  gsl_vector *b_n10 = readMDSplusVector(shotNumber, "\\b_n10_0", "fuze");
 
-  //double cosOffset = readMDSplusDouble(baseLineShotNumber, "\\COS_2:COS_OFF", "fuze");
-  //double sinOffset = readMDSplusDouble(baseLineShotNumber, "\\SIN_2:SIN_OFF", "fuze");
+  gsl_vector_scale(timeB, 1E6);
 
-  //std::cout << "Cosine offset in MDSplus: " << cosOffset << "\n";
-  //std::cout << "Sine offset in MDSplus: " << sinOffset << "\n";
+  plotOptions = "set xrange[20:35]\n"
+    //"set yrange[-1E21:]\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/bfield_190416004.png'\n"
+    "set grid\n"
+    "set key left top\n"
+    "set ylabel 'B_{/Symbol q} (Tesla)' font ',16' offset 0,0\n"
+    "set xlabel 'Time ({/Symbol m}sec)' font ',16' offset 0,0\n"
+    "set title 'B_{/Symbol q} in the acceleration region' "
+    "font 'Times Bold,16'\n"
+    "set label '#190416004' at graph 0.02,0.83 font 'Times Bold, 14'\n";
+
+  plot2VectorData(timeB, b_n40, "title 'z=-40 cm'", b_n10, "title 'z=-10 cm'", 
+		  plotOptions, "data/temp.txt", "data/temp.sh");
+
 
   double testVal = 0.035;
 
