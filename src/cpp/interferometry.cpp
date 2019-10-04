@@ -810,3 +810,443 @@ bool testGetIFDensityForAPS() {
   return false;
 
 }
+
+
+/*
+ * This is the python code to process the IF data for the FuZE experiment. From Han.
+ * For reference
+
+#!/usr/bin/env python
+"""
+Created on Oct 2017
+Last Updated on Dec 13 2017
+author: Bonghan Kim
+FuZE HeNe interferometry code - Location TODO NOTINPLACE
+
+Version history
+
+V3: Added Brian's optimization and style corrections.
+    NOTE: Don't for-loop np.array for simple operations. They can handle
+    element wise operations efficiently.
+
+V4: loadSmoothingInfo implemented
+  : loadTrendlineInfo implemented
+  : Write to tree functions tested
+
+V5: Calculate offset if shotNum == refShotNum
+  : Read offset if shotNum != refShotNum
+  : Write to offset
+
+V5 TODO: Write detect IP functionality for detecting the beginning and the end
+         of the relevent sig for trendline subtraction.
+
+"""
+
+from scipy.constants import pi
+import MDSplus as MDS
+import numpy as np
+import matplotlib.pyplot as plt
+# Possible packages that I could try and use later
+# import pylab as P
+# import scipy.signal as signal
+
+
+def main(shotNum=1233,
+         save2tree=True, ignoreZeroR=False, invert=False, debug=False):
+
+    # Get Tree
+    T = MDS.Tree('fuze', shotNum)
+
+    for chord in range(1, 9):
+        try:
+
+            # load reference shot number
+            refShotNum = T.getNode(r'\NE_1:BASELINE').getData().data()
+
+            if shotNum == refShotNum:
+                setRawOffset(T, chord, save2tree, debug)
+            else:
+                processDensity(T, chord, save2tree, ignoreZeroR, invert, debug)
+
+            if debug:
+                print('chord %d processed' % chord)
+
+        except:
+            if debug:
+                print('chord %d skipped due to lack of data' % chord)
+            continue
+
+
+def setRawOffset(MDSTree, chord, save2tree, debug):
+    (cos_Raw, sin_Raw, time_Raw) = loadIFdata(chord, MDSTree)
+    cosOffset = np.mean(cos_Raw)
+    sinOffset = np.mean(sin_Raw)
+
+    if save2tree:
+        saveDouble(cosOffset, r'\COS_%d:COS_OFF' % chord, MDSTree)
+        saveDouble(sinOffset, r'\SIN_%d:SIN_OFF' % chord, MDSTree)
+
+    if debug:
+        plt.figure('offset diagnostic plots')
+        plt.subplot(2, 2, 1)
+        plt.plot(sin_Raw)
+        plt.subplot(2, 2, 2)
+        plt.plot(cos_Raw)
+
+
+def processDensity(MDStree, chord, save2tree, ignoreZeroR, invert, debug):
+
+    # -------------------------------------------------------------------------
+    # ---------------------------- LOAD SETTINGS ------------------------------
+    # -------------------------------------------------------------------------
+
+    convert = 5.61*1E20  # Conversion using 632.8nm for laser wavelength
+    T = MDStree
+
+    # load reference shot numbers
+    refShotNum = T.getNode(r'\NE_1:BASELINE').getData().data()
+    Tref = MDS.Tree('fuze', refShotNum)
+
+    # load smoothing window
+    (sm_win1, sm_win2, sm_win3, sm_win4) = loadSmoothingInfo(chord, T)
+
+    # Threshhold used for detecting fringe jump.
+    jumpDet = pi
+
+    # Import IF data from MDS tree with default name T
+    if invert:
+        (sin_Raw, cos_Raw, time_Raw) = loadIFdata(chord, T)
+    else:
+        (cos_Raw, sin_Raw, time_Raw) = loadIFdata(chord, T)
+
+    # Import IF baseline data from MDS tree with default name T.
+    if invert:
+        (sinOffset, cosOffset) = loadIFbaseline(chord, Tref)
+    else:
+        (cosOffset, sinOffset) = loadIFbaseline(chord, Tref)
+
+    # reads IP data to be used in determining trendline fit domain
+    (Ip, Tip) = loadIpdata(chord, T)
+
+    (sig_i_t, plas_i_t, plas_f_t, sig_f_t) = loadTrendlineInfo(chord, T)
+
+    # TODO: make auto detection more reliable
+    (plas_i_t_auto, plas_f_t_auto) = find_trendline_domain(Ip, Tip)
+
+    if plas_i_t == -99.:
+        plas_i_t = plas_i_t_auto
+    if plas_f_t == -99.:
+        plas_f_t = plas_f_t_auto
+
+    signal_i = timeToIndex(sig_i_t, time_Raw)
+    plasma_i = timeToIndex(plas_i_t, time_Raw)
+    plasma_f = timeToIndex(plas_f_t, time_Raw)
+    signal_f = timeToIndex(sig_f_t, time_Raw)
+
+    # if auto detection fails,
+    if plasma_i - 5000 < signal_i:
+        plasma_i = signal_i + 5001  # must be greater than
+    if plasma_f + 5000 > signal_f:
+        plasma_f = signal_f - 5001
+
+    # -------------------------------------------------------------------------
+    # -------------------------- SIGNAL PROCESSING ----------------------------
+    # -------------------------------------------------------------------------
+
+    # Obtain cosine and sine signal with baseline subtraction.
+    # This centeres the lisajou.
+    cos_SubBase = cos_Raw - cosOffset
+    sin_SubBase = sin_Raw - sinOffset
+
+    # Find the initial phase of the cos and sin signal.
+    phaseInitial = calc_initial_phase(cos_SubBase, sin_SubBase)
+
+    # Rotate the cos and sin signal so the phase starts at 0.
+    # the give pi+1 above and pi-1 below of phase before phase jump.
+    (cos_SubBase, sin_SubBase) = rotate2d(cos_SubBase, sin_SubBase,
+                                          phaseInitial)
+
+    # Smooths cos and sin signal using two windows.
+    cos_SubBase = smooth(smooth(cos_SubBase, window_len=sm_win1),
+                         window_len=sm_win2)
+    sin_SubBase = smooth(smooth(sin_SubBase, window_len=sm_win1),
+                         window_len=sm_win2)
+
+    # Convert cos_SubBase and sin_SubBase signals into phase signal with
+    #  fringe jumps.x
+    phase = get_phase(cos_SubBase, sin_SubBase)
+    densityRaw = phase * convert
+
+    # Calculates radius of lisajou.
+    radius = get_radius(cos_SubBase, sin_SubBase)
+
+    # When change in value between data+ is greater than threashhold.
+    # it increments the jump_correction list.
+    jump_correction = get_jump_correction(phase, radius, jumpDet, ignoreZeroR)
+
+    # Subtracting jump_correction*2*pi gives the jump corrected phase.
+    phase_jump_corrected = phase - jump_correction * 2 * pi
+    density = phase_jump_corrected * convert
+
+    # Trendline Subtraction.
+    # NOTE: This trucates the signal from index signal_i ot index signal_f.
+    (baseline, fitline, fitline_time) = get_trendline(phase_jump_corrected,
+                                                      time_Raw, signal_i,
+                                                      plasma_i, plasma_f,
+                                                      signal_f)
+    phase_sub_TrendLine = phase_jump_corrected[signal_i:signal_f] - baseline
+    timeForTrendline = time_Raw[signal_i:signal_f]
+    densitySubTrend = phase_sub_TrendLine*convert
+
+    # Saving smoothed signals
+    density_sm = smooth(smooth(density, sm_win3), sm_win4)
+    densitySubTrend_sm = smooth(smooth(densitySubTrend, sm_win3), sm_win4)
+
+    # -------------------------------------------------------------------------
+    # ----------------------------- SAVE TO TREE ------------------------------
+    # -------------------------------------------------------------------------
+
+    # TODO Test this
+    if save2tree:
+        saveData(density, time_Raw, r'\NE_%d' % chord, T)  # NE#
+        saveData(density_sm, time_Raw, r'\NE_%d_sm' % chord, T)
+        saveData(densityRaw, time_Raw, r'\NE_%d_Raw' % chord, T)  # NE#_Raw
+        saveData(densitySubTrend, timeForTrendline,
+                 r'\NE_%d_SubTrend' % chord, T)  # NE_subTrend
+        saveData(densitySubTrend_sm, timeForTrendline,
+                 r'\NE_%d_SubTrend_sm' % chord, T)  # TODO Too long
+        saveData(cos_SubBase, time_Raw,
+                 r'\COS%d_rotated' % chord, T)  # processed cos signal
+        saveData(sin_SubBase, time_Raw,
+                 r'\SIN%d_rotated' % chord, T)  # processed sin signal
+        saveData(radius, time_Raw,
+                 r'\NE_%d:radius' % chord, T)  # radius of processed cos,sin
+        saveDouble(cosOffset, r'\COS_%d:COS_OFF' % chord, T)  # cos offset used
+        saveDouble(sinOffset, r'\SIN_%d:SIN_OFF' % chord, T)  # sin offset used
+        trendlineDomain = np.array([sig_i_t, plas_i_t, plas_f_t, sig_f_t])
+        saveArray(trendlineDomain, r'\ne_%d:TREND_WINDOW' % chord, T)
+
+    # -------------------------------------------------------------------------
+    # ----------------------------- DEBUG PLOTS -------------------------------
+    # -------------------------------------------------------------------------
+
+    # Plots for debugging
+    if debug:
+        plt.close()
+        plt.figure("IF Diagnostic Signals shot %d chord %d" % (T.shot, chord),
+                   figsize=(18, 8))
+
+        # Phase and jump corrected phase
+        ax = plt.subplot(2, 3, 1)
+        plt.plot(time_Raw, densityRaw, label='Original')
+        plt.plot(time_Raw, density, 'r-', label='Jump Corrected')
+        plt.legend(loc='lower right')
+        plt.grid(True)
+
+        # Radius
+        plt.subplot(2, 3, 2, sharex=ax)
+        plt.plot(time_Raw, radius, 'g-', label="Radius")
+
+        plt.title('Shot: %d Chord: %d' % (T.shot, chord))
+        plt.legend()
+        plt.grid(True)
+        plt.ylim(ymin=0)
+        # ca = plt.gca()
+
+        # Details of trendline subtraction (NOTE: Truncated)
+        plt.subplot(2, 3, 4, sharex=ax)
+        plt.plot(time_Raw[signal_i:signal_f],
+                 phase_jump_corrected[signal_i:signal_f], 'r-',
+                 label='Phase w/o trendline')
+        plt.plot(time_Raw[signal_i:signal_f], baseline, 'g-',
+                 label='Trendline')
+        plt.plot(fitline_time, fitline, 'b.', label='Fitline Domain')
+        plt.legend(loc='upper right')
+        plt.grid(True)
+
+        # Trendline subtracted phase signal (NOTE: Truncated)
+        plt.subplot(2, 3, 5, sharex=ax)
+        plt.plot(timeForTrendline, densitySubTrend, 'b-',
+                 label='Trendline Corrected')
+        plt.plot(timeForTrendline, densitySubTrend_sm, 'r-', lw=2,
+                 label='Trendline Corrected SM')
+        plt.legend(loc='upper right')
+        plt.grid()
+
+        # Plasma current trace
+        plt.subplot(2, 3, 6, sharex=ax)
+        plt.plot(Tip, Ip)
+        plt.plot(Tip, np.ones(Tip.size)*max(Ip)*0.05, 'r-')
+
+
+# Imports smoothing windows used in the analysis
+# TODO: test
+def loadSmoothingInfo(chord, MDStree):
+    sm_win = MDStree.getNode(r'\ne_%d:SM_WINDOW' % chord).getData().data()
+    return(sm_win[0], sm_win[1], sm_win[2], sm_win[3])
+
+
+# Imports trendline subtraction domains
+# TODO: test
+def loadTrendlineInfo(chord, MDStree):
+    trnd_win = MDStree.getNode(r'\ne_%d:TREND_WINDOW' % chord).getData().data()
+    return(trnd_win[0], trnd_win[1], trnd_win[2], trnd_win[3])
+
+
+# Imports cosRaw, sinRaw, and time_Raw signal given
+#  (chord, refShotnum, MDStree = T)
+def loadIFdata(chord, MDStree):
+    cosRaw = MDStree.getNode(r'\cos%d' % chord).getData().data()
+    sinRaw = MDStree.getNode(r'\sin%d' % chord).getData().data()
+    time_Raw = MDStree.getNode(r'\cos%d' % chord).dim_of().data()
+    return (cosRaw, sinRaw, time_Raw)
+
+
+# Imports IP signal given (chord, MDStree =T)
+def loadIpdata(chord, MDStree):
+    I_P = MDStree.getNode(r'\I_P').getData().data()
+    Tip = MDStree.getNode(r'\I_P').dim_of().data()
+    return (I_P, Tip)
+
+
+# Imports baseline value for cos and sin
+def loadIFbaseline(chord, MDStree):
+    cosOffset = MDStree.getNode(r'\COS_%d:COS_OFF' % chord).getData().data()
+    sinOffset = MDStree.getNode(r'\SIN_%d:SIN_OFF' % chord).getData().data()
+    return(cosOffset, sinOffset)
+
+
+# Calculates initial phase
+def calc_initial_phase(cos_SubBase, sin_SubBase):
+    # Finding initial phase
+    phaseInitial = np.arctan2(sin_SubBase[0], cos_SubBase[0])
+    # Rotate the sin and cos signal by - initial phase
+    return phaseInitial
+
+
+# Rotate (xArray,yArray) CW by (angleRad)
+def rotate2d(xArray, yArray, angleRad):
+    xArray_new = xArray * np.cos(angleRad) + yArray * np.sin(angleRad)
+    yArray_new = -xArray * np.sin(angleRad) + yArray * np.cos(angleRad)
+    return (xArray_new, yArray_new)
+
+
+# Calculates phase signal using (cos_SubBase) and (sin_SubBase)
+def get_phase(cos_SubBase, sin_SubBase):
+    phase = np.arctan2(cos_SubBase, sin_SubBase)
+    return phase
+
+
+# Calculates radius of lisajou using (cos_SubBase,sin_SubBase)
+def get_radius(cos_SubBase, sin_SubBase):
+    radius = np.sqrt(sin_SubBase**2 + cos_SubBase**2)
+    return radius
+
+
+# When change in value between data is greater than threashhold
+# it increments the jump_correction list
+def get_jump_correction(phase, radius, jump=pi, ignoreZeroR=False):
+    length = len(phase)
+    total_correction = 0
+    jump_correction = np.zeros(length)
+    for i in range(1, length):
+
+        if ignoreZeroR and radius[i] < 0.01:
+            pass
+        elif (phase[i] - phase[i-1]) > jump:
+            total_correction += 1
+        elif (phase[i] - phase[i-1]) < -jump:
+            total_correction -= 1
+
+        jump_correction[i] = total_correction
+
+    return jump_correction
+
+
+# smooths the signal x and returns as y.
+def smooth(x, window_len=11, window='flat'):
+        # Possible Windows
+        # ['flat', 'hanning', 'hamming', 'bartlett', 'blackman']:
+        s = np.r_[2 * x[0] - x[window_len-1::-1], x, 2 * x[-1] -
+                  x[-1:-window_len:-1]]
+        if window == 'flat':   # moving average
+            w = np.ones(window_len, 'd')
+        else:
+            w = eval('np.'+window+'(window_len)')
+        y = np.convolve(w/w.sum(), s, mode='same')
+        return y[window_len:-window_len+1]
+
+
+# Calculates trendline
+def get_trendline(phase, time_Raw, signalStart, plasmaStart, plasmaEnd,
+                  signalEnd):
+
+    phase = phase[signalStart:signalEnd]
+    time_Raw = time_Raw[signalStart:signalEnd]
+    plasmaStart -= signalStart
+    plasmaEnd -= signalEnd
+
+    section1 = smooth(phase[:plasmaStart], window_len=5000)
+    section1_time = time_Raw[:plasmaStart]
+    section2 = smooth(phase[plasmaEnd:], window_len=5000)
+    section2_time = time_Raw[plasmaEnd:]
+
+    fitline = np.concatenate([section1, section2])
+    fitline_time = np.concatenate([section1_time, section2_time])
+
+    z = np.polyfit(fitline_time, fitline, 7)
+    p = np.poly1d(z)
+    trendline = [p(x) for x in time_Raw]
+
+    return (trendline, fitline, fitline_time)
+
+
+# Finds trendline domain from IP data
+def find_trendline_domain(Ip, Tip):
+    IpThreash = max(Ip) * 0.1
+    plasmaIndex = np.where(Ip > IpThreash)
+    plasmaBeginIndex = plasmaIndex[0][0]
+    plasmaEndIndex = plasmaIndex[0][-1]
+    plasmaBeginTime = Tip[plasmaBeginIndex]
+    plasmaEndTime = Tip[plasmaEndIndex]
+    return (plasmaBeginTime, plasmaEndTime)
+
+
+# Saves Data to MDS Tree
+def saveData(sig, time, signame, MDSTree):
+    node = MDSTree.getNode(signame)
+    ySig = MDS.Float32Array(sig)
+    node.putData(MDS.Signal(ySig, None, time))
+
+
+# for saving single number to Tree
+def saveDouble(data, name, MDSTree):
+    node = MDSTree.getNode(name)
+    node.putData(MDS.Float64(data))
+
+
+# for saving numpy array to Tree
+def saveArray(data, name, MDSTree):
+    node = MDSTree.getNode(name)
+    node.putData(MDS.Float32Array(data))
+
+
+def timeToIndex(time, time_Raw):
+    indexs = np.where(time < time_Raw)
+    return indexs[0][0]
+
+
+# Runs main if you run this program (not importing to other modules)
+if __name__ == "__main__":
+    from sys import argv
+
+    nargs = len(argv)
+    if nargs == 1:
+        print("Usage:")
+        print("HeNe_IF_processDensity shotNum chord")
+    elif nargs == 2:
+        shotNum = int(argv[1])
+        main(shotNum=shotNum)
+
+*/
+
