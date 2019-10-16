@@ -20,6 +20,10 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
 		      int tLow, int tHigh);
 static int kiranaImageAnalysis();
+static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
+				std::string tempScriptFile, int tLow, int tHigh);
+static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		      int tLow, int tHigh);
 
 #define TLOW 20
 #define THIGH 60
@@ -45,6 +49,10 @@ int plotPostShotAnalysis() {
   }
 
   getchar();
+
+  plotM0Mode(shotNumber, "data/m0.txt", "data/m0.sh", 20, 50);
+
+  return 0;
   
   int pid1 = fork();
   int pid2 = fork();
@@ -92,6 +100,7 @@ int plotPostShotAnalysis() {
     plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh",
 		       TLOW, THIGH);
     kiranaImageAnalysis();
+    plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 0, 100);
   }
 
   return 0;
@@ -557,6 +566,144 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
   gsl_vector_free(p_315);
 
   gsl_matrix_free(azimuthalArray);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPinchCurrentData
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotPinchCurrentData(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+				int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *p15M1;
+  gsl_vector *p15M0;
+  std::string p15M0Label;
+  std::string p15M1Label;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumber, "\\b_p15_000", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  p15M0 = getM0Mode(shotNumber, "\\b_p15_000");
+  gsl_vector_scale(p15M0, 5E2);
+  oss << "with line lw 3 lc rgb 'black' title 'm=0'";
+  p15M0Label = oss.str();
+  oss.str("");
+  
+  p15M1 = getM1Mode(shotNumber, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'red' title 'm=1' axes x1y2";
+  p15M1Label = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  oss << "set title 'm= 0 and 1 at z=15 cm for shotnumber: " << shotNumber << "'\n"
+    //<< "set terminal png\n"
+    //<< "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set grid\n"
+      << "set ylabel 'm=0 (kA)'\n"
+      << "set y2label 'Normalized m=1'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set yrange[0:]\n"
+      << "set y2range[0:1]\n"
+      << "set y2tics nomirror tc lt 2\n"
+      << "set key right top\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot2VectorData(time, p15M0, p15M0Label, p15M1, p15M1Label, keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotM0Mode
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		      int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *p5;
+  gsl_vector *p15;
+  gsl_vector *p35;
+  gsl_vector *p45;
+  std::string p5Label;
+  std::string p15Label;
+  std::string p35Label;
+  std::string p45Label;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  p5 = getM0Mode(shotNumber, "\\b_p5_000");
+  gsl_vector_scale(p5, 5E2);
+  oss << "with line lw 3 lc rgb 'black' title 'm=1 at P5'";
+  p5Label = oss.str();
+  oss.str("");
+
+  p15 = getM0Mode(shotNumber, "\\b_p15_000");
+  gsl_vector_scale(p15, 5E2);
+  oss << "with line lw 3 lc rgb 'red' title 'm=1 at P15'";
+  p15Label = oss.str();
+  oss.str("");
+
+  p35 = getM0Mode(shotNumber, "\\b_p35_000");
+  gsl_vector_scale(p35, 5E2);
+  oss << "with line lw 3 lc rgb 'green' title 'm=1 at P35'";
+  p35Label = oss.str();
+  oss.str("");
+
+  p45 = getM0Mode(shotNumber, "\\b_p45_000");
+  gsl_vector_scale(p45, 5E2);
+  oss << "with line lw 3 lc rgb 'blue' title 'm=1 at P45'";
+  p45Label = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  oss << "set title 'm=0 at different z values for " << shotNumber << "'\n"
+      << "set ylabel 'Normalized mode'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+    //<< "set yrange[0:1]\n"
+      << "set terminal png\n"
+      << "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set key right top\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
+		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
