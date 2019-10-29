@@ -26,6 +26,7 @@ static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string temp
 		      int tLow, int tHigh);
 static int plotPinchCurrentAverageData(int shotNumber, std::string tempDataFile,
 				       std::string tempScriptFile, int tLow, int tHigh);
+static int saveIBMData();
 
 #define TLOW 20
 #define THIGH 60
@@ -42,7 +43,7 @@ int plotPostShotAnalysis() {
 
   int shotNumber,
     currShotNumber = getCurrentPulseNumber();
-  
+
   printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
 
@@ -52,7 +53,7 @@ int plotPostShotAnalysis() {
 
   getchar();
 
-  plotM0Mode(shotNumber, "data/m0.txt", "data/m0.sh", 20, 50);
+  saveIBMData();
 
   return 0;
   
@@ -633,6 +634,10 @@ static int plotPinchCurrentData(int shotNumber, std::string tempDataFile, std::s
   
   plot2VectorData(time, p15M0, p15M0Label, p15M1, p15M1Label, keyWords, tempDataFile, tempScriptFile);
 
+  gsl_vector_free(time);
+  gsl_vector_free(p15M1);
+  gsl_vector_free(p15M0);
+
   return 0;
 
 }
@@ -708,6 +713,12 @@ static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string temp
   
   plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
 		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(p5);
+  gsl_vector_free(p15);
+  gsl_vector_free(p35);
+  gsl_vector_free(p45);
 
   return 0;
 
@@ -812,6 +823,92 @@ static int plotPinchCurrentAverageData(int shotNumber, std::string tempDataFile,
   keyWords.append(rangeLabel);
   
   plot2VectorData(time, pM0, pM0Label, pM1, pM1Label, keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(p5M0);
+  gsl_vector_free(p15M0);
+  gsl_vector_free(p25M0);
+  gsl_vector_free(p35M0);
+  gsl_vector_free(pM0);
+  gsl_vector_free(p5M1);
+  gsl_vector_free(p15M1);
+  gsl_vector_free(p25M1);
+  gsl_vector_free(p35M1);
+  gsl_vector_free(pM1);
+
+  return 0;
+
+}
+
+
+static int saveIBMData() {
+
+  std::string fileNameOut = "/home/fuze/Downloads/Ouput_191028003.csv";
+  std::string fileNameGap = "/home/fuze/Downloads/Gap_191028003.csv";
+
+  int shotNumber = 191028003;
+  int sizeRowOut;
+  int sizeRowGap;
+  int ii;
+
+  gsl_vector *timeOut;
+  gsl_vector *timeGap;
+  gsl_vector *outRaw1;
+  gsl_vector *outRaw2;
+  gsl_vector *outRaw3;
+  gsl_vector *outRaw4;
+  gsl_vector *outRaw5;
+  gsl_vector *outRaw6;
+  gsl_vector *vgap;
+
+  remove(fileNameOut.c_str());
+  remove(fileNameGap.c_str());
+  FILE *fpDataOut = fopen(fileNameOut.c_str(), "w");
+  FILE *fpDataGap = fopen(fileNameGap.c_str(), "w");
+
+  if ( (fpDataOut == NULL) || (fpDataGap == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);
+  }
+
+  timeGap = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
+  vgap = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
+
+  timeOut = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT:RAW", "fuze");
+  outRaw1 = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT:RAW", "fuze");
+  outRaw2 = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT:RAW", "fuze");
+  outRaw3 = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT:RAW", "fuze");
+  outRaw4 = readMDSplusVector(shotNumber, "\\I_IBM_4_OUT:RAW", "fuze");
+  outRaw5 = readMDSplusVector(shotNumber, "\\I_IBM_5_OUT:RAW", "fuze");
+  outRaw6 = readMDSplusVector(shotNumber, "\\I_IBM_6_OUT:RAW", "fuze");
+  
+  sizeRowOut = (int) timeOut->size;
+  sizeRowGap = (int) timeGap->size;
+
+  for (ii = 0; ii < sizeRowOut; ii++) {
+
+    fprintf(fpDataOut, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeOut, ii), 
+	    gsl_vector_get(outRaw1, ii), gsl_vector_get(outRaw2, ii), gsl_vector_get(outRaw3, ii), 
+	    gsl_vector_get(outRaw4, ii), gsl_vector_get(outRaw5, ii), gsl_vector_get(outRaw6, ii));
+
+  }
+
+  for (ii = 0; ii < sizeRowGap; ii++) {
+
+    fprintf(fpDataGap, "%g\t%g\n", gsl_vector_get(timeGap, ii), 
+	    gsl_vector_get(vgap, ii));
+
+  }
+
+  gsl_vector_free(timeOut);
+  gsl_vector_free(timeGap);
+  gsl_vector_free(outRaw1);
+  gsl_vector_free(outRaw2);
+  gsl_vector_free(outRaw3);
+  gsl_vector_free(outRaw4);
+  gsl_vector_free(outRaw5);
+  gsl_vector_free(outRaw6);
+  gsl_vector_free(vgap);
 
   return 0;
 
