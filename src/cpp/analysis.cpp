@@ -27,6 +27,10 @@ static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string temp
 static int plotPinchCurrentAverageData(int shotNumber, std::string tempDataFile,
 				       std::string tempScriptFile, int tLow, int tHigh);
 static int saveIBMData();
+static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScriptFile);
+static int plotPinchM1Scaling(std::string tempDataFile, std::string tempScriptFile);
+static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScriptFile);
+
 
 #define TLOW 20
 #define THIGH 60
@@ -46,14 +50,16 @@ int plotPostShotAnalysis() {
 
   printf("\nEnter Pulse Number> ");
   scanf("%d", &shotNumber);
-
-  if (shotNumber <= 0) {
+ 
+ if (shotNumber <= 0) {
     shotNumber = currShotNumber+shotNumber;
   }
 
   getchar();
 
-  saveIBMData();
+  plotPinchVgapScaling("data/data.txt", "data/data.sh");
+  //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
+  //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
   return 0;
   
@@ -106,6 +112,10 @@ int plotPostShotAnalysis() {
     plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 0, 100);
     plotM0Mode(shotNumber, "data/m0.txt", "data/m0.sh", 20, 50);
     plotPinchCurrentAverageData(shotNumber, "data/data.txt", "data/data.sh", 20, 50);
+    saveIBMData();
+    plotPinchCurrentScaling("data/data.txt", "data/data.sh");
+    plotPinchM1Scaling("data/data.txt", "data/data.sh");
+    plotPinchVgapScaling("data/data.txt", "data/data.sh");
   }
 
   return 0;
@@ -909,6 +919,289 @@ static int saveIBMData() {
   gsl_vector_free(outRaw5);
   gsl_vector_free(outRaw6);
   gsl_vector_free(vgap);
+
+  return 0;
+
+}
+
+ 
+/******************************************************************************
+ * Function: plotPinchCurrentScaling
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScriptFile) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *p15M04;
+  gsl_vector *p15M05;
+  gsl_vector *p15M06;
+  gsl_vector *p15M07;
+  gsl_vector *p15M08;
+
+  int shotNumber4 = 191018004,
+    shotNumber5 = 191018005,
+    shotNumber6 = 191018006,
+    shotNumber7 = 191018007,
+    shotNumber8 = 191018008;
+    
+  std::string p15M04Label;
+  std::string p15M05Label;
+  std::string p15M06Label;
+  std::string p15M07Label;
+  std::string p15M08Label;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumber4, "\\b_p15_000", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  p15M04 = getM0Mode(shotNumber4, "\\b_p15_000");
+  gsl_vector_scale(p15M04, 5E2);
+  oss << "with line lw 3 lc rgb 'black' title 'TBM=4 kV'";
+  p15M04Label = oss.str();
+  oss.str("");
+
+  p15M05 = getM0Mode(shotNumber5, "\\b_p15_000");
+  gsl_vector_scale(p15M05, 5E2);
+  oss << "with line lw 3 lc rgb 'red' title 'TBM=5 kV'";
+  p15M05Label = oss.str();
+  oss.str("");
+
+  p15M06 = getM0Mode(shotNumber6, "\\b_p15_000");
+  gsl_vector_scale(p15M06, 5E2);
+  oss << "with line lw 3 lc rgb 'blue' title 'TBM=6 kV'";
+  p15M06Label = oss.str();
+  oss.str("");
+
+  p15M07 = getM0Mode(shotNumber7, "\\b_p15_000");
+  gsl_vector_scale(p15M07, 5E2);
+  oss << "with line lw 3 lc rgb 'green' title 'TBM=7 kV'";
+  p15M07Label = oss.str();
+  oss.str("");
+
+  p15M08 = getM0Mode(shotNumber8, "\\b_p15_000");
+  gsl_vector_scale(p15M08, 5E2);
+  oss << "with line lw 3 lc rgb 'yellow' title 'TBM=8 kV'";
+  p15M08Label = oss.str();
+  oss.str("");
+  
+  oss << "set title 'Pinch current at z=15 cm \n"
+      << "set terminal png\n"
+      << "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set grid\n"
+      << "set ylabel 'm=0 (kA)'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set xrange[20:40]\n"
+      << "set yrange[0:]\n"
+      << "set key left top\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot5VectorData(time, p15M04, p15M04Label, p15M05, p15M05Label, p15M06, p15M06Label,
+		  p15M07, p15M07Label, p15M08, p15M08Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(p15M04);
+  gsl_vector_free(p15M05);
+  gsl_vector_free(p15M06);
+  gsl_vector_free(p15M07);
+  gsl_vector_free(p15M08);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPinchM1Scaling
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotPinchM1Scaling(std::string tempDataFile, std::string tempScriptFile) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *p15M14;
+  gsl_vector *p15M15;
+  gsl_vector *p15M16;
+  gsl_vector *p15M17;
+  gsl_vector *p15M18;
+
+  int shotNumber4 = 191018004,
+    shotNumber5 = 191018005,
+    shotNumber6 = 191018006,
+    shotNumber7 = 191018007,
+    shotNumber8 = 191018008;
+    
+  std::string p15M14Label;
+  std::string p15M15Label;
+  std::string p15M16Label;
+  std::string p15M17Label;
+  std::string p15M18Label;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumber4, "\\b_p15_000", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  p15M14 = getM1Mode(shotNumber4, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'black' title 'TBM=4 kV'";
+  p15M14Label = oss.str();
+  oss.str("");
+
+  p15M15 = getM1Mode(shotNumber5, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'red' title 'TBM=5 kV'";
+  p15M15Label = oss.str();
+  oss.str("");
+
+  p15M16 = getM1Mode(shotNumber6, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'blue' title 'TBM=6 kV'";
+  p15M16Label = oss.str();
+  oss.str("");
+
+  p15M17 = getM1Mode(shotNumber7, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'green' title 'TBM=7 kV'";
+  p15M17Label = oss.str();
+  oss.str("");
+
+  p15M18 = getM1Mode(shotNumber8, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'yellow' title 'TBM=8 kV'";
+  p15M18Label = oss.str();
+  oss.str("");
+  
+  oss << "set title 'Normalized m=1 mode at z=15 cm \n"
+      << "set terminal png\n"
+      << "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set grid\n"
+      << "set ylabel 'Norm m=1'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set xrange[20:40]\n"
+      << "set yrange[0:1]\n"
+      << "set key right top\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot5VectorData(time, p15M14, p15M14Label, p15M15, p15M15Label, p15M16, p15M16Label,
+		  p15M17, p15M17Label, p15M18, p15M18Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(p15M14);
+  gsl_vector_free(p15M15);
+  gsl_vector_free(p15M16);
+  gsl_vector_free(p15M17);
+  gsl_vector_free(p15M18);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotPinchVgapScaling
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScriptFile) {
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *VGap4;
+  gsl_vector *VGap5;
+  gsl_vector *VGap6;
+  gsl_vector *VGap7;
+  gsl_vector *VGap8;
+
+  int shotNumber4 = 191018004,
+    shotNumber5 = 191018005,
+    shotNumber6 = 191018006,
+    shotNumber7 = 191018007,
+    shotNumber8 = 191018008;
+    
+  std::string VGap4Label;
+  std::string VGap5Label;
+  std::string VGap6Label;
+  std::string VGap7Label;
+  std::string VGap8Label;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumber4, "\\V_GAP", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  VGap4 = readMDSplusVector(shotNumber4, "\\V_GAP", "fuze");
+  gsl_vector_scale(VGap4, 1E-3);
+  oss << "with line lw 3 lc rgb 'black' title 'TBM=4 kV'";
+  VGap4Label = oss.str();
+  oss.str("");
+
+  VGap5 = readMDSplusVector(shotNumber5, "\\V_GAP", "fuze");
+  gsl_vector_scale(VGap5, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title 'TBM=5 kV'";
+  VGap5Label = oss.str();
+  oss.str("");
+
+  VGap6 = readMDSplusVector(shotNumber6, "\\V_GAP", "fuze");
+  gsl_vector_scale(VGap6, 1E-3);
+  oss << "with line lw 3 lc rgb 'blue' title 'TBM=6 kV'";
+  VGap6Label = oss.str();
+  oss.str("");
+
+  VGap7 = readMDSplusVector(shotNumber7, "\\V_GAP", "fuze");
+  gsl_vector_scale(VGap7, 1E-3);
+  oss << "with line lw 3 lc rgb 'green' title 'TBM=7 kV'";
+  VGap7Label = oss.str();
+  oss.str("");
+
+  VGap8 = readMDSplusVector(shotNumber8, "\\V_GAP", "fuze");
+  gsl_vector_scale(VGap8, 1E-3);
+  oss << "with line lw 3 lc rgb 'yellow' title 'TBM=8 kV'";
+  VGap8Label = oss.str();
+  oss.str("");
+  
+  oss << "set title 'V_{GAP} scaling with TBM setting\n"
+      << "set terminal png\n"
+      << "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set grid\n"
+      << "set ylabel 'Voltage (kV)'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set xrange[20:40]\n"
+      << "set yrange[:0]\n"
+      << "set key right bottom\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot5VectorData(time, VGap4, VGap4Label, VGap5, VGap5Label, VGap6, VGap6Label,
+		  VGap7, VGap7Label, VGap8, VGap8Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(VGap4);
+  gsl_vector_free(VGap5);
+  gsl_vector_free(VGap6);
+  gsl_vector_free(VGap7);
+  gsl_vector_free(VGap8);
 
   return 0;
 
