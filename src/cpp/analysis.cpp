@@ -57,7 +57,8 @@ int plotPostShotAnalysis() {
 
   getchar();
 
-  plotPinchVgapScaling("data/data.txt", "data/data.sh");
+  saveIBMData();
+  //plotPinchVgapScaling("data/data.txt", "data/data.sh");
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
@@ -882,9 +883,12 @@ static int saveIBMData() {
   }
 
   timeGap = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
+  gsl_vector_scale(timeGap, 1E6);
   vgap = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
-
+  gsl_vector_scale(vgap, 1E3);
+  
   timeOut = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT:RAW", "fuze");
+  gsl_vector_scale(timeOut, 1E6);
   outRaw1 = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT:RAW", "fuze");
   outRaw2 = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT:RAW", "fuze");
   outRaw3 = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT:RAW", "fuze");
@@ -898,8 +902,10 @@ static int saveIBMData() {
   for (ii = 0; ii < sizeRowOut; ii++) {
 
     fprintf(fpDataOut, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeOut, ii), 
-	    gsl_vector_get(outRaw1, ii), gsl_vector_get(outRaw2, ii), gsl_vector_get(outRaw3, ii), 
-	    gsl_vector_get(outRaw4, ii), gsl_vector_get(outRaw5, ii), gsl_vector_get(outRaw6, ii));
+	    gsl_vector_get(outRaw1, ii), gsl_vector_get(outRaw2, ii),
+	    gsl_vector_get(outRaw3, ii), 
+	    gsl_vector_get(outRaw4, ii), gsl_vector_get(outRaw5, ii),
+	    gsl_vector_get(outRaw6, ii));
 
   }
 
