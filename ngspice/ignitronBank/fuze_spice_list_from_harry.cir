@@ -1,0 +1,256 @@
+12x830_variable_pulses_3kV
+************************
+* B2 Spice
+************************
+* B2 Spice default format (same as Berkeley Spice 3F format)
+***** dependent-child subcircuit definitions
+
+***** main subcircuit definitions
+***** parameter-based internally generated macro-models
+
+***** main circuit
+IVm 1  0 0
+L_pinch 2  0  300n 
+VAM_pinch 3  4 0
+IV_zap 4  0 0
+V0 1  0 DC 0 PWL ( 0u 0 2u 0  2.1u 3.1 32u 3.1 32.1u 6.1)
+VAm01 5  3 0
+L10 6  7  1.122u 
+R11 8  6  3.33m 
+VAm_d24 9  0 0
+R_pinch 4  2  7.5m 
+VAm_d1 10  0 0
+VAm12 11  3 0
+VAm11 12  3 0
+Switch1 13  14  1 0 switch_1 off 
+Switch12 15  16  1 0 switch_12 off 
+VAm02 17  3 0
+Switch2 18  19  1 0 switch_2 off 
+Switch11 20  21  1 0 switch_11 off 
+VAm03 22  3 0
+L58 23  11  300n 
+L57 24  12  300n 
+L56 25  26  300n 
+Switch10 27  28  1 0 switch_10 off 
+L55 29  30  300n 
+L54 31  32  300n 
+L53 33  34  300n 
+L52 35  36  300n 
+L51 37  38  300n 
+VAm04 39  3 0
+L50 40  39  300n 
+L49 41  22  300n 
+L48 42  17  300n 
+Switch9 43  44  1 0 switch_9 off 
+L47 7  5  300n 
+R58 45  0  4 
+C34 15  46  1u  ic = 3k 
+R57 47  0  4 
+VAm05 38  3 0
+C33 15  45  1u  ic = 3k 
+Switch8 48  49  1 0 switch_8 off 
+R56 50  0  4 
+C32 51  0  830u  ic = 3k 
+R55 52  0  4 
+C31 20  53  1u  ic = 3k 
+R54 54  0  4 
+VAm06 36  3 0
+C30 20  47  1u  ic = 3k 
+Switch7 55  56  1 0 switch_7 off 
+R53 57  0  4 
+C29 58  0  830u  ic = 3k 
+R40 46  59  4 
+C28 27  60  1u  ic = 3k 
+R39 53  61  4 
+C27 27  50  1u  ic = 3k 
+R38 60  62  4 
+VAm07 34  3 0
+Switch6 63  64  1 0 switch_6 off 
+C26 65  0  830u  ic = 3k 
+R37 66  67  4 
+C25 43  66  1u  ic = 3k 
+R36 68  69  4 
+Switch5 70  71  1 0 switch_5 off 
+C24 43  52  1u  ic = 3k 
+R35 72  73  4 
+L46 74  75  40n 
+R52 51  74  2m 
+VAm08 32  3 0
+L45 76  77  40n 
+R51 58  76  2m 
+L44 78  79  40n 
+R50 65  78  2m 
+Switch4 80  81  1 0 switch_4 off 
+L43 82  83  40n 
+R49 84  82  2m 
+L42 85  86  40n 
+R48 87  85  2m 
+L41 88  89  40n 
+VAm09 30  3 0
+R47 90  88  2m 
+L40 91  92  40n 
+R46 93  91  1m 
+Switch3 94  95  1 0 switch_3 off 
+L39 96  97  40n 
+R45 98  96  1m 
+L38 99  100  40n 
+R44 101  99  1m 
+L37 102  103  40n 
+R43 104  102  1m 
+VAm10 26  3 0
+L36 105  106  40n 
+R42 107  105  1m 
+L35 108  109  40n 
+R41 110  108  1m 
+L34 59  111  200n 
+C23 84  0  830u  ic = 3k 
+L33 61  112  200n 
+R34 113  114  4 
+L32 62  115  200n 
+C22 48  68  1u  ic = 3k 
+L31 67  116  200n 
+R33 117  118  4 
+L30 69  119  200n 
+C21 48  54  1u  ic = 3k 
+L29 73  120  200n 
+R32 121  122  4 
+L28 114  123  200n 
+C20 87  0  830u  ic = 3k 
+L27 118  124  200n 
+R31 125  126  4 
+L26 122  127  200n 
+C19 55  72  1u  ic = 3k 
+L25 126  128  200n 
+R30 129  130  4 
+L24 130  131  200n 
+C18 55  57  1u  ic = 3k 
+R29 132  133  4 
+L23 133  8  200n 
+L22 134  23  1.122u 
+R27 111  134  3.33m 
+L21 135  24  1.122u 
+R26 112  135  3.33m 
+L20 136  25  1.122u 
+R25 115  136  3.33m 
+L19 137  29  1.122u 
+R24 116  137  3.33m 
+L18 138  31  1.122u 
+R23 119  138  3.33m 
+L17 139  33  1.122u 
+R21 120  139  3.33m 
+L16 140  35  1.122u 
+R20 123  140  3.33m 
+L15 141  37  1.122u 
+R18 124  141  3.33m 
+L13 142  40  1.122u 
+R15 127  142  3.33m 
+L2 143  41  1.122u 
+R3 128  143  3.33m 
+L0 144  42  1.122u 
+C17 13  132  1u  ic = 3k 
+R10 145  0  4 
+R8 146  0  4 
+C16 90  0  830u  ic = 3k 
+R6 147  0  4 
+C15 63  113  1u  ic = 3k 
+VAm_c1 148  0 0
+R5 149  0  4 
+C14 63  146  1u  ic = 3k 
+R2 150  0  4 
+C13 93  0  830u  ic = 3k 
+IVm_C1 109  0 0
+C12 70  117  1u  ic = 3k 
+R1 151  0  4 
+diode5 0  55 model_diode 
+R0 131  144  3.33m 
+R28 152  15  6m 
+L14 75  152  200n 
+diode22 16  59 model_diode 
+diode4 0  63 model_diode 
+L12 77  153  200n 
+R22 153  20  6m 
+diode21 21  61 model_diode 
+C11 13  145  1u  ic = 3k 
+R19 154  27  6m 
+L11 79  154  200n 
+diode16 9  15 model_diode 
+C10 70  147  1u  ic = 3k 
+diode20 28  62 model_diode 
+diode19 44  67 model_diode 
+C9 98  0  830u  ic = 3k 
+R17 155  43  6m 
+diode3 0  70 model_diode 
+L9 83  155  200n 
+L8 86  156  200n 
+diode15 0  20 model_diode 
+C8 80  121  1u  ic = 3k 
+R16 156  48  6m 
+diode18 49  69 model_diode 
+C7 80  149  1u  ic = 3k 
+diode17 56  73 model_diode 
+diode2 0  80 model_diode 
+R14 157  55  6m 
+L7 89  157  200n 
+L6 92  158  200n 
+diode14 0  27 model_diode 
+C6 101  0  830u  ic = 3k 
+diode13 64  114 model_diode 
+R13 158  63  6m 
+R12 159  70  6m 
+C5 94  125  1u  ic = 3k 
+diode12 71  118 model_diode 
+L5 97  159  200n 
+diode8 0  43 model_diode 
+diode1 0  94 model_diode 
+L4 100  160  200n 
+C4 94  150  1u  ic = 3k 
+R9 160  80  6m 
+diode11 81  122 model_diode 
+C3 104  0  830u  ic = 3k 
+C2 18  129  1u  ic = 3k 
+diode 10  13 model_diode 
+diode10 95  126 model_diode 
+L3 109  161  200n 
+R 162  94  6m 
+R7 161  13  6m 
+L1 103  162  200n 
+C1 18  151  1u  ic = 3k 
+diode9 19  130 model_diode 
+diode0 0  18 model_diode 
+L 106  163  200n 
+C0 110  148  830u  ic = 3k 
+R4 163  18  6m 
+diode6 14  133 model_diode 
+diode7 0  48 model_diode 
+C 107  0  830u  ic = 3k 
+
+.model switch_1 sw  vt = 1.0   ron = 0.5m   roff = 1gig  
+
+.model switch_2 sw  vt = 2   ron = 0.5m   roff = 1gig  
+
+.model switch_3 sw  vt = 3   ron = 0.5m   roff = 1gig  
+
+.model switch_4 sw  vt = 4   ron = 0.5m   roff = 1gig  
+
+.model switch_5 sw  vt = 5   ron = 0.5m   roff = 1gig  
+
+.model switch_6 sw  vt = 6   ron = 0.5m   roff = 1gig  
+
+.model switch_7 sw  vt = 7   ron = 0.5m   roff = 1gig  
+
+.model switch_8 sw  vt = 8   ron = 0.5m   roff = 1gig  
+
+.model switch_9 sw  vt = 9   ron = 0.5m   roff = 1gig  
+
+.model switch_10 sw  vt = 10   ron = 0.5m   roff = 1gig  
+
+.model switch_11 sw  vt = 11   ron = 0.5m   roff = 1gig  
+
+.model switch_12 sw  vt = 12   ron = 0.5m   roff = 1gig  
+
+.model model_diode D  rs = 0.17m  
+
+
+.OPTIONS  itl4 = 50  
+.TRAN  5n 500u 0 50n uic
+.END
