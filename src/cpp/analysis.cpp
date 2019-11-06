@@ -57,7 +57,8 @@ int plotPostShotAnalysis() {
 
   getchar();
 
-  saveIBMData();
+  plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 20, 50);
+  //saveIBMData();
   //plotPinchVgapScaling("data/data.txt", "data/data.sh");
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
@@ -596,8 +597,8 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
  * the post shot analysis
  ******************************************************************************/
 
-static int plotPinchCurrentData(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
-				int tLow, int tHigh) {
+static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
+				std::string tempScriptFile, int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -627,8 +628,8 @@ static int plotPinchCurrentData(int shotNumber, std::string tempDataFile, std::s
   oss.str("");
 
   oss << "set title 'm= 0 and 1 at z=15 cm for shotnumber: " << shotNumber << "'\n"
-    //<< "set terminal png\n"
-    //<< "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set terminal png\n"
+      << "set output '/home/fuze/Downloads/temp.png'\n"
       << "set grid\n"
       << "set ylabel 'm=0 (kA)'\n"
       << "set y2label 'Normalized m=1'\n"
@@ -947,19 +948,16 @@ static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScr
   gsl_vector *p15M05;
   gsl_vector *p15M06;
   gsl_vector *p15M07;
-  gsl_vector *p15M08;
 
-  int shotNumber4 = 191018004,
-    shotNumber5 = 191018005,
-    shotNumber6 = 191018006,
-    shotNumber7 = 191018007,
-    shotNumber8 = 191018008;
+  int shotNumber4 = 191106003,
+    shotNumber5 = 191106004,
+    shotNumber6 = 191106005,
+    shotNumber7 = 191106006;
     
   std::string p15M04Label;
   std::string p15M05Label;
   std::string p15M06Label;
   std::string p15M07Label;
-  std::string p15M08Label;
   std::string keyWords;
   std::string rangeLabel;
 
@@ -989,20 +987,14 @@ static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScr
   oss << "with line lw 3 lc rgb 'green' title 'TBM=7 kV'";
   p15M07Label = oss.str();
   oss.str("");
-
-  p15M08 = getM0Mode(shotNumber8, "\\b_p15_000");
-  gsl_vector_scale(p15M08, 5E2);
-  oss << "with line lw 3 lc rgb 'yellow' title 'TBM=8 kV'";
-  p15M08Label = oss.str();
-  oss.str("");
   
-  oss << "set title 'Pinch current at z=15 cm \n"
+  oss << "set title 'Pinch current at z=15 cm for 150 psi\n"
       << "set terminal png\n"
-      << "set output '/home/webertr/Downloads/temp.png'\n"
+      << "set output '/home/fuze/Downloads/temp.png'\n"
       << "set grid\n"
       << "set ylabel 'm=0 (kA)'\n"
       << "set xlabel 'Time ({/Symbol m}sec)'\n"
-      << "set xrange[20:40]\n"
+      << "set xrange[15:50]\n"
       << "set yrange[0:]\n"
       << "set key left top\n";
 
@@ -1011,8 +1003,8 @@ static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScr
 
   keyWords.append(rangeLabel);
   
-  plot5VectorData(time, p15M04, p15M04Label, p15M05, p15M05Label, p15M06, p15M06Label,
-		  p15M07, p15M07Label, p15M08, p15M08Label,
+  plot4VectorData(time, p15M04, p15M04Label, p15M05, p15M05Label, p15M06, p15M06Label,
+		  p15M07, p15M07Label,
 		  keyWords, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
@@ -1020,7 +1012,6 @@ static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScr
   gsl_vector_free(p15M05);
   gsl_vector_free(p15M06);
   gsl_vector_free(p15M07);
-  gsl_vector_free(p15M08);
 
   return 0;
 
