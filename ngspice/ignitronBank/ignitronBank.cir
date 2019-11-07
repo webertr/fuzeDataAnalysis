@@ -12,14 +12,17 @@ xignBank1 1 0 r1p r1n r4p r3p r3n vignBank
           +initialVoltage=5k
 	  +capValue=37u
 
+* Shunt resistance
+RS 1 2 1u
+
 * Plasma impedance
-xplasmaLoad1 1 0 vplasmaload
+xplasmaLoad1 2 0 vplasmaload
 
 * Snubber impedance
-xsnubberLoad1 1 0 vsnubber
+xsnubberLoad1 2 0 vsnubber
 
 * Dummy load
-xdummyLoad1 1 0 vdummyload
+xdummyLoad1 2 0 vdummyload
 
 
 
@@ -35,21 +38,27 @@ L1 1 2 10n
 R1 2 3 6.3m
 L2 3 4 120n
 R2 4 5 0.1m
-SwitchOUT 5 6 99 10 switch_1 off 
+SwitchOUT 5 6 99 10 switch_out off 
 L3 6 7 500n
-R3 6 7 1.9m
+R3 7 8 1.9m
 L4 8 11 640n
-SwitchCB 3 9 99 10 switch_1 off 
+SwitchCB 3 9 3 10 switch_cb on
 L5 9 12 130n
 R4 12 10 0.1m
 
 * Ignitron switch model control voltage
 v1 99 10 DC PWL(0 0 trigTime1a 0 trigTime1b 1)
+
 * Models
-* Switch model
+* Switch model for output
 * vt = on threshold, vh = hystersis, ron = on resistance
 * roff = off resistance
-.model switch_1 sw vt=1.0 vh=0 ron=0.1m roff=1gig
+.model switch_out sw vt=1.0 vh=0 ron=0.1m roff=1gig
+
+* Switch model for cb
+* vt = on threshold, vh = hystersis, ron = on resistance
+* roff = off resistance
+.model switch_cb sw vt=5000 vh=5000 ron=1gig roff=0.1m
 
 .ends
 
@@ -108,6 +117,14 @@ tran 5n 500u 0 50n uic
 *plot v(5)
 * Writting output file for I from Capacitor
 write ic1.txt (v(r1p)-v(r1n))/6.3m/1000
+* Writting output file for total ip
+write ip.txt (v(1)-v(2))/1u/1000
+* Writting output file for ignitron out 1
+write iout1.txt (v(r3p)-v(r3n))/1.9m/1000
+* Writting output file for ignitron cb 1
+write icb1.txt (v(r4p)-v(0))/0.1m/1000
+* Writting output for vgap
+write vgap.txt v(2)/1000
 
 * Ending control statement
 .endc
