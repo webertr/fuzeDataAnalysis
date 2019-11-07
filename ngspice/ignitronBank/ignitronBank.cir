@@ -12,6 +12,36 @@ xignBank1 1 0 r1p r1n r3p r3n rsp rsn vignBank
           +initialVoltage=5k
 	  +capValue=37u
 
+* Instance of ignitron bank module
+xignBank2 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+          +trigTime1a=10u trigTime1b=11u
+          +initialVoltage=5k
+	  +capValue=37u
+
+* Instance of ignitron bank module
+xignBank3 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+          +trigTime1a=10u trigTime1b=11u
+          +initialVoltage=5k
+	  +capValue=37u
+
+* Instance of ignitron bank module
+xignBank4 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+          +trigTime1a=10u trigTime1b=11u
+          +initialVoltage=5k
+	  +capValue=37u
+
+* Instance of ignitron bank module
+xignBank5 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+          +trigTime1a=10u trigTime1b=11u
+          +initialVoltage=5k
+	  +capValue=37u
+
+* Instance of ignitron bank module
+xignBank6 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+          +trigTime1a=10u trigTime1b=11u
+          +initialVoltage=5k
+	  +capValue=37u
+
 * Shunt resistance
 RS 1 2 1u
 
