@@ -14,7 +14,7 @@ int main() {
   convert("ip.txt", "ip_convert.txt");
   convert("ic1.txt", "ic1_convert.txt");
   convert("iout1.txt", "iout1_convert.txt");
-  //convert("icb1.txt", "ic1_convert.txt");
+  convert("icb1.txt", "icb1_convert.txt");
   //convert("vgap.txt", "vgap_convert.txt");
   //convert("id1.txt", "id1_convert.txt");
   //convert("it1.txt", "it1_convert.txt");
