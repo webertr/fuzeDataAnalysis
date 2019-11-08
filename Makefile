@@ -52,6 +52,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/epicsCA.cpp \
 	src/cpp/psqlAccess.cpp \
 	src/cpp/interferometry.cpp \
+	src/cpp/plasmaParam.cpp \
 	src/cpp/test.cpp
 
 SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \
