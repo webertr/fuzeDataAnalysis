@@ -16,7 +16,9 @@ int main() {
   convert("iout1.txt", "iout1_convert.txt");
   convert("icb1.txt", "icb1_convert.txt");
   convert("vigcb.txt", "vigcb_convert.txt");
-  //convert("vgap.txt", "vgap_convert.txt");
+  convert("vcap1.txt", "vcap1_convert.txt");
+  convert("vtcap1.txt", "vtcap1_convert.txt");
+  convert("vgap.txt", "vgap_convert.txt");
   //convert("id1.txt", "id1_convert.txt");
   //convert("it1.txt", "it1_convert.txt");
   //convert("vgapR.txt", "vgapR_convert.txt");
