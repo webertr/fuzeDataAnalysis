@@ -307,9 +307,9 @@ tran 5n 500u 0 50n uic
 write ic1.txt (v(ri1p)-v(ri1n))/6.3m/1000
 * Writting output file for total ip
 write ip.txt (v(1)-v(2))/1u/1000
-* Writting output file for ignitron out 1
+* This is the total current from IBM 1, to the plasma load.
 write iout1.txt (v(rtot1p)-v(rtot1n))/1.9m/1000
-* Writting output file for ignitron cb 1
+* This is the total current through the crow bar ignitron on IBM #1 
 write icb1.txt (v(rs1n)-v(rs1p))/1u/1000
 * Writting output for vgap
 write vgap.txt v(2)/1000
