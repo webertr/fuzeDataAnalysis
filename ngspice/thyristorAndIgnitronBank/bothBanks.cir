@@ -89,37 +89,37 @@ xthyBank12 1 0 r12p r12n id12 it12p it12n vthyBank
 ************************************************************************************************
 
 * Instance of ignitron bank module
-xignBank1 1 0 ri1p ri1n rtot1p rtot1n rs1p rs1n capv1 vignBank 
+xignBank1 1 0 ri1p ri1n rtot1p rtot1n rs1p capv1 vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=7k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank2 1 0 ri2p ri2n rtot2p rtot2n rs2p rs2n capv2 vignBank 
+xignBank2 1 0 ri2p ri2n rtot2p rtot2n rs2p capv2 vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=7k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank3 1 0 ri3p ri3n rtot3p rtot1n rs3p rs3n capv3 vignBank 
+xignBank3 1 0 ri3p ri3n rtot3p rtot1n rs3p capv3 vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=7k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank4 1 0 ri4p ri4n rtot4p rtot4n rs4p rs4n capv4 vignBank 
+xignBank4 1 0 ri4p ri4n rtot4p rtot4n rs4p capv4 vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=7k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank5 1 0 ri5p ri5n rtot5p rtot5n rs5p rs5n capv5 vignBank 
+xignBank5 1 0 ri5p ri5n rtot5p rtot5n rs5p capv5 vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=7k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank6 1 0 ri6p ri6n rtot6p rtot6n rs6p rs6n capv6 vignBank 
+xignBank6 1 0 ri6p ri6n rtot6p rtot6n rs6p capv6 vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=7k
 	  +capValue=37u
@@ -148,7 +148,7 @@ xdummyLoad1 2 0 vdummyload
 ************************************************************************************************
 
 * Model of a capacitor and ignitron bank module.
-.subckt vignBank 11 10 2 3 7 8 12 13 1
+.subckt vignBank 11 10 2 3 7 8 12 1
                  +trigTime1a=0.3 trigTime1b=0.31
                  +initialVoltage=5k
 		 +capValue=37u
@@ -165,8 +165,7 @@ R3 7 8 1.9m
 L4 8 11 640n
 SwitchCB 3 9 3 10 switch_cb on
 L5 9 12 130n
-RS 12 13 1u
-R4 13 10 0.1m
+R4 12 10 0.101m
 
 * Ignitron switch model control voltage
 v1 99 10 DC PWL(0 0 trigTime1a 0 trigTime1b 1)
@@ -310,7 +309,7 @@ write ip.txt (v(1)-v(2))/1u/1000
 * This is the total current from IBM 1, to the plasma load.
 write iout1.txt (v(rtot1p)-v(rtot1n))/1.9m/1000
 * This is the total current through the crow bar ignitron on IBM #1 
-write icb1.txt (v(rs1n)-v(rs1p))/1u/1000
+write icb1.txt -v(rs1p)/(0.101m)/1000
 * Writting output for vgap
 write vgap.txt v(2)/1000
 * Writting voltage at ignitron cb
