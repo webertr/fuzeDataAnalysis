@@ -30,6 +30,7 @@ static int saveIBMData();
 static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotPinchM1Scaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScriptFile);
+static int plotDualBanksAnalysis();
 
 
 #define TLOW 20
@@ -57,6 +58,7 @@ int plotPostShotAnalysis() {
 
   getchar();
 
+  //plotDualBanksAnalysis()
   plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 20, 50);
   //saveIBMData();
   //plotPinchVgapScaling("data/data.txt", "data/data.sh");
@@ -118,6 +120,7 @@ int plotPostShotAnalysis() {
     plotPinchCurrentScaling("data/data.txt", "data/data.sh");
     plotPinchM1Scaling("data/data.txt", "data/data.sh");
     plotPinchVgapScaling("data/data.txt", "data/data.sh");
+    plotDualBanksAnalysis();
   }
 
   return 0;
@@ -628,8 +631,8 @@ static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
   oss.str("");
 
   oss << "set title 'm= 0 and 1 at z=15 cm for shotnumber: " << shotNumber << "'\n"
-      << "set terminal png\n"
-      << "set output '/home/fuze/Downloads/temp.png'\n"
+    //<< "set terminal png\n"
+    //<< "set output '/home/fuze/Downloads/temp.png'\n"
       << "set grid\n"
       << "set ylabel 'm=0 (kA)'\n"
       << "set y2label 'Normalized m=1'\n"
@@ -1202,4 +1205,25 @@ static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScript
 
   return 0;
 
+}
+
+
+/******************************************************************************
+ * Function: plotDualBanksAnalysis
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotDualBanksAnalysis() {
+
+  /*
+   * 191122008 - 191122011 are 6 kV with both banks.
+   * 191122008 is 6 kV with just the thyristor bank
+   */
+  
+
+  return 0;
+  
 }
