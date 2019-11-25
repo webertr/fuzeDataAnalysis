@@ -7,37 +7,37 @@
 *.param corn=2
 
 * Instance of ignitron bank module
-xignBank1 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+xignBank1 1 0 r1p r1n rtot1p rtot1n rs1p rs1n vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=5k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank2 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+xignBank2 1 0 r2p r2n rtot2p rtot2n rs2p rs2n vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=5k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank3 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+xignBank3 1 0 r3p r3n rtot3p rtot3n rs3p rs3n vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=5k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank4 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+xignBank4 1 0 r4p r4n rtot4p rtot4n rs4p rs4n vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=5k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank5 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+xignBank5 1 0 r5p r5n rtot5p rtot5n rs5p rs5n vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=5k
 	  +capValue=37u
 
 * Instance of ignitron bank module
-xignBank6 1 0 r1p r1n r3p r3n rsp rsn vignBank 
+xignBank6 1 0 r6p r6n rtot6p rtot6n rs6p rs6n vignBank 
           +trigTime1a=10u trigTime1b=11u
           +initialVoltage=5k
 	  +capValue=37u
@@ -89,6 +89,7 @@ v1 99 10 DC PWL(0 0 trigTime1a 0 trigTime1b 1)
 * Switch model for cb
 * vt = on threshold, vh = hystersis, ron = on resistance
 * roff = off resistance
+* The switch trips at (Vt − Vh) and (Vt + Vh)
 .model switch_cb sw vt=5000 vh=5000 ron=1gig roff=0.1m
 
 .ends
@@ -151,11 +152,13 @@ write ic1.txt (v(r1p)-v(r1n))/6.3m/1000
 * Writting output file for total ip
 write ip.txt (v(1)-v(2))/1u/1000
 * Writting output file for ignitron out 1
-write iout1.txt (v(r3p)-v(r3n))/1.9m/1000
+write iout1.txt (v(rtot1p)-v(rtot1n))/1.9m/1000
 * Writting output file for ignitron cb 1
-write icb1.txt (v(rsn)-v(rsp))/1u/1000
+write icb1.txt (v(rs1n)-v(rs1p))/1u/1000
 * Writting output for vgap
 write vgap.txt v(2)/1000
+* Writting voltage at ignitron cb
+write vigcb.txt v(r1n)/1000
 
 * Ending control statement
 .endc

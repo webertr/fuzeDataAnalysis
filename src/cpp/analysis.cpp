@@ -31,6 +31,7 @@ static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScr
 static int plotPinchM1Scaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotDualBanksAnalysis();
+static int plotDualBanksAnalysis2();
 
 
 #define TLOW 20
@@ -58,8 +59,9 @@ int plotPostShotAnalysis() {
 
   getchar();
 
-  //plotDualBanksAnalysis()
-  plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 20, 50);
+  //plotDualBanksAnalysis();
+  plotDualBanksAnalysis2();
+  //plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 20, 50);
   //saveIBMData();
   //plotPinchVgapScaling("data/data.txt", "data/data.sh");
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
@@ -121,6 +123,7 @@ int plotPostShotAnalysis() {
     plotPinchM1Scaling("data/data.txt", "data/data.sh");
     plotPinchVgapScaling("data/data.txt", "data/data.sh");
     plotDualBanksAnalysis();
+    plotDualBanksAnalysis2();
   }
 
   return 0;
@@ -630,7 +633,8 @@ static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
   rangeLabel = oss.str();
   oss.str("");
 
-  oss << "set title 'm= 0 and 1 at z=15 cm for shotnumber: " << shotNumber << "'\n"
+  oss << "set title 'm= 0 and 1 at z=15 cm for shotnumber: " << shotNumber << 
+    " Thyristor Bank only" << "'\n"
     //<< "set terminal png\n"
     //<< "set output '/home/fuze/Downloads/temp.png'\n"
       << "set grid\n"
@@ -1220,9 +1224,162 @@ static int plotDualBanksAnalysis() {
 
   /*
    * 191122008 - 191122011 are 6 kV with both banks.
-   * 191122008 is 6 kV with just the thyristor bank
+   * 191122004 is 6 kV with just the thyristor bank
    */
+
+  std::string tempDataFile = "data/data1.txt",
+    tempScriptFile = "data/script1.sh";
+
+  int shotNumberT = 191122004;
+  int shotNumberTI = 191122011;
+
+  int tLow = 20,
+    tHigh = 50;
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *p15M1T;
+  gsl_vector *p15M1TI;
+  gsl_vector *p15M0T;
+  gsl_vector *p15M0TI;
+  std::string p15M0LabelT;
+  std::string p15M0LabelTI;
+  std::string p15M1LabelT;
+  std::string p15M1LabelTI;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumberT, "\\b_p15_000", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  p15M0T = getM0Mode(shotNumberT, "\\b_p15_000");
+  gsl_vector_scale(p15M0T, 5E2);
+  oss << "with line lw 3 lc rgb 'black' title 'm=0 Thy'";
+  p15M0LabelT = oss.str();
+  oss.str("");
+
+  p15M0TI = getM0Mode(shotNumberTI, "\\b_p15_000");
+  gsl_vector_scale(p15M0TI, 5E2);
+  oss << "with line lw 3 lc rgb 'red' title 'm=0 Thy+Ign'";
+  p15M0LabelTI = oss.str();
+  oss.str("");
   
+  p15M1T = getM1Mode(shotNumberT, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'green' title 'm=1 Thy' axes x1y2";
+  p15M1LabelT = oss.str();
+  oss.str("");
+
+  p15M1TI = getM1Mode(shotNumberTI, "\\b_p15_000");
+  oss << "with line lw 3 lc rgb 'blue' title 'm=1 Thy+Ign' axes x1y2";
+  p15M1LabelTI = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  oss << "set title 'm= 0 and 1 at z=15 cm for shotnumbers: " << shotNumberT
+      << ", " << shotNumberTI << "'\n"
+      << "set terminal png\n"
+      << "set output '/home/fuze/Downloads/temp.png'\n"
+      << "set grid\n"
+      << "set ylabel 'm=0 (kA)'\n"
+      << "set y2label 'Normalized m=1'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set yrange[0:]\n"
+      << "set y2range[0:1]\n"
+      << "set y2tics nomirror tc lt 2\n"
+      << "set key center top\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot4VectorData(time, p15M0T, p15M0LabelT, p15M0TI, p15M0LabelTI, p15M1T, p15M1LabelT, 
+		  p15M1TI, p15M1LabelTI, keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(p15M1T);
+  gsl_vector_free(p15M1TI);
+  gsl_vector_free(p15M0T);
+  gsl_vector_free(p15M0TI);
+
+  return 0;
+  
+}
+
+/******************************************************************************
+ * Function: plotDualBanksAnalysis2
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotDualBanksAnalysis2() {
+
+  /*
+   * 191122008 - 191122011 are 6 kV with both banks.
+   * 191122004 is 6 kV with just the thyristor bank
+   */
+
+  std::string tempDataFile = "data/data1.txt",
+    tempScriptFile = "data/script1.sh";
+
+  int shotNumber = 191122010;
+
+  int tLow = 0,
+    tHigh = 45;
+
+  std::ostringstream oss;
+  gsl_vector *time;
+  gsl_vector *bankCurrT;
+  gsl_vector *bankCurrI;
+  std::string bankCurrLabelT;
+  std::string bankCurrLabelI;
+  std::string keyWords;
+  std::string rangeLabel;
+
+  time = readMDSplusVectorDim(shotNumber, "\\I_TBM_01_OUT", "fuze");
+  gsl_vector_scale(time, 1E6);
+
+  bankCurrT = readMDSplusVector(shotNumber, "\\I_TBM_01_OUT", "fuze");
+  gsl_vector_scale(bankCurrT, 1E-3);
+  oss << "with line lw 3 lc rgb 'black' title 'TBM Cap Curr'";
+  bankCurrLabelT = oss.str();
+  oss.str("");
+
+  bankCurrI = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");
+  gsl_vector_scale(bankCurrI, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title 'IBM Cap Curr'";
+  bankCurrLabelI = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  oss << "set title 'Current from cap 1 of two banks for shotnumber: " << shotNumber << "'\n"
+      << "set terminal png\n"
+      << "set output '/home/fuze/Downloads/temp.png'\n"
+      << "set grid\n"
+      << "set ylabel 'Current (kA)'\n"
+      << "set xlabel 'Time ({/Symbol m}sec)'\n"
+      << "set yrange[0:]\n"
+      << "set key center top\n";
+
+  keyWords = oss.str();
+  oss.str("");
+
+  keyWords.append(rangeLabel);
+  
+  plot2VectorData(time, bankCurrT, bankCurrLabelT, bankCurrI, bankCurrLabelI, keyWords, 
+		  tempDataFile, tempScriptFile);
+
+  gsl_vector_free(time);
+  gsl_vector_free(bankCurrT);
+  gsl_vector_free(bankCurrI);
 
   return 0;
   
