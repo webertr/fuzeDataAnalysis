@@ -63,14 +63,15 @@ class CSV2NewTree(object):
         reader = csv.reader(open(self.csvfile, 'r'))
         self.rows = []
         self.stop = False
+        # extract header line
+        self.rows.append(next(reader))
+        self.header = self.rows[0]
         for row in reader:
             if '!!!STOP!!!' in row:
                 self.stop = True
                 break
             if row[0] and (not row[0].startswith(CSV2NewTree.CommentChar)):
                 self.rows.append(row)
-        # extract header line
-        self.header = self.rows[0]
         # strip off header line from rows
         self.rows = self.rows[1:]
 
