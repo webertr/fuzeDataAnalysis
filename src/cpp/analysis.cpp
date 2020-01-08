@@ -34,8 +34,8 @@ static int plotDualBanksAnalysis();
 static int plotDualBanksAnalysis2();
 
 
-#define TLOW 20
-#define THIGH 60
+#define TLOW 0
+#define THIGH 100
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
@@ -60,15 +60,13 @@ int plotPostShotAnalysis() {
   getchar();
 
   //plotDualBanksAnalysis();
-  plotDualBanksAnalysis2();
+  //plotDualBanksAnalysis2();
   //plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 20, 50);
   //saveIBMData();
   //plotPinchVgapScaling("data/data.txt", "data/data.sh");
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
-  return 0;
-  
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
