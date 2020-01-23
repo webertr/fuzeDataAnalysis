@@ -188,3 +188,116 @@ Then, you calculate the radius of the lisajou. This is just the square root of t
 Now, it will go through and do an "unwrapping" procedure, where we ignore any points where the radius is less then 0.01. For all other points, it will first check to see if there has been a phase jump of more then PI. If there has, that point, and all subsequent point, will have 2*pi subtracted from it. Similarly, if there has been a jump of less then -PI, that point and all subsequent points will have 2*pi added to it.
 
 The final step is to convert from the unwrapped phase angle to line integrated density. This is muliplying by a factor, 5.61*1E20 for the 632.8 nm laser wavelength.
+
+
+* MDSplus PHP
+
+I am working on an mdsplus php extension.
+
+https://www.php.net/manual/en/internals2.structure.php
+
+
+
+* Docker
+
+I am trying to use docker to run all this. Here are my notes.
+
+Run with docker image with:
+
+List the images available:
+sudo docker images
+
+Run the fuze image:
+sudo docker run -it --rm webertr/fuze:latest
+
+List running containers running:
+sudo docker ps
+
+List running containers we ran:
+sudo docker ps -a
+
+Removes all unused containers and images:
+sudo docker image prune
+
+More aggressive (removes everything, I think)
+sudo docker image prune -a
+
+To stop a container:
+sudo docker stop 74c9ac0b0332
+
+To delete an image:
+sudo docker rmi f54e760b76fd
+
+To build a docker image:
+sudo docker build -t mdsplus-test 
+-t = tag it
+
+To tag a containers as a repository image:
+sudo docker tag 727511995d4e webertr/fuze:latest
+
+Then push it into the repository:
+sudo docker push webertr/fuze
+
+To login:
+docker login --username=webertr
+
+To remove all stopped container:
+sudo docker container prune
+
+To run with the host network!
+sudo docker run -it --rm --network host webertr/fuze:latest
+
+Here is what the mdsplus docker site says to run scope:
+docker run -d --name scope --rm -it --env=DISPLAY --env=QT_X11_NO_MITSHM=1 \
+    --volume=/tmp/.X11-unix:/tmp/.X11-unix:rw mdsplus/mdsplus:latest dwscope
+
+-d = detached. Not sure what volume means
+-it = interactive, and tty, some interactive process
+
+To mount a directory “/home/fuze/Downloads” in “/home/fuze” as “read only”
+--volume=/home/fuze/Downloads:/home/fuze:ro
+
+Mounting all the mdsplus directories from fuze.fuze
+sudo docker run --name test --rm -it --volume=/usr/local/UWmdsplus:/usr/local/UWmdsplus:ro --volume=/etc/mdsplus.conf:/etc/mdsplus.conf:ro --volume=/etc/init/mdsip_camac.conf:/etc/init/mdsip_camac.conf:ro --volume=/etc/init/mdsip_dispatch.conf:/etc/init/mdsip_dispatch.conf:ro --volume=/etc/init/mdsip_monitor.conf:/etc/init/mdsip_monitor.conf:ro --volume=/etc/init/mdsip_submit:/etc/init/mdsip_submit:ro webertr/fuze:latest
+
+For environment variables, just make a file:
+docker run --env-file=env_file_name alpine env
+
+Where the file just has lines:
+env_var_name=another_value
+
+Ultimately, I am looking to run an mdsplus server. That is done with this command:
+mdsip -p 8000 -m -h /etc/mdsip.hosts
+
+8000 = port number. 
+
+I had to do this before I connected to a docker test tree in mdsplus:
+export docker_tree_path=10.10.10.10:8000::/home/fuze/dockerMDSplusTest
+
+In the “Dockerfile”
+
+RUN executes command(s) in a new layer and creates a new image. E.g., it is often used for installing software packages.
+
+RUN can go in shell or exec form:
+RUN apt-get install python3
+RUN ["apt-get", "install", "python3"]
+Shell processing does not happen in exec form.
+
+To go to a directory or create one:
+“WORKDIR /usr/local”
+
+To run “git”:
+“RUN git clone https://github.com/MDSplus/mdsplus”
+
+Install things with apt-get like this:
+
+RUN apt-get update
+RUN apt-get install -y \
+    gfortran \
+    gawk \
+    default-jre \
+    default-jdk
+
+
+Reference the fuze build with:
+FROM webertr/fuze:latest
