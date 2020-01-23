@@ -301,3 +301,44 @@ RUN apt-get install -y \
 
 Reference the fuze build with:
 FROM webertr/fuze:latest
+
+
+
+Here is how it appears I set environment variables. Make a shell script in your folder with the Dockerfile, that has something like:
+
+epics.sh:
+
+#!/bin/sh
+# EPICS
+PATH=$PATH:/sbin:/usr/local/epics/base/bin/linux-x86_64:/usr/local/epics/extensions/bin/linux-x86_64
+export EPICS_HOST_ARCH=linux-x86_64
+export EPICS_BASE=/usr/local/epics/base
+export EPICS_MODULES=/usr/local/epics/modules
+export EPICS_EXTENSIONS=/usr/local/epics/extensions
+export EPICS_LOCAL=/usr/local/epics/local
+export EPICS_CONFIG=/usr/local/epics/apps/config
+export EPICS_HOSTNAME=$(hostname | /usr/bin/cut -f1 -d'-')
+export LINUX_HOSTNAME=$(hostname)
+
+
+
+Then, include the lines:
+
+WORKDIR /tmp
+COPY epics.sh /etc/profile.d/
+RUN chmod +x /etc/profile.d/epics.sh
+RUN echo ". /etc/profile.d/epics.sh" >> /etc/bash.bashrc
+
+
+in your Dockerfile.
+
+
+To run with a host:
+sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm webertr/fuze:latest
+
+
+
+To run with external windows (This does not work at the moment):
+
+sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm -e DISPLAY=10.10.10.10:$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix webertr/fuze:latest
+
