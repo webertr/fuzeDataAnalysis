@@ -340,14 +340,25 @@ sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm webertr/fuze:latest
 
 To run with external windows:
 
+#xhost + (Dangerous)
+xhost +localhost (Not sure if that is the write user.)
+xhost local:root
 sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix webertr/fuze:latest
+
+Then type,
+xhost -
 
 I tried this version of mdsplus:
 sudo git checkout stable_release-7-84-7
 
 and
+sudo make clean
 ./configure --disable-java
 sudo make clean
 sudo make all
 
 and it seemed to work on another machine.
+
+
+I started docker with:
+sudo service docker start
