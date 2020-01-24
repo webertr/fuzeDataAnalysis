@@ -728,3 +728,76 @@ int plotImageData(gsl_matrix *mInput, double dx, double dy, std::string plotOpti
   return 0;
 
 }
+
+
+/******************************************************************************
+ *
+ * TESTING SECTION
+ *
+ ******************************************************************************/
+
+static bool testMultiplePlot();
+
+bool testPlot() {
+
+  if (!testMultiplePlot()) {
+    std::cout << "Failed test multiple plot\n";
+  }
+
+  std::cout << "Passed All Plot Tests\n";
+
+  return true;
+
+}
+
+
+static bool testMultiplePlot() {
+
+  gsl_vector *xVec = gsl_vector_alloc(100);
+  gsl_vector *yVec = gsl_vector_alloc(100);
+  int ii = 0;
+  for (ii = 0; ii < 100; ii++)  {
+    gsl_vector_set(xVec, ii, ii);
+    gsl_vector_set(yVec, ii, ii*ii);
+  }
+  
+  int pid1 = fork();
+  int pid2 = fork();
+  int pid3 = fork();
+
+  if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
+    plotVectorData(xVec, yVec, "title 'Data-1'", "", "data/test1.dat", "data/test1.sh");
+    return true;
+  }
+  else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
+    plotVectorData(xVec, yVec, "title 'Data-2'", "", "data/test2.dat", "data/test2.sh");
+    exit(0);
+  }
+  else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
+    plotVectorData(xVec, yVec, "title 'Data-3'", "", "data/test3.dat", "data/test3.sh");
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
+    plotVectorData(xVec, yVec, "title 'Data-4'", "", "data/test4.dat", "data/test4.sh");
+    exit(0);
+  }
+  else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotVectorData(xVec, yVec, "title 'Data-5'", "", "data/test5.dat", "data/test5.sh");
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
+    plotVectorData(xVec, yVec, "title 'Data-6'", "", "data/test6.dat", "data/test6.sh");
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
+    plotVectorData(xVec, yVec, "title 'Data-7'", "", "data/test7.dat", "data/test7.sh");
+    exit(0);
+  }
+  else if ( (pid1 > 0) && (pid2 > 0) && (pid3 > 0) ) {
+    plotVectorData(xVec, yVec, "title 'Data-8'", "", "data/test8.dat", "data/test8.sh");
+    exit(0);
+  }
+  
+  return false;
+  
+}

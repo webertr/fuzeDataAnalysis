@@ -6,7 +6,9 @@
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <string>
-
+#include <stdio.h>
+#include <iostream>
+#include <unistd.h>
 
 int plot1DVectorData(gsl_vector *yVecIn, std::string yLabel, std::string plotOptions, 
 		     std::string tempDataFile, std::string tempScriptFile);
@@ -41,5 +43,6 @@ int plot8VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label
 		    std::string plotOptions, std::string tempDataFile, std::string tempScriptFile);
 int plotImageData(gsl_matrix *mInput, double dx, double dy, std::string plotOptions,
 		  std::string tempDataFile, std::string tempScriptFile);
+bool testPlot();
 
 #endif
