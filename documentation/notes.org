@@ -229,7 +229,7 @@ To delete an image:
 sudo docker rmi f54e760b76fd
 
 To build a docker image:
-sudo docker build -t mdsplus-test 
+sudo docker build -t mdsplus-test .
 -t = tag it
 
 To tag a containers as a repository image:
@@ -338,7 +338,16 @@ sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm webertr/fuze:latest
 
 
 
-To run with external windows (This does not work at the moment):
+To run with external windows:
 
-sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm -e DISPLAY=10.10.10.10:$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix webertr/fuze:latest
+sudo docker run --add-host=fuze.fuze:10.10.10.240 -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix webertr/fuze:latest
 
+I tried this version of mdsplus:
+sudo git checkout stable_release-7-84-7
+
+and
+./configure --disable-java
+sudo make clean
+sudo make all
+
+and it seemed to work on another machine.

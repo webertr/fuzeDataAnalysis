@@ -1,6 +1,9 @@
 FROM webertr/fuze:latest
 #FROM debian
 
+WORKDIR /home/fuze/Github/fuzeDataAnalysis/data
+WORKDIR /home/fuze/Github/fuzeDataAnalysis
+
 #RUN apt-get update && apt-get install -y \
 #    wget \
 #    make \
@@ -31,18 +34,21 @@ FROM webertr/fuze:latest
 #RUN git pull
 #RUN make
 
-RUN apt-get update && apt-get install -y \
-    libcairo2-dev \
-    libgd-dev \
-    libcerf-dev
+#RUN apt-get update && apt-get install -y \
+#    libcairo2-dev \
+#    libgd-dev \
+#    libcerf-dev
 
-WORKDIR /home/fuze/Downloads
-COPY gnuplot-5.2.8.tar.gz ./
-RUN tar -xf gnuplot-5.2.8.tar.gz
-WORKDIR /home/fuze/Downloads/gnuplot-5.2.8
-RUN ./configure
-RUN make
-RUN make install
+#RUN apt-get update && apt-get install -y \
+#    xterm
+
+#WORKDIR /home/fuze/Downloads
+#COPY gnuplot-5.2.8.tar.gz ./
+#RUN tar -xf gnuplot-5.2.8.tar.gz
+#WORKDIR /home/fuze/Downloads/gnuplot-5.2.8
+#RUN ./configure
+#RUN make
+#RUN make install
 
 #WORKDIR /usr/local/epics
 
