@@ -26,8 +26,8 @@ LightField::LightField(std::string fileNameParam):
   size_t fbXML;
 
   /* Image and wavelength data */
-  float *data,
-    *wvData;
+  float *wvData;
+  void *data = NULL;
 
   /* Offset for xml file (64 bit)*/
   unsigned int xmlOffset;
@@ -126,16 +126,22 @@ LightField::LightField(std::string fileNameParam):
   int dataSize;
   if (pixelType == 0) {
     dataSize = 4;
+    data = malloc(xdim * ydim * sizeof(float));
   } else if (pixelType == 1) {
     dataSize = 4;
+    data = malloc(xdim * ydim * sizeof(float));
   } else if (pixelType == 2) {
-    dataSize = 2;
+    dataSize = 4;
+    data = malloc(xdim * ydim * sizeof(int));
   } else if (pixelType == 3) {
     dataSize = 2;
+    data = malloc(xdim * ydim * sizeof(uint));
   } else if (pixelType == 4) {
-    dataSize = 2;
+    dataSize =4;
+    data = malloc(xdim * ydim * sizeof(float));
   } else {
     dataSize = 4;
+    data = malloc(xdim * ydim * sizeof(float));
   }
 
   /*
@@ -157,7 +163,8 @@ LightField::LightField(std::string fileNameParam):
   /*
    * Pulling the 4100th byte to get the binary image.
    */
-  data = (float *)malloc(xdim * ydim * sizeof(float));
+  
+  
   fseek(fp, 4100, SEEK_SET);
   fb = fread((void *) data, (size_t) dataSize, (size_t) (imageSize), fp);
 
@@ -196,14 +203,45 @@ LightField::LightField(std::string fileNameParam):
    * Moving data over to matrix
    */
   int ii, jj;
-  for (ii = 0; ii < xdim; ii ++) {
-    for (jj = 0; jj < ydim; jj++) {
 
-      gsl_matrix_set(image, jj, ii, (double) data[xdim*jj+ii]);
-      
+  if (pixelType == 0) {
+    for (ii = 0; ii < xdim; ii ++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+      }
+    }
+  } else if (pixelType == 1) { 
+    for (ii = 0; ii < xdim; ii ++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+      }
+    }
+ } else if (pixelType == 2) {
+    for (ii = 0; ii < xdim; ii ++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_set(image, jj, ii, (double) ((int *) data)[xdim*jj+ii]);
+      }
+    }
+  } else if (pixelType == 3) {
+    for (ii = 0; ii < xdim; ii ++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_set(image, jj, ii, (double) ((uint *) data)[xdim*jj+ii]);
+      }
+    }
+  } else if (pixelType == 4) {
+    for (ii = 0; ii < xdim; ii ++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+      }
+    }
+  } else {
+    for (ii = 0; ii < xdim; ii ++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+      }
     }
   }
-
+  
   /* Converting to a ushort matrix */
   double minVal = gsl_matrix_min(image);
   if (minVal > 0) {
@@ -1031,6 +1069,9 @@ static bool testImageRead();
 
 bool testLightField() {
 
+  LightField test = LightField("/home/fuze/SpectroscopyData/200122/200122008.spe");
+  test.plotImage();
+  
   if (!testImageRead()) {
     std::cout << "Failed image read test\n";
   }
