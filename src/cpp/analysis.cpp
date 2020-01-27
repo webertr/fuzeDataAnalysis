@@ -67,6 +67,9 @@ int plotPostShotAnalysis() {
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
+  plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
+  return 0;
+  
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
