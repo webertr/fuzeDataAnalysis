@@ -12,12 +12,17 @@
 int save2VectorData(gsl_vector *vec1In, gsl_vector *vec2In, std::string fileName) {
 
   int ii;
+  FILE *fp;
   
-  if (remove(fileName.c_str()) != 0) {
-    printf("Unable to delete the file");
+  if ( (fp = fopen(fileName.c_str(), "r")) ) {
+    fclose(fp);
+    if (remove(fileName.c_str()) != 0) {
+      printf("Unable to delete the file");
+    }
   }
   
-  FILE *fp = fopen(fileName.c_str(), "w");
+  
+  fp = fopen(fileName.c_str(), "w");
   
   if ( (fp == NULL) ) {
     printf("Error opening files to save for 2 vector save!\n");
@@ -45,12 +50,17 @@ int save2VectorData(gsl_vector *vec1In, gsl_vector *vec2In, std::string fileName
 int saveVectorData(gsl_vector *vecIn, std::string fileName) {
 
   int ii;
+
+  FILE *fp;
   
-  if (remove(fileName.c_str()) != 0) {
-    printf("Unable to delete the file");
+  if ( (fp = fopen(fileName.c_str(), "r")) ) {
+    fclose(fp);
+    if (remove(fileName.c_str()) != 0) {
+      printf("Unable to delete the file");
+    }
   }
   
-  FILE *fp = fopen(fileName.c_str(), "w");
+  fp = fopen(fileName.c_str(), "w");
   
   if ( (fp == NULL) ) {
 
@@ -116,6 +126,51 @@ gsl_vector *readVectorData(std::string fileName) {
 
 
 /******************************************************************************
+ * Function: read2VectorData
+ * Inputs: gsl_vector*, char *
+ * Returns: int
+ * Description: This will first delete the file that it is passed, then save 
+ * the 1 vectors in a single text file for gnuplot to plot 
+ ******************************************************************************/
+
+bool read2VectorData(gsl_vector **vecX, gsl_vector **vecY, std::string fileName) {
+
+  double xVal, yVal;
+  int ii;
+  int vecSize;
+  
+  std::ifstream fileStream(fileName);
+
+  if (!fileStream.is_open() ) {
+    printf("Error opening files to save for vector read!\n");
+    exit(1);
+  }
+
+  ii = 0;
+  while(fileStream >> yVal) {
+    ii++;
+  }
+  vecSize = ii;
+
+  *vecX = gsl_vector_alloc(vecSize);
+  *vecY = gsl_vector_alloc(vecSize);
+  
+  fileStream.clear();
+  fileStream.seekg(0, std::ios_base::beg);
+
+  ii=0;
+  while(fileStream >> xVal >> yVal) {
+    gsl_vector_set(*vecX, ii, xVal);
+    gsl_vector_set(*vecY, ii, yVal);
+    ii++;
+  }
+
+  return true;
+
+}
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *
@@ -146,20 +201,58 @@ int testSave() {
 
 static bool testReadWriteVector() {
 
-  gsl_vector *testVec = readVectorData("data/text.txt");
+  int ii;
+  
+  std::string fileNameY = "data/testX.txt";
+  std::string fileNameXY = "data/testXY.txt";
 
-  if ( !((gsl_vector_get(testVec, 0) > 1.1) && (gsl_vector_get(testVec, 0) < 1.3)) ) {
-    std::cout << gsl_vector_get(testVec, 0) << "not equal to 1.2";
+  gsl_vector *testWriteX = gsl_vector_alloc(3);
+  gsl_vector *testWriteY = gsl_vector_alloc(3);
+  
+  gsl_vector_set(testWriteY, 0, 1.2);
+  gsl_vector_set(testWriteY, 1, 4);
+  gsl_vector_set(testWriteY, 2, 6);
+  
+  gsl_vector_set(testWriteX, 0, 1);
+  gsl_vector_set(testWriteX, 1, 2);
+  gsl_vector_set(testWriteX, 2, 3);
+
+  saveVectorData(testWriteY, fileNameY);
+  save2VectorData(testWriteX, testWriteY, fileNameXY);
+  
+  gsl_vector *testYRet = readVectorData(fileNameY);
+  gsl_vector *xRet, *yRet;
+  
+  if ( !read2VectorData(&xRet, &yRet, fileNameXY) ){
     return false;
   }
 
-  if ( !((gsl_vector_get(testVec, 1) > 3.9) && (gsl_vector_get(testVec, 1) < 4.1)) ) {
-    std::cout << gsl_vector_get(testVec, 1) << "not equal to 4";
+  for (ii = 0; ii < 3; ii++) {
+    if ( !((gsl_vector_get(xRet, ii) > (gsl_vector_get(testWriteX, ii)-0.1)) &&
+	   (gsl_vector_get(xRet, ii) < (gsl_vector_get(testWriteX, ii)+0.1))) ) {
+      return false;
+    }
+    if ( !((gsl_vector_get(yRet, ii) > gsl_vector_get(testWriteY, ii)-0.1) &&
+	  (gsl_vector_get(yRet, ii) < gsl_vector_get(testWriteY, ii)+0.1)) ) {
+      return false;
+    }
+  }
+  
+  if ( !((gsl_vector_get(testYRet, 0) > 1.1) &&
+	 (gsl_vector_get(testYRet, 0) < 1.3)) ) {
+    std::cout << gsl_vector_get(testYRet, 0) << "not equal to 1.2";
     return false;
   }
 
-  if ( !((gsl_vector_get(testVec, 2) > 5.9) && (gsl_vector_get(testVec, 2) < 6.1)) ) {
-    std::cout << gsl_vector_get(testVec, 2) << "not equal to 6";
+  if ( !((gsl_vector_get(testYRet, 1) > 3.9) &&
+	 (gsl_vector_get(testYRet, 1) < 4.1)) ) {
+    std::cout << gsl_vector_get(testYRet, 1) << "not equal to 4";
+    return false;
+  }
+
+  if ( !((gsl_vector_get(testYRet, 2) > 5.9) &&
+	 (gsl_vector_get(testYRet, 2) < 6.1)) ) {
+    std::cout << gsl_vector_get(testYRet, 2) << "not equal to 6";
     return false;
   }
   
