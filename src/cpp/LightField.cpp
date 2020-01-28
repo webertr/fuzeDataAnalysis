@@ -125,8 +125,8 @@ LightField::LightField(std::string fileNameParam):
 
   int dataSize;
   if (pixelType == 0) {
-    dataSize = 4;
-    data = malloc(xdim * ydim * sizeof(float));
+    dataSize = sizeof(float);                             // 32 bit = 4 bytes
+    data = malloc(xdim * ydim * sizeof(float));           // 32 bit = 4 bytes
   } else if (pixelType == 1) {
     dataSize = sizeof(unsigned long);
     data = malloc(xdim * ydim * sizeof(unsigned long));
@@ -137,11 +137,11 @@ LightField::LightField(std::string fileNameParam):
     dataSize = sizeof(unsigned short);                    // 16 bits = 2 bytes
     data = malloc(xdim * ydim * sizeof(unsigned  short)); // 16 bits = 2 bytes
   } else if (pixelType == 4) {
-    dataSize = 4;
-    data = malloc(xdim * ydim * sizeof(float));
+    dataSize = sizeof(unsigned short);                    // 16 bits = 2 bytes
+    data = malloc(xdim * ydim * sizeof(unsigned short));  // 16 bits = 2 bytes
   } else {
-    dataSize = 4;
-    data = malloc(xdim * ydim * sizeof(float));
+    dataSize = sizeof(unsigned short);                    // 16 bits = 2 bytes
+    data = malloc(xdim * ydim * sizeof(unsigned short));  // 16 bits = 2 bytes
   }
 
   /*
@@ -202,55 +202,71 @@ LightField::LightField(std::string fileNameParam):
    * Moving data over to matrix
    */
   int ii, jj;
+  double minVal;
   if (pixelType == 0) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
 	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
       }
     }
+    minVal = gsl_matrix_min(image);
+    if (minVal > 0) {
+      minVal = 0;
+    }
+    for (ii = 0; ii < xdim; ii++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_ushort_set(imageUShort, ii, jj,
+			      gsl_matrix_get(image, ii, jj) - minVal);
+      }
+    }
   } else if (pixelType == 1) { 
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
-	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
+	gsl_matrix_set(image, jj, ii, (double) ((unsigned long *) data)[xdim*jj+ii]);
+      }
+    }
+    minVal = gsl_matrix_min(image);
+    if (minVal > 0) {
+      minVal = 0;
+    }
+    for (ii = 0; ii < xdim; ii++) {
+      for (jj = 0; jj < ydim; jj++) {
+	gsl_matrix_ushort_set(imageUShort, ii, jj,
+			      gsl_matrix_get(image, ii, jj) - minVal);
       }
     }
   } else if (pixelType == 2) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
 	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
+	gsl_matrix_ushort_set(imageUShort, jj, ii, ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
   } else if (pixelType == 3) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
 	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
+	gsl_matrix_ushort_set(imageUShort, jj, ii, ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
   } else if (pixelType == 4) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
-	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
+	gsl_matrix_ushort_set(imageUShort, jj, ii, ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
   } else {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
-	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
+	gsl_matrix_ushort_set(imageUShort, jj, ii, ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
   }
   
   /* Converting to a ushort matrix */
-  double minVal = gsl_matrix_min(image);
-  if (minVal > 0) {
-    minVal = 0;
-  }
-  for (ii = 0; ii < xdim; ii++) {
-    for (jj = 0; jj < ydim; jj++) {
-      gsl_matrix_ushort_set(imageUShort, ii, jj,
-			    gsl_matrix_get(image, ii, jj) - minVal);
-    }
-  }
+
 
   /*
    * Returning file to original position
