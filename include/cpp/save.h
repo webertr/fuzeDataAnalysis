@@ -11,6 +11,7 @@
 
 int saveVectorData(gsl_vector *vecIn, std::string fileName);
 int save2VectorData(gsl_vector *vec1In, gsl_vector *vec2In, std::string fileName);
+gsl_vector *readVectorData(std::string fileName);
 int testSave();
 
 #endif

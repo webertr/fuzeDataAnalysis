@@ -14,6 +14,7 @@
 #include <cpp/mdsplusAccess.h>
 #include <cpp/Kirana.h>
 #include <cpp/magnetic.h>
+#include <cpp/save.h>
 
 int plotPostShotAnalysis();
 

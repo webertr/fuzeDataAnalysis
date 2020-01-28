@@ -32,6 +32,7 @@ static int plotPinchM1Scaling(std::string tempDataFile, std::string tempScriptFi
 static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotDualBanksAnalysis();
 static int plotDualBanksAnalysis2();
+static int saveData(int shotNumber);
 
 
 #define TLOW 0
@@ -67,8 +68,7 @@ int plotPostShotAnalysis() {
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
-  plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
-  return 0;
+  saveData(shotNumber);
   
   int pid1 = fork();
   int pid2 = fork();
@@ -83,21 +83,21 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
+    //plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
+    //plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotNeutron(shotNumber, "\\neutron_1_s", "data/neutron5.txt", "data/neutron5.sh",
-		TLOW, THIGH);
+    //plotNeutron(shotNumber, "\\neutron_1_s", "data/neutron5.txt", "data/neutron5.sh",
+    //		TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    plotNeutron(shotNumber, "\\neutron_4_s", "data/neutron6.txt", "data/neutron6.sh",
-		TLOW, THIGH);
+    //plotNeutron(shotNumber, "\\neutron_4_s", "data/neutron6.txt", "data/neutron6.sh",
+    //		TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -108,8 +108,8 @@ int plotPostShotAnalysis() {
   }
 
   if (0) {
-    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt", "data/neutron4.sh", TLOW,
-		THIGH);
+    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt",
+		"data/neutron4.sh", TLOW, THIGH);
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
@@ -123,6 +123,7 @@ int plotPostShotAnalysis() {
     plotPinchCurrentScaling("data/data.txt", "data/data.sh");
     plotPinchM1Scaling("data/data.txt", "data/data.sh");
     plotPinchVgapScaling("data/data.txt", "data/data.sh");
+    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     plotDualBanksAnalysis();
     plotDualBanksAnalysis2();
   }
@@ -177,22 +178,22 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
   std::string ip3Label;
   std::string rangeLabel;
 
-  time = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
+  time = readVectorData("data/timeIP.txt");
   gsl_vector_scale(time, 1E6);
 
-  ip1 = readMDSplusVector(shotNumber, "\\I_P", "fuze");
+  ip1 = readVectorData("data/ip1.txt");
   gsl_vector_scale(ip1, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'IP for " << shotNumber << "'";
   ip1Label = oss.str();
   oss.str("");
 
-  ip2 = readMDSplusVector(shotNumber-1, "\\I_P", "fuze");
+  ip2 = readVectorData("data/ip2.txt");
   gsl_vector_scale(ip2, 1E-3);
   oss << "with line lw 3 lc rgb 'red' title 'IP for " << shotNumber-1 << "'";
   ip2Label = oss.str();
   oss.str("");
 
-  ip3 = readMDSplusVector(shotNumber-2, "\\I_P", "fuze");
+  ip3 = readVectorData("data/ip3.txt");
   gsl_vector_scale(ip3, 1E-3);
   oss << "with line lw 3 lc rgb 'green' title 'IP for " << shotNumber-2 << "'";
   ip3Label = oss.str();
@@ -239,22 +240,22 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
   std::string vgap3Label;
   std::string rangeLabel;
 
-  time = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
+  time = readVectorData("data/timeVGap.txt");
   gsl_vector_scale(time, 1E6);
 
-  vgap1 = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
+  vgap1 = readVectorData("data/vgap1.txt");
   gsl_vector_scale(vgap1, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'V_{GAP} for " << shotNumber << "'";
   vgap1Label = oss.str();
   oss.str("");
 
-  vgap2 = readMDSplusVector(shotNumber-1, "\\V_GAP", "fuze");
+  vgap2 = readVectorData("data/vgap2.txt");
   gsl_vector_scale(vgap2, 1E-3);
   oss << "with line lw 3 lc rgb 'red' title 'V_{GAP} for " << shotNumber-1 << "'";
   vgap2Label = oss.str();
   oss.str("");
 
-  vgap3 = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
+  vgap3 = readVectorData("data/vgap3.txt");
   gsl_vector_scale(vgap3, 1E-3);
   oss << "with line lw 3 lc rgb 'green' title 'V_{GAP} for " << shotNumber-2 << "'";
   vgap3Label = oss.str();
@@ -1308,6 +1309,63 @@ static int plotDualBanksAnalysis() {
 
   return 0;
   
+}
+
+
+/******************************************************************************
+ * Function: saveData
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int saveData(int shotNumber) {
+
+  gsl_vector *timeIP;
+  gsl_vector *ip1;
+  gsl_vector *ip2;
+  gsl_vector *ip3;
+  gsl_vector *timeVGap;
+  gsl_vector *vgap1;
+  gsl_vector *vgap2;
+  gsl_vector *vgap3;
+  
+  timeIP = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
+  saveVectorData(timeIP, "data/timeIP.txt");
+  
+  ip1 = readMDSplusVector(shotNumber, "\\I_P", "fuze");
+  saveVectorData(ip1, "data/ip1.txt");
+
+  ip2 = readMDSplusVector(shotNumber-1, "\\I_P", "fuze");
+  saveVectorData(ip2, "data/ip2.txt");
+
+  ip3 = readMDSplusVector(shotNumber-2, "\\I_P", "fuze");
+  saveVectorData(ip3, "data/ip3.txt");
+
+  timeVGap = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
+  saveVectorData(timeVGap, "data/timeVGap.txt");
+  
+  vgap1 = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
+  saveVectorData(vgap1, "data/vgap1.txt");
+
+  vgap2 = readMDSplusVector(shotNumber-1, "\\V_GAP", "fuze");
+  saveVectorData(vgap2, "data/vgap2.txt");
+
+  vgap3 = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
+  saveVectorData(vgap3, "data/vgap3.txt");
+  
+  gsl_vector_free(timeIP);
+  gsl_vector_free(ip1);
+  gsl_vector_free(ip2);
+  gsl_vector_free(ip3);
+  gsl_vector_free(timeVGap);
+  gsl_vector_free(vgap1);
+  gsl_vector_free(vgap2);
+  gsl_vector_free(vgap3);
+
+  return 0;
+
 }
 
 /******************************************************************************
