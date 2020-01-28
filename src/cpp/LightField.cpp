@@ -128,16 +128,16 @@ LightField::LightField(std::string fileNameParam):
     dataSize = 4;
     data = malloc(xdim * ydim * sizeof(float));
   } else if (pixelType == 1) {
-    dataSize = 4;
-    data = malloc(xdim * ydim * sizeof(float));
+    dataSize = sizeof(unsigned long);
+    data = malloc(xdim * ydim * sizeof(unsigned long));
   } else if (pixelType == 2) {
-    dataSize = 4;
-    data = malloc(xdim * ydim * sizeof(int));
+    dataSize = sizeof(unsigned short);                    // 16 bits = 2 bytes
+    data = malloc(xdim * ydim * sizeof(unsigned short));  // 16 bits = 2 bytes
   } else if (pixelType == 3) {
-    dataSize = 2;
-    data = malloc(xdim * ydim * sizeof(uint));
+    dataSize = sizeof(unsigned short);                    // 16 bits = 2 bytes
+    data = malloc(xdim * ydim * sizeof(unsigned  short)); // 16 bits = 2 bytes
   } else if (pixelType == 4) {
-    dataSize =4;
+    dataSize = 4;
     data = malloc(xdim * ydim * sizeof(float));
   } else {
     dataSize = 4;
@@ -162,8 +162,7 @@ LightField::LightField(std::string fileNameParam):
   
   /*
    * Pulling the 4100th byte to get the binary image.
-   */
-  
+   */  
   
   fseek(fp, 4100, SEEK_SET);
   fb = fread((void *) data, (size_t) dataSize, (size_t) (imageSize), fp);
@@ -203,7 +202,6 @@ LightField::LightField(std::string fileNameParam):
    * Moving data over to matrix
    */
   int ii, jj;
-
   if (pixelType == 0) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
@@ -213,19 +211,19 @@ LightField::LightField(std::string fileNameParam):
   } else if (pixelType == 1) { 
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
-	gsl_matrix_set(image, jj, ii, (double) ((float *) data)[xdim*jj+ii]);
+	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
- } else if (pixelType == 2) {
+  } else if (pixelType == 2) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
-	gsl_matrix_set(image, jj, ii, (double) ((int *) data)[xdim*jj+ii]);
+	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
   } else if (pixelType == 3) {
     for (ii = 0; ii < xdim; ii ++) {
       for (jj = 0; jj < ydim; jj++) {
-	gsl_matrix_set(image, jj, ii, (double) ((uint *) data)[xdim*jj+ii]);
+	gsl_matrix_set(image, jj, ii, (double) ((unsigned short *) data)[xdim*jj+ii]);
       }
     }
   } else if (pixelType == 4) {
@@ -1069,9 +1067,6 @@ static bool testImageRead();
 
 bool testLightField() {
 
-  LightField test = LightField("/home/fuze/SpectroscopyData/200122/200122008.spe");
-  test.plotImage();
-  
   if (!testImageRead()) {
     std::cout << "Failed image read test\n";
   }
