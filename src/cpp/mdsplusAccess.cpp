@@ -662,6 +662,210 @@ int writeMDSplusMatrix(gsl_matrix_ushort *matIn, int shotNumber, std::string nod
 
 
 /******************************************************************************
+ * Function: readMDSplusVectorWrite
+ * Inputs: int, char *, char *, char *
+ * Returns: gsl_vector *
+ * Description: Read and write an mdsplus vector
+ ******************************************************************************/
+
+bool readMDSplusVectorWrite(int shotNumber, std::string nodeName,
+			    std::string treeName, std::string fileName) {
+
+  MDSplus::Tree *tree = NULL;
+  MDSplus::Data *data = NULL;
+  int numElements;
+  double *doubleArray = NULL;
+  std::string readOnly = "READONLY";
+
+  /*
+   * Trying to open an experiment and shot number
+   */
+  try {
+
+    /*
+     * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
+     * If not data in tree, %TREE-E-NODATA
+     */
+    tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
+
+  } catch(MDSplus::MdsException &exc) {
+
+    std::cout << "Cannot open tree " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    delete tree;
+    delete doubleArray;
+    return false;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    delete tree;
+    delete doubleArray;
+    return false;
+
+  }
+
+  try {
+    
+    data = MDSplus::execute(nodeName.c_str(), tree);
+
+  } catch (MDSplus::MdsException &exc) {
+      
+    std::cout << "Error in executing " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    delete tree;
+    delete doubleArray;
+    return false;
+
+  }
+
+  doubleArray = data->getDoubleArray(&numElements);
+
+  gsl_vector *vecRead = gsl_vector_alloc(numElements);
+
+  int ii;
+  for (ii = 0; ii < numElements; ii++) {
+    gsl_vector_set(vecRead, ii, doubleArray[ii]);
+  }
+
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(data);
+
+  // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
+  delete tree;
+
+  // Delete pointer to memory that mdsplus created. Shouldn't already be deleted?
+  delete doubleArray;
+
+  /* Writing file to hold data */
+  remove(fileName.c_str());
+
+  FILE *fpData = fopen(fileName.c_str(), "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);    
+    return false;
+  }
+
+  for (ii = 0; ii < numElements; ii++) {
+    fprintf(fpData, "%d\t%g\n", ii, gsl_vector_get(vecRead, ii));
+  }
+
+  fclose(fpData);
+  
+  gsl_vector_free(vecRead);
+
+  return true;
+
+}
+
+
+/******************************************************************************
+ * Function: readMDSplusVectorDimWrite
+ * Inputs: int, char *, char *, char *
+ * Returns: gsl_vector *
+ * Description: 
+ ******************************************************************************/
+
+bool readMDSplusVectorDimWrite(int shotNumber, std::string nodeName, std::string treeName,
+			       std::string fileName) {
+
+  MDSplus::Tree *tree = NULL;
+  MDSplus::Data *data = NULL;
+  int numElements;
+  double *doubleArray = NULL;
+  std::string readOnly = "READONLY";
+  char buf[1024];
+
+  /*
+   * Trying to open an experiment and shot number
+   */
+  try {
+
+    /*
+     * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
+     */
+    tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
+
+  } catch(MDSplus::MdsException &exc) {
+
+    std::cout << "Cannot open tree " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    delete tree;
+    delete doubleArray;
+    return false;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    delete tree;
+    delete doubleArray;
+    return false;
+  }
+
+  snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName.c_str());
+
+  try {
+    
+    data = MDSplus::execute(buf, tree);
+
+  } catch (MDSplus::MdsException &exc) {
+      
+    std::cout << "Error in executing " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    delete tree;
+    delete doubleArray;
+    return false;
+
+  }
+
+  doubleArray = data->getDoubleArray(&numElements);
+
+  gsl_vector *vecRead = gsl_vector_alloc(numElements);
+
+  int ii;
+  for (ii = 0; ii < numElements; ii++) {
+    gsl_vector_set(vecRead, ii, doubleArray[ii]);
+  }
+
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(data);
+
+  // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
+  delete tree;
+
+  // Delete pointer to memory that mdsplus created. Shouldn't already be deleted?
+  delete doubleArray;
+
+  /* Writing file to hold data */
+  remove(fileName.c_str());
+
+  FILE *fpData = fopen(fileName.c_str(), "w");
+  
+  if ( (fpData == NULL) ) {
+    printf("Error opening files!\n");
+    exit(1);    
+    return false;
+  }
+
+  for (ii = 0; ii < numElements; ii++) {
+    fprintf(fpData, "%d\t%g\n", ii, gsl_vector_get(vecRead, ii));
+  }
+
+  fclose(fpData);
+  
+  // Freeing vector
+  gsl_vector_free(vecRead);
+  
+  return true;
+
+}
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *

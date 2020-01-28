@@ -6,7 +6,7 @@ int main() {
 
   //testMDSplusAccess();
   
-  plotPostShotAnalysis();
+  //plotPostShotAnalysis();
 
   //testLightField();
 
@@ -21,6 +21,8 @@ int main() {
   //testKirana();
 
   //testPlot();
+
+  testSave();
   
   return 0;
 

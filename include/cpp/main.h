@@ -12,5 +12,6 @@
 #include "cpp/spectroscopyMonitor.h"
 #include "cpp/psqlAccess.h"
 #include "cpp/interferometry.h"
+#include "cpp/save.h"
 
 #endif
