@@ -33,6 +33,16 @@ static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScript
 static int plotDualBanksAnalysis();
 static int plotDualBanksAnalysis2();
 static int saveData(int shotNumber);
+static int setGlobalVariables(int shotNumber);
+static gsl_vector *timeIPGlobal;
+static gsl_vector *ip1Global;
+static gsl_vector *ip2Global;
+static gsl_vector *ip3Global;
+static gsl_vector *timeVGapGlobal;
+static gsl_vector *vgap1Global;
+static gsl_vector *vgap2Global;
+static gsl_vector *vgap3Global;
+
 
 
 #define TLOW 0
@@ -68,7 +78,7 @@ int plotPostShotAnalysis() {
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
-  saveData(shotNumber);
+  setGlobalVariables(shotNumber);
   
   int pid1 = fork();
   int pid2 = fork();
@@ -126,6 +136,7 @@ int plotPostShotAnalysis() {
     plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     plotDualBanksAnalysis();
     plotDualBanksAnalysis2();
+    saveData(shotNumber);
   }
 
   return 0;
@@ -169,32 +180,24 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
 		  int tLow, int tHigh) {
 
   std::ostringstream oss;
-  gsl_vector *time;
-  gsl_vector *ip1;
-  gsl_vector *ip2;
-  gsl_vector *ip3;
   std::string ip1Label;
   std::string ip2Label;
   std::string ip3Label;
   std::string rangeLabel;
 
-  time = readVectorData("data/timeIP.txt");
-  gsl_vector_scale(time, 1E6);
+  gsl_vector_scale(timeIPGlobal, 1E6);
 
-  ip1 = readVectorData("data/ip1.txt");
-  gsl_vector_scale(ip1, 1E-3);
+  gsl_vector_scale(ip1Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'IP for " << shotNumber << "'";
   ip1Label = oss.str();
   oss.str("");
 
-  ip2 = readVectorData("data/ip2.txt");
-  gsl_vector_scale(ip2, 1E-3);
+  gsl_vector_scale(ip2Global, 1E-3);
   oss << "with line lw 3 lc rgb 'red' title 'IP for " << shotNumber-1 << "'";
   ip2Label = oss.str();
   oss.str("");
 
-  ip3 = readVectorData("data/ip3.txt");
-  gsl_vector_scale(ip3, 1E-3);
+  gsl_vector_scale(ip3Global, 1E-3);
   oss << "with line lw 3 lc rgb 'green' title 'IP for " << shotNumber-2 << "'";
   ip3Label = oss.str();
   oss.str("");
@@ -211,8 +214,8 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
 
   keyWords.append(rangeLabel);
 
-  plot3VectorData(time, ip1, ip1Label, ip2, ip2Label, ip3, ip3Label,
-		  keyWords, tempDataFile, tempScriptFile);
+  plot3VectorData(timeIPGlobal, ip1Global, ip1Label, ip2Global, ip2Label,
+		  ip3Global, ip3Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -231,32 +234,24 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
 		    int tLow, int tHigh) {
 
   std::ostringstream oss;
-  gsl_vector *time;
-  gsl_vector *vgap1;
-  gsl_vector *vgap2;
-  gsl_vector *vgap3;
   std::string vgap1Label;
   std::string vgap2Label;
   std::string vgap3Label;
   std::string rangeLabel;
 
-  time = readVectorData("data/timeVGap.txt");
-  gsl_vector_scale(time, 1E6);
+  gsl_vector_scale(timeVGapGlobal, 1E6);
 
-  vgap1 = readVectorData("data/vgap1.txt");
-  gsl_vector_scale(vgap1, 1E-3);
+  gsl_vector_scale(vgap1Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'V_{GAP} for " << shotNumber << "'";
   vgap1Label = oss.str();
   oss.str("");
 
-  vgap2 = readVectorData("data/vgap2.txt");
-  gsl_vector_scale(vgap2, 1E-3);
+  gsl_vector_scale(vgap2Global, 1E-3);
   oss << "with line lw 3 lc rgb 'red' title 'V_{GAP} for " << shotNumber-1 << "'";
   vgap2Label = oss.str();
   oss.str("");
 
-  vgap3 = readVectorData("data/vgap3.txt");
-  gsl_vector_scale(vgap3, 1E-3);
+  gsl_vector_scale(vgap3Global, 1E-3);
   oss << "with line lw 3 lc rgb 'green' title 'V_{GAP} for " << shotNumber-2 << "'";
   vgap3Label = oss.str();
   oss.str("");
@@ -273,8 +268,8 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
   
   keyWords.append(rangeLabel);
 
-  plot3VectorData(time, vgap1, vgap1Label, vgap2, vgap2Label, vgap3, vgap3Label,
-		  keyWords, tempDataFile, tempScriptFile);
+  plot3VectorData(timeVGapGlobal, vgap1Global, vgap1Label, vgap2Global, vgap2Label,
+		  vgap3Global, vgap3Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -1367,6 +1362,38 @@ static int saveData(int shotNumber) {
   return 0;
 
 }
+
+
+/******************************************************************************
+ * Function: setGlobalVariables
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int setGlobalVariables(int shotNumber) {
+
+  timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
+  
+  ip1Global = readMDSplusVector(shotNumber, "\\I_P", "fuze");
+
+  ip2Global = readMDSplusVector(shotNumber-1, "\\I_P", "fuze");
+
+  ip3Global = readMDSplusVector(shotNumber-2, "\\I_P", "fuze");
+
+  timeVGapGlobal = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
+  
+  vgap1Global = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
+
+  vgap2Global = readMDSplusVector(shotNumber-1, "\\V_GAP", "fuze");
+
+  vgap3Global = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
+
+  return 0;
+
+}
+
 
 /******************************************************************************
  * Function: plotDualBanksAnalysis2
