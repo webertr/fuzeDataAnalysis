@@ -13,8 +13,9 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
 static int plotCompCurrent(int shotNumber, std::string tempDataFile,
 			   std::string tempScriptFile,
 			   int tLow, int tHigh);
-static int plotNeutron(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
-		       int tLow, int tHigh);
+static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
+		       gsl_vector *det2, int detNum2,  gsl_vector *det3, int detNum3,
+		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh);
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      std::string tempDataFile, std::string tempScriptFile, 
 			      int tLow, int tHigh);
@@ -44,24 +45,35 @@ static gsl_vector *vgap1Global;
 static gsl_vector *vgap2Global;
 static gsl_vector *vgap3Global;
 static gsl_vector *timeProbeGlobal;
-static gsl_vector *p5Global;
-static gsl_vector *p15Global;
-static gsl_vector *p35Global;
-static gsl_vector *p45Global;
+static gsl_vector *m0p5Global;
+static gsl_vector *m0p15Global;
+static gsl_vector *m0p35Global;
+static gsl_vector *m0p45Global;
+static gsl_vector *m1p5Global;
+static gsl_vector *m1p15Global;
+static gsl_vector *m1p35Global;
+static gsl_vector *m1p45Global;
 static gsl_vector *timeNeutronGlobal;
 static gsl_vector *neutron1Global;
-static gsl_vector *neutron2Global;
-static gsl_vector *neutron3Global;
+//static gsl_vector *neutron2Global;
+//static gsl_vector *neutron3Global;
 static gsl_vector *neutron4Global;
 static gsl_vector *neutron5Global;
-static gsl_vector *neutron6Global;
+//static gsl_vector *neutron6Global;
 static gsl_vector *neutron7Global;
 static gsl_vector *neutron8Global;
-static gsl_vector *neutron9Global;
+//static gsl_vector *neutron9Global;
 static gsl_vector *neutron10Global;
+static gsl_vector *timeIBMOutGlobal;
+static gsl_vector *ibmOut1Global;
+static gsl_vector *ibmOut2Global;
+static gsl_vector *ibmOut3Global;
+static gsl_vector *ibmOut4Global;
+static gsl_vector *ibmOut5Global;
+static gsl_vector *ibmOut6Global;
 
 #define TLOW 0
-#define THIGH 100
+#define THIGH 50
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
@@ -108,7 +120,7 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    //plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
+    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
@@ -116,12 +128,13 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    plotNeutron(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    //plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
+    //		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotNeutron(shotNumber, "\\neutron_4_s", "data/neutron6.txt", "data/neutron6.sh",
-    //		TLOW, THIGH);
+    //plotNeutron(shotNumber, timeNeutronGlobal, neutron7Global, 7, neutron8Global, 8,
+    //		neutron10Global, 10, "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -132,7 +145,8 @@ int plotPostShotAnalysis() {
   }
 
   if (0) {
-    plotNeutron(shotNumber, "data/neutron4.txt", "data/neutron4.sh", TLOW, THIGH);
+    plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
+		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
@@ -151,6 +165,120 @@ int plotPostShotAnalysis() {
     plotDualBanksAnalysis2();
     saveData(shotNumber);
   }
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: setGlobalVariables
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int setGlobalVariables(int shotNumber) {
+
+  timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
+  ip1Global = readMDSplusVector(shotNumber, "\\I_P", "fuze");
+  ip2Global = readMDSplusVector(shotNumber-1, "\\I_P", "fuze");
+  ip3Global = readMDSplusVector(shotNumber-2, "\\I_P", "fuze");
+
+  timeVGapGlobal = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
+  vgap1Global = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
+  vgap2Global = readMDSplusVector(shotNumber-1, "\\V_GAP", "fuze");
+  vgap3Global = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
+
+  timeProbeGlobal = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
+  gsl_vector_scale(timeProbeGlobal, 1E6);
+  m1p15Global = getM1Mode(shotNumber, "\\b_p15_000");
+  m1p35Global = getM1Mode(shotNumber, "\\b_p35_000");
+  m1p45Global = getM1Mode(shotNumber, "\\b_p45_000");
+
+  timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_1_s", "fuze");
+  neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
+  //neutron2Global = readMDSplusVector(shotNumber, "\\neutron_2_s", "fuze");
+  //neutron3Global = readMDSplusVector(shotNumber, "\\neutron_3_s", "fuze");
+  neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
+  neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
+  //neutron6Global = readMDSplusVector(shotNumber, "\\neutron_6_s", "fuze");
+  neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
+  neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
+  //neutron9Global = readMDSplusVector(shotNumber, "\\neutron_9_s", "fuze");
+  neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
+
+  m0p5Global = getM0Mode(shotNumber, "\\b_p5_000");
+  gsl_vector_scale(m0p5Global, 5E2);
+  m0p15Global = getM0Mode(shotNumber, "\\b_p15_000");
+  gsl_vector_scale(m0p15Global, 5E2);  
+  m0p35Global = getM0Mode(shotNumber, "\\b_p35_000");
+  gsl_vector_scale(m0p35Global, 5E2);  
+  m0p45Global = getM0Mode(shotNumber, "\\b_p45_000");
+  gsl_vector_scale(m0p45Global, 5E2);  
+
+  timeIBMOutGlobal = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
+  gsl_vector_free(timeIPGlobal);
+  timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT", "fuze");
+  ibmOut1Global = readMDSplusVector(shotNumber-2, "\\I_IBM_1_OUT", "fuze");
+  ibmOut2Global = readMDSplusVector(shotNumber-2, "\\I_IBM_2_OUT", "fuze");
+  ibmOut3Global = readMDSplusVector(shotNumber-2, "\\I_IBM_3_OUT", "fuze");
+  ibmOut4Global = readMDSplusVector(shotNumber-2, "\\I_IBM_4_OUT", "fuze");
+  ibmOut5Global = readMDSplusVector(shotNumber-2, "\\I_IBM_5_OUT", "fuze");
+  ibmOut6Global = readMDSplusVector(shotNumber-2, "\\I_IBM_6_OUT", "fuze");
+
+  gsl_vector_free(ip3Global);
+  ip3Global = readMDSplusVector(shotNumber-2, "\\I_IBM_1_OUT", "fuze");
+  gsl_vector_add(ip3Global, ibmOut2Global);
+  gsl_vector_add(ip3Global, ibmOut3Global);
+  gsl_vector_add(ip3Global, ibmOut4Global);
+  gsl_vector_add(ip3Global, ibmOut5Global);
+  gsl_vector_add(ip3Global, ibmOut6Global); 
+
+  gsl_vector_free(ibmOut1Global);
+  gsl_vector_free(ibmOut2Global);
+  gsl_vector_free(ibmOut3Global);
+  gsl_vector_free(ibmOut4Global);
+  gsl_vector_free(ibmOut5Global);
+  gsl_vector_free(ibmOut6Global);
+
+  gsl_vector_free(ip2Global);
+  ip2Global = readMDSplusVector(shotNumber-1, "\\I_IBM_1_OUT", "fuze");  
+  ibmOut1Global = readMDSplusVector(shotNumber-1, "\\I_IBM_1_OUT", "fuze");
+  ibmOut2Global = readMDSplusVector(shotNumber-1, "\\I_IBM_2_OUT", "fuze");
+  ibmOut3Global = readMDSplusVector(shotNumber-1, "\\I_IBM_3_OUT", "fuze");
+  ibmOut4Global = readMDSplusVector(shotNumber-1, "\\I_IBM_4_OUT", "fuze");
+  ibmOut5Global = readMDSplusVector(shotNumber-1, "\\I_IBM_5_OUT", "fuze");
+  ibmOut6Global = readMDSplusVector(shotNumber-1, "\\I_IBM_6_OUT", "fuze");
+  
+  gsl_vector_add(ip2Global, ibmOut2Global);
+  gsl_vector_add(ip2Global, ibmOut3Global);
+  gsl_vector_add(ip2Global, ibmOut4Global);
+  gsl_vector_add(ip2Global, ibmOut5Global);
+  gsl_vector_add(ip2Global, ibmOut6Global); 
+
+  gsl_vector_free(ibmOut1Global);
+  gsl_vector_free(ibmOut2Global);
+  gsl_vector_free(ibmOut3Global);
+  gsl_vector_free(ibmOut4Global);
+  gsl_vector_free(ibmOut5Global);
+  gsl_vector_free(ibmOut6Global);
+
+  gsl_vector_free(ip1Global);
+  ip1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");  
+  ibmOut1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");
+  ibmOut2Global = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT", "fuze");
+  ibmOut3Global = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT", "fuze");
+  ibmOut4Global = readMDSplusVector(shotNumber, "\\I_IBM_4_OUT", "fuze");
+  ibmOut5Global = readMDSplusVector(shotNumber, "\\I_IBM_5_OUT", "fuze");
+  ibmOut6Global = readMDSplusVector(shotNumber, "\\I_IBM_6_OUT", "fuze");
+  
+  gsl_vector_add(ip1Global, ibmOut2Global);
+  gsl_vector_add(ip1Global, ibmOut3Global);
+  gsl_vector_add(ip1Global, ibmOut4Global);
+  gsl_vector_add(ip1Global, ibmOut5Global);
+  gsl_vector_add(ip1Global, ibmOut6Global); 
 
   return 0;
 
@@ -301,11 +429,6 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
 			   int tLow, int tHigh) {
 
   std::ostringstream oss;
-  gsl_vector *time;
-  gsl_vector *p5;
-  gsl_vector *p15;
-  gsl_vector *p35;
-  gsl_vector *p45;
   std::string p5Label;
   std::string p15Label;
   std::string p35Label;
@@ -313,29 +436,18 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
   std::string keyWords;
   std::string rangeLabel;
 
-  time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
-  gsl_vector_scale(time, 1E6);
-
-  p5 = getM0Mode(shotNumber, "\\b_p5_000");
-  gsl_vector_scale(p5, 5E2);
   oss << "with line lw 3 lc rgb 'black' title 'I_{P-5}'";
   p5Label = oss.str();
   oss.str("");
 
-  p15 = getM0Mode(shotNumber, "\\b_p15_000");
-  gsl_vector_scale(p15, 5E2);
   oss << "with line lw 3 lc rgb 'red' title 'I_{P-15}'";
   p15Label = oss.str();
   oss.str("");
 
-  p35 = getM0Mode(shotNumber, "\\b_p35_000");
-  gsl_vector_scale(p35, 5E2);
   oss << "with line lw 3 lc rgb 'green' title 'I_{P-35}'";
   p35Label = oss.str();
   oss.str("");
 
-  p45 = getM0Mode(shotNumber, "\\b_p45_000");
-  gsl_vector_scale(p45, 5E2);
   oss << "with line lw 3 lc rgb 'blue' title 'I_{P-45}'";
   p45Label = oss.str();
   oss.str("");
@@ -355,8 +467,8 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
 
   keyWords.append(rangeLabel);
   
-  plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
-		  keyWords, tempDataFile, tempScriptFile);
+  plot4VectorData(timeProbeGlobal, m0p5Global, p5Label, m0p15Global, p15Label, m0p35Global, p35Label,
+		  m0p45Global, p45Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -382,9 +494,7 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
   std::string keyWords;
   std::string rangeLabel;
 
-  gsl_vector_scale(timeProbeGlobal, 1E6);
-
-  p5Global = getM1Mode(shotNumber, "\\b_p5_000");
+  m1p5Global = getM1Mode(shotNumber, "\\b_p5_000");
   oss << "with line lw 3 lc rgb 'black' title 'm=1 at P5'";
   p5Label = oss.str();
   oss.str("");
@@ -416,8 +526,8 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
 
   keyWords.append(rangeLabel);
   
-  plot4VectorData(timeProbeGlobal, p5Global, p5Label, p15Global, p15Label, p35Global, p35Label,
-		  p45Global, p45Label, keyWords, tempDataFile, tempScriptFile);
+  plot4VectorData(timeProbeGlobal, m1p5Global, p5Label, m1p15Global, p15Label, m1p35Global, p35Label,
+		  m1p45Global, p45Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -432,8 +542,9 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
  * the post shot analysis
  ******************************************************************************/
 
-static int plotNeutron(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
-		       int tLow, int tHigh) {
+static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
+		       gsl_vector *det2, int detNum2,  gsl_vector *det3, int detNum3,
+		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh) {
 
   std::ostringstream oss;
   std::string neutron1Label;
@@ -443,15 +554,15 @@ static int plotNeutron(int shotNumber, std::string tempDataFile, std::string tem
   
   gsl_vector_scale(timeNeutronGlobal, 1E6);
 
-  oss << "with line lw 3 lc rgb 'black' title 'ND for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'black' title 'ND" << detNum1 << "for " << shotNumber << "'";
   neutron1Label = oss.str();
   oss.str("");
 
-  oss << "with line lw 3 lc rgb 'red' title 'ND for " << shotNumber-1 << "'";
+  oss << "with line lw 3 lc rgb 'red' title 'ND" << detNum2 << "for " << shotNumber << "'";
   neutron2Label = oss.str();
   oss.str("");
 
-  oss << "with line lw 3 lc rgb 'green' title 'ND for " << shotNumber-2 << "'";
+  oss << "with line lw 3 lc rgb 'green' title 'ND" << detNum3 << "for " << shotNumber << "'";
   neutron3Label = oss.str();
   oss.str("");
 
@@ -467,8 +578,8 @@ static int plotNeutron(int shotNumber, std::string tempDataFile, std::string tem
 
   keyWords.append(rangeLabel);
   
-  plot3VectorData(timeNeutronGlobal, neutron1Global, neutron1Label, neutron2Global, neutron2Label,
-		  neutron3Global, neutron3Label, keyWords, tempDataFile, tempScriptFile);
+  plot3VectorData(time, det1, neutron1Label, det2, neutron2Label,
+		  det3, neutron3Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -1357,58 +1468,6 @@ static int saveData(int shotNumber) {
   return 0;
 
 }
-
-
-/******************************************************************************
- * Function: setGlobalVariables
- * Inputs: int
- * Returns: int
- * Description: This will prompt the user for a pulse number, and output 
- * the post shot analysis
- ******************************************************************************/
-
-static int setGlobalVariables(int shotNumber) {
-
-  timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
-  
-  ip1Global = readMDSplusVector(shotNumber, "\\I_P", "fuze");
-
-  ip2Global = readMDSplusVector(shotNumber-1, "\\I_P", "fuze");
-
-  ip3Global = readMDSplusVector(shotNumber-2, "\\I_P", "fuze");
-
-  timeVGapGlobal = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
-  
-  vgap1Global = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
-
-  vgap2Global = readMDSplusVector(shotNumber-1, "\\V_GAP", "fuze");
-
-  vgap3Global = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
-
-  timeProbeGlobal = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
-
-  p15Global = getM1Mode(shotNumber, "\\b_p15_000");
-
-  p35Global = getM1Mode(shotNumber, "\\b_p35_000");
-
-  p45Global = getM1Mode(shotNumber, "\\b_p45_000");
-
-  timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_1_s", "fuze");
-  neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
-  neutron2Global = readMDSplusVector(shotNumber, "\\neutron_2_s", "fuze");
-  neutron3Global = readMDSplusVector(shotNumber, "\\neutron_3_s", "fuze");
-  neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
-  neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
-  neutron6Global = readMDSplusVector(shotNumber, "\\neutron_6_s", "fuze");
-  neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
-  neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
-  neutron9Global = readMDSplusVector(shotNumber, "\\neutron_9_s", "fuze");
-  neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
-  
-  return 0;
-
-}
-
 
 /******************************************************************************
  * Function: plotDualBanksAnalysis2
