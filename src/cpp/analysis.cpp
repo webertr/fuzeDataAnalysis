@@ -10,10 +10,11 @@ static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScri
 		  int tLow, int tHigh);
 static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
 		    int tLow, int tHigh);
-static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+static int plotCompCurrent(int shotNumber, std::string tempDataFile,
+			   std::string tempScriptFile,
 			   int tLow, int tHigh);
-static int plotNeutron(int shotNumber, std::string neutronNode,
-		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh);
+static int plotNeutron(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		       int tLow, int tHigh);
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      std::string tempDataFile, std::string tempScriptFile, 
 			      int tLow, int tHigh);
@@ -42,8 +43,22 @@ static gsl_vector *timeVGapGlobal;
 static gsl_vector *vgap1Global;
 static gsl_vector *vgap2Global;
 static gsl_vector *vgap3Global;
-
-
+static gsl_vector *timeProbeGlobal;
+static gsl_vector *p5Global;
+static gsl_vector *p15Global;
+static gsl_vector *p35Global;
+static gsl_vector *p45Global;
+static gsl_vector *timeNeutronGlobal;
+static gsl_vector *neutron1Global;
+static gsl_vector *neutron2Global;
+static gsl_vector *neutron3Global;
+static gsl_vector *neutron4Global;
+static gsl_vector *neutron5Global;
+static gsl_vector *neutron6Global;
+static gsl_vector *neutron7Global;
+static gsl_vector *neutron8Global;
+static gsl_vector *neutron9Global;
+static gsl_vector *neutron10Global;
 
 #define TLOW 0
 #define THIGH 100
@@ -97,12 +112,11 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
+    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotNeutron(shotNumber, "\\neutron_1_s", "data/neutron5.txt", "data/neutron5.sh",
-    //		TLOW, THIGH);
+    plotNeutron(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
@@ -118,8 +132,7 @@ int plotPostShotAnalysis() {
   }
 
   if (0) {
-    plotNeutron(shotNumber, "\\neutron_11_s", "data/neutron4.txt",
-		"data/neutron4.sh", TLOW, THIGH);
+    plotNeutron(shotNumber, "data/neutron4.txt", "data/neutron4.sh", TLOW, THIGH);
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
@@ -362,11 +375,6 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
 		      int tLow, int tHigh) {
 
   std::ostringstream oss;
-  gsl_vector *time;
-  gsl_vector *p5;
-  gsl_vector *p15;
-  gsl_vector *p35;
-  gsl_vector *p45;
   std::string p5Label;
   std::string p15Label;
   std::string p35Label;
@@ -374,25 +382,21 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
   std::string keyWords;
   std::string rangeLabel;
 
-  time = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
-  gsl_vector_scale(time, 1E6);
+  gsl_vector_scale(timeProbeGlobal, 1E6);
 
-  p5 = getM1Mode(shotNumber, "\\b_p5_000");
+  p5Global = getM1Mode(shotNumber, "\\b_p5_000");
   oss << "with line lw 3 lc rgb 'black' title 'm=1 at P5'";
   p5Label = oss.str();
   oss.str("");
 
-  p15 = getM1Mode(shotNumber, "\\b_p15_000");
   oss << "with line lw 3 lc rgb 'red' title 'm=1 at P15'";
   p15Label = oss.str();
   oss.str("");
 
-  p35 = getM1Mode(shotNumber, "\\b_p35_000");
   oss << "with line lw 3 lc rgb 'green' title 'm=1 at P35'";
   p35Label = oss.str();
   oss.str("");
 
-  p45 = getM1Mode(shotNumber, "\\b_p45_000");
   oss << "with line lw 3 lc rgb 'blue' title 'm=1 at P45'";
   p45Label = oss.str();
   oss.str("");
@@ -412,8 +416,8 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
 
   keyWords.append(rangeLabel);
   
-  plot4VectorData(time, p5, p5Label, p15, p15Label, p35, p35Label, p45, p45Label,
-		  keyWords, tempDataFile, tempScriptFile);
+  plot4VectorData(timeProbeGlobal, p5Global, p5Label, p15Global, p15Label, p35Global, p35Label,
+		  p45Global, p45Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -428,34 +432,25 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
  * the post shot analysis
  ******************************************************************************/
 
-static int plotNeutron(int shotNumber, std::string neutronNode,
-		       std::string tempDataFile, std::string tempScriptFile,
+static int plotNeutron(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
 		       int tLow, int tHigh) {
 
   std::ostringstream oss;
-  gsl_vector *time;
-  gsl_vector *neutron1;
-  gsl_vector *neutron2;
-  gsl_vector *neutron3;
   std::string neutron1Label;
   std::string neutron2Label;
   std::string neutron3Label;
   std::string rangeLabel;
+  
+  gsl_vector_scale(timeNeutronGlobal, 1E6);
 
-  time = readMDSplusVectorDim(shotNumber, neutronNode, "fuze");
-  gsl_vector_scale(time, 1E6);
-
-  neutron1 = readMDSplusVector(shotNumber, neutronNode, "fuze");
   oss << "with line lw 3 lc rgb 'black' title 'ND for " << shotNumber << "'";
   neutron1Label = oss.str();
   oss.str("");
 
-  neutron2 = readMDSplusVector(shotNumber-1, neutronNode, "fuze");
   oss << "with line lw 3 lc rgb 'red' title 'ND for " << shotNumber-1 << "'";
   neutron2Label = oss.str();
   oss.str("");
 
-  neutron3 = readMDSplusVector(shotNumber-2, neutronNode, "fuze");
   oss << "with line lw 3 lc rgb 'green' title 'ND for " << shotNumber-2 << "'";
   neutron3Label = oss.str();
   oss.str("");
@@ -472,8 +467,8 @@ static int plotNeutron(int shotNumber, std::string neutronNode,
 
   keyWords.append(rangeLabel);
   
-  plot3VectorData(time, neutron1, neutron1Label, neutron2, neutron2Label, neutron3, neutron3Label,
-		  keyWords, tempDataFile, tempScriptFile);
+  plot3VectorData(timeNeutronGlobal, neutron1Global, neutron1Label, neutron2Global, neutron2Label,
+		  neutron3Global, neutron3Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -1390,6 +1385,26 @@ static int setGlobalVariables(int shotNumber) {
 
   vgap3Global = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
 
+  timeProbeGlobal = readMDSplusVectorDim(shotNumber, "\\b_p5_000", "fuze");
+
+  p15Global = getM1Mode(shotNumber, "\\b_p15_000");
+
+  p35Global = getM1Mode(shotNumber, "\\b_p35_000");
+
+  p45Global = getM1Mode(shotNumber, "\\b_p45_000");
+
+  timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_1_s", "fuze");
+  neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
+  neutron2Global = readMDSplusVector(shotNumber, "\\neutron_2_s", "fuze");
+  neutron3Global = readMDSplusVector(shotNumber, "\\neutron_3_s", "fuze");
+  neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
+  neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
+  neutron6Global = readMDSplusVector(shotNumber, "\\neutron_6_s", "fuze");
+  neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
+  neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
+  neutron9Global = readMDSplusVector(shotNumber, "\\neutron_9_s", "fuze");
+  neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
+  
   return 0;
 
 }
