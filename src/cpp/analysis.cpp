@@ -91,7 +91,7 @@ static gsl_vector *tbmOut12Global;
 #define USE_THYRISTOR_IP false
 #define USE_NEUTRON false
 #define USE_THYRISTOR_BANK false
-#define USE_IGNITRON_BANK false
+#define USE_IGNITRON_BANK true
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
