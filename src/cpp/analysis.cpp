@@ -71,9 +71,27 @@ static gsl_vector *ibmOut3Global;
 static gsl_vector *ibmOut4Global;
 static gsl_vector *ibmOut5Global;
 static gsl_vector *ibmOut6Global;
+static gsl_vector *timeTBMOutGlobal;
+static gsl_vector *tbmOut1Global;
+static gsl_vector *tbmOut2Global;
+static gsl_vector *tbmOut3Global;
+static gsl_vector *tbmOut4Global;
+static gsl_vector *tbmOut5Global;
+static gsl_vector *tbmOut6Global;
+static gsl_vector *tbmOut7Global;
+static gsl_vector *tbmOut8Global;
+static gsl_vector *tbmOut9Global;
+static gsl_vector *tbmOut10Global;
+static gsl_vector *tbmOut11Global;
+static gsl_vector *tbmOut12Global;
 
 #define TLOW 0
 #define THIGH 50
+#define USE_IGNITRON_IP true
+#define USE_THYRISTOR_IP false
+#define USE_NEUTRON false
+#define USE_THYRISTOR_BANK false
+#define USE_IGNITRON_BANK false
 
 /******************************************************************************
  * Function: plotPostShotAnalysis
@@ -128,13 +146,19 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-    //plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
-    //		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+
+    if (USE_NEUTRON) {
+      plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
+		  neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    }
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
-    //plotNeutron(shotNumber, timeNeutronGlobal, neutron7Global, 7, neutron8Global, 8,
-    //		neutron10Global, 10, "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
+
+    if (USE_NEUTRON) {
+      plotNeutron(shotNumber, timeNeutronGlobal, neutron7Global, 7, neutron8Global, 8,
+		  neutron10Global, 10, "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
+    }
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -145,6 +169,7 @@ int plotPostShotAnalysis() {
   }
 
   if (0) {
+    
     plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
 		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
@@ -164,6 +189,7 @@ int plotPostShotAnalysis() {
     plotDualBanksAnalysis();
     plotDualBanksAnalysis2();
     saveData(shotNumber);
+    
   }
 
   return 0;
@@ -197,17 +223,21 @@ static int setGlobalVariables(int shotNumber) {
   m1p35Global = getM1Mode(shotNumber, "\\b_p35_000");
   m1p45Global = getM1Mode(shotNumber, "\\b_p45_000");
 
-  timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_1_s", "fuze");
-  neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
-  //neutron2Global = readMDSplusVector(shotNumber, "\\neutron_2_s", "fuze");
-  //neutron3Global = readMDSplusVector(shotNumber, "\\neutron_3_s", "fuze");
-  neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
-  neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
-  //neutron6Global = readMDSplusVector(shotNumber, "\\neutron_6_s", "fuze");
-  neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
-  neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
-  //neutron9Global = readMDSplusVector(shotNumber, "\\neutron_9_s", "fuze");
-  neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
+  if (USE_NEUTRON) {
+    
+    timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_1_s", "fuze");
+    neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
+    //neutron2Global = readMDSplusVector(shotNumber, "\\neutron_2_s", "fuze");
+    //neutron3Global = readMDSplusVector(shotNumber, "\\neutron_3_s", "fuze");
+    neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
+    neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
+    //neutron6Global = readMDSplusVector(shotNumber, "\\neutron_6_s", "fuze");
+    neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
+    neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
+    //neutron9Global = readMDSplusVector(shotNumber, "\\neutron_9_s", "fuze");
+    neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
+
+  }
 
   m0p5Global = getM0Mode(shotNumber, "\\b_p5_000");
   gsl_vector_scale(m0p5Global, 5E2);
@@ -218,68 +248,224 @@ static int setGlobalVariables(int shotNumber) {
   m0p45Global = getM0Mode(shotNumber, "\\b_p45_000");
   gsl_vector_scale(m0p45Global, 5E2);  
 
-  timeIBMOutGlobal = readMDSplusVectorDim(shotNumber, "\\I_P", "fuze");
-  gsl_vector_free(timeIPGlobal);
-  timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT", "fuze");
-  ibmOut1Global = readMDSplusVector(shotNumber-2, "\\I_IBM_1_OUT", "fuze");
-  ibmOut2Global = readMDSplusVector(shotNumber-2, "\\I_IBM_2_OUT", "fuze");
-  ibmOut3Global = readMDSplusVector(shotNumber-2, "\\I_IBM_3_OUT", "fuze");
-  ibmOut4Global = readMDSplusVector(shotNumber-2, "\\I_IBM_4_OUT", "fuze");
-  ibmOut5Global = readMDSplusVector(shotNumber-2, "\\I_IBM_5_OUT", "fuze");
-  ibmOut6Global = readMDSplusVector(shotNumber-2, "\\I_IBM_6_OUT", "fuze");
+  if (USE_IGNITRON_BANK) {
+    
+    if (USE_IGNITRON_IP) {
 
-  gsl_vector_free(ip3Global);
-  ip3Global = readMDSplusVector(shotNumber-2, "\\I_IBM_1_OUT", "fuze");
-  gsl_vector_add(ip3Global, ibmOut2Global);
-  gsl_vector_add(ip3Global, ibmOut3Global);
-  gsl_vector_add(ip3Global, ibmOut4Global);
-  gsl_vector_add(ip3Global, ibmOut5Global);
-  gsl_vector_add(ip3Global, ibmOut6Global); 
+      timeIBMOutGlobal = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT", "fuze");
+    
+      ibmOut1Global = readMDSplusVector(shotNumber-2, "\\I_IBM_1_OUT", "fuze");
+      ibmOut2Global = readMDSplusVector(shotNumber-2, "\\I_IBM_2_OUT", "fuze");
+      ibmOut3Global = readMDSplusVector(shotNumber-2, "\\I_IBM_3_OUT", "fuze");
+      ibmOut4Global = readMDSplusVector(shotNumber-2, "\\I_IBM_4_OUT", "fuze");
+      ibmOut5Global = readMDSplusVector(shotNumber-2, "\\I_IBM_5_OUT", "fuze");
+      ibmOut6Global = readMDSplusVector(shotNumber-2, "\\I_IBM_6_OUT", "fuze");
+    
+      gsl_vector_free(timeIPGlobal);
+      timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT", "fuze");
+    
+      gsl_vector_free(ip3Global);
+      ip3Global = readMDSplusVector(shotNumber-2, "\\I_IBM_1_OUT", "fuze");
+      gsl_vector_add(ip3Global, ibmOut2Global);
+      gsl_vector_add(ip3Global, ibmOut3Global);
+      gsl_vector_add(ip3Global, ibmOut4Global);
+      gsl_vector_add(ip3Global, ibmOut5Global);
+      gsl_vector_add(ip3Global, ibmOut6Global); 
 
-  gsl_vector_free(ibmOut1Global);
-  gsl_vector_free(ibmOut2Global);
-  gsl_vector_free(ibmOut3Global);
-  gsl_vector_free(ibmOut4Global);
-  gsl_vector_free(ibmOut5Global);
-  gsl_vector_free(ibmOut6Global);
+      gsl_vector_free(ibmOut1Global);
+      gsl_vector_free(ibmOut2Global);
+      gsl_vector_free(ibmOut3Global);
+      gsl_vector_free(ibmOut4Global);
+      gsl_vector_free(ibmOut5Global);
+      gsl_vector_free(ibmOut6Global);
 
-  gsl_vector_free(ip2Global);
-  ip2Global = readMDSplusVector(shotNumber-1, "\\I_IBM_1_OUT", "fuze");  
-  ibmOut1Global = readMDSplusVector(shotNumber-1, "\\I_IBM_1_OUT", "fuze");
-  ibmOut2Global = readMDSplusVector(shotNumber-1, "\\I_IBM_2_OUT", "fuze");
-  ibmOut3Global = readMDSplusVector(shotNumber-1, "\\I_IBM_3_OUT", "fuze");
-  ibmOut4Global = readMDSplusVector(shotNumber-1, "\\I_IBM_4_OUT", "fuze");
-  ibmOut5Global = readMDSplusVector(shotNumber-1, "\\I_IBM_5_OUT", "fuze");
-  ibmOut6Global = readMDSplusVector(shotNumber-1, "\\I_IBM_6_OUT", "fuze");
+      gsl_vector_free(ip2Global);
+      ip2Global = readMDSplusVector(shotNumber-1, "\\I_IBM_1_OUT", "fuze");  
+      ibmOut1Global = readMDSplusVector(shotNumber-1, "\\I_IBM_1_OUT", "fuze");
+      ibmOut2Global = readMDSplusVector(shotNumber-1, "\\I_IBM_2_OUT", "fuze");
+      ibmOut3Global = readMDSplusVector(shotNumber-1, "\\I_IBM_3_OUT", "fuze");
+      ibmOut4Global = readMDSplusVector(shotNumber-1, "\\I_IBM_4_OUT", "fuze");
+      ibmOut5Global = readMDSplusVector(shotNumber-1, "\\I_IBM_5_OUT", "fuze");
+      ibmOut6Global = readMDSplusVector(shotNumber-1, "\\I_IBM_6_OUT", "fuze");
   
-  gsl_vector_add(ip2Global, ibmOut2Global);
-  gsl_vector_add(ip2Global, ibmOut3Global);
-  gsl_vector_add(ip2Global, ibmOut4Global);
-  gsl_vector_add(ip2Global, ibmOut5Global);
-  gsl_vector_add(ip2Global, ibmOut6Global); 
+      gsl_vector_add(ip2Global, ibmOut2Global);
+      gsl_vector_add(ip2Global, ibmOut3Global);
+      gsl_vector_add(ip2Global, ibmOut4Global);
+      gsl_vector_add(ip2Global, ibmOut5Global);
+      gsl_vector_add(ip2Global, ibmOut6Global); 
 
-  gsl_vector_free(ibmOut1Global);
-  gsl_vector_free(ibmOut2Global);
-  gsl_vector_free(ibmOut3Global);
-  gsl_vector_free(ibmOut4Global);
-  gsl_vector_free(ibmOut5Global);
-  gsl_vector_free(ibmOut6Global);
-
-  gsl_vector_free(ip1Global);
-  ip1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");  
-  ibmOut1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");
-  ibmOut2Global = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT", "fuze");
-  ibmOut3Global = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT", "fuze");
-  ibmOut4Global = readMDSplusVector(shotNumber, "\\I_IBM_4_OUT", "fuze");
-  ibmOut5Global = readMDSplusVector(shotNumber, "\\I_IBM_5_OUT", "fuze");
-  ibmOut6Global = readMDSplusVector(shotNumber, "\\I_IBM_6_OUT", "fuze");
+      gsl_vector_free(ibmOut1Global);
+      gsl_vector_free(ibmOut2Global);
+      gsl_vector_free(ibmOut3Global);
+      gsl_vector_free(ibmOut4Global);
+      gsl_vector_free(ibmOut5Global);
+      gsl_vector_free(ibmOut6Global);
+    
+      gsl_vector_free(ip1Global);
+      ip1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");  
+      ibmOut1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");
+      ibmOut2Global = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT", "fuze");
+      ibmOut3Global = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT", "fuze");
+      ibmOut4Global = readMDSplusVector(shotNumber, "\\I_IBM_4_OUT", "fuze");
+      ibmOut5Global = readMDSplusVector(shotNumber, "\\I_IBM_5_OUT", "fuze");
+      ibmOut6Global = readMDSplusVector(shotNumber, "\\I_IBM_6_OUT", "fuze");
   
-  gsl_vector_add(ip1Global, ibmOut2Global);
-  gsl_vector_add(ip1Global, ibmOut3Global);
-  gsl_vector_add(ip1Global, ibmOut4Global);
-  gsl_vector_add(ip1Global, ibmOut5Global);
-  gsl_vector_add(ip1Global, ibmOut6Global); 
+      gsl_vector_add(ip1Global, ibmOut2Global);
+      gsl_vector_add(ip1Global, ibmOut3Global);
+      gsl_vector_add(ip1Global, ibmOut4Global);
+      gsl_vector_add(ip1Global, ibmOut5Global);
+      gsl_vector_add(ip1Global, ibmOut6Global);
 
+    } else {
+
+      timeIBMOutGlobal = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT", "fuze");
+      ibmOut1Global = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT", "fuze");
+      ibmOut2Global = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT", "fuze");
+      ibmOut3Global = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT", "fuze");
+      ibmOut4Global = readMDSplusVector(shotNumber, "\\I_IBM_4_OUT", "fuze");
+      ibmOut5Global = readMDSplusVector(shotNumber, "\\I_IBM_5_OUT", "fuze");
+      ibmOut6Global = readMDSplusVector(shotNumber, "\\I_IBM_6_OUT", "fuze");
+
+    }
+
+  }
+
+  if (USE_THYRISTOR_BANK) {
+    
+    if (USE_THYRISTOR_IP) {
+
+      timeTBMOutGlobal = readMDSplusVectorDim(shotNumber, "\\I_TBM_1_OUT", "fuze");
+    
+      tbmOut1Global = readMDSplusVector(shotNumber-2, "\\I_TBM_1_OUT", "fuze");
+      tbmOut2Global = readMDSplusVector(shotNumber-2, "\\I_TBM_2_OUT", "fuze");
+      tbmOut3Global = readMDSplusVector(shotNumber-2, "\\I_TBM_3_OUT", "fuze");
+      tbmOut4Global = readMDSplusVector(shotNumber-2, "\\I_TBM_4_OUT", "fuze");
+      tbmOut5Global = readMDSplusVector(shotNumber-2, "\\I_TBM_5_OUT", "fuze");
+      tbmOut6Global = readMDSplusVector(shotNumber-2, "\\I_TBM_6_OUT", "fuze");
+      tbmOut7Global = readMDSplusVector(shotNumber-2, "\\I_TBM_7_OUT", "fuze");
+      tbmOut8Global = readMDSplusVector(shotNumber-2, "\\I_TBM_8_OUT", "fuze");
+      tbmOut9Global = readMDSplusVector(shotNumber-2, "\\I_TBM_9_OUT", "fuze");
+      tbmOut10Global = readMDSplusVector(shotNumber-2, "\\I_TBM_10_OUT", "fuze");
+      tbmOut11Global = readMDSplusVector(shotNumber-2, "\\I_TBM_11_OUT", "fuze");
+      tbmOut12Global = readMDSplusVector(shotNumber-2, "\\I_TBM_12_OUT", "fuze");
+    
+      gsl_vector_free(timeIPGlobal);
+      timeIPGlobal = readMDSplusVectorDim(shotNumber, "\\I_TBM_1_OUT", "fuze");
+    
+      gsl_vector_free(ip3Global);
+      ip3Global = readMDSplusVector(shotNumber-2, "\\I_TBM_1_OUT", "fuze");
+      gsl_vector_add(ip3Global, tbmOut2Global);
+      gsl_vector_add(ip3Global, tbmOut3Global);
+      gsl_vector_add(ip3Global, tbmOut4Global);
+      gsl_vector_add(ip3Global, tbmOut5Global);
+      gsl_vector_add(ip3Global, tbmOut6Global);
+      gsl_vector_add(ip3Global, tbmOut7Global);
+      gsl_vector_add(ip3Global, tbmOut8Global);
+      gsl_vector_add(ip3Global, tbmOut9Global);
+      gsl_vector_add(ip3Global, tbmOut10Global);
+      gsl_vector_add(ip3Global, tbmOut11Global);
+      gsl_vector_add(ip3Global, tbmOut12Global);
+
+      gsl_vector_free(tbmOut1Global);
+      gsl_vector_free(tbmOut2Global);
+      gsl_vector_free(tbmOut3Global);
+      gsl_vector_free(tbmOut4Global);
+      gsl_vector_free(tbmOut5Global);
+      gsl_vector_free(tbmOut6Global);
+      gsl_vector_free(tbmOut7Global);
+      gsl_vector_free(tbmOut8Global);
+      gsl_vector_free(tbmOut9Global);
+      gsl_vector_free(tbmOut10Global);
+      gsl_vector_free(tbmOut11Global);
+      gsl_vector_free(tbmOut12Global);
+
+      gsl_vector_free(ip2Global);
+      ip2Global = readMDSplusVector(shotNumber-1, "\\I_TBM_1_OUT", "fuze");  
+      tbmOut1Global = readMDSplusVector(shotNumber-1, "\\I_TBM_1_OUT", "fuze");
+      tbmOut2Global = readMDSplusVector(shotNumber-1, "\\I_TBM_2_OUT", "fuze");
+      tbmOut3Global = readMDSplusVector(shotNumber-1, "\\I_TBM_3_OUT", "fuze");
+      tbmOut4Global = readMDSplusVector(shotNumber-1, "\\I_TBM_4_OUT", "fuze");
+      tbmOut5Global = readMDSplusVector(shotNumber-1, "\\I_TBM_5_OUT", "fuze");
+      tbmOut6Global = readMDSplusVector(shotNumber-1, "\\I_TBM_6_OUT", "fuze");
+      tbmOut7Global = readMDSplusVector(shotNumber-1, "\\I_TBM_7_OUT", "fuze");
+      tbmOut8Global = readMDSplusVector(shotNumber-1, "\\I_TBM_8_OUT", "fuze");
+      tbmOut9Global = readMDSplusVector(shotNumber-1, "\\I_TBM_9_OUT", "fuze");
+      tbmOut10Global = readMDSplusVector(shotNumber-1, "\\I_TBM_10_OUT", "fuze");
+      tbmOut11Global = readMDSplusVector(shotNumber-1, "\\I_TBM_11_OUT", "fuze");
+      tbmOut12Global = readMDSplusVector(shotNumber-1, "\\I_TBM_12_OUT", "fuze");
+  
+      gsl_vector_add(ip2Global, tbmOut2Global);
+      gsl_vector_add(ip2Global, tbmOut3Global);
+      gsl_vector_add(ip2Global, tbmOut4Global);
+      gsl_vector_add(ip2Global, tbmOut5Global);
+      gsl_vector_add(ip2Global, tbmOut6Global); 
+      gsl_vector_add(ip2Global, tbmOut7Global);
+      gsl_vector_add(ip2Global, tbmOut8Global);
+      gsl_vector_add(ip2Global, tbmOut9Global);
+      gsl_vector_add(ip2Global, tbmOut10Global);
+      gsl_vector_add(ip2Global, tbmOut11Global);
+      gsl_vector_add(ip2Global, tbmOut12Global);
+      
+      gsl_vector_free(tbmOut1Global);
+      gsl_vector_free(tbmOut2Global);
+      gsl_vector_free(tbmOut3Global);
+      gsl_vector_free(tbmOut4Global);
+      gsl_vector_free(tbmOut5Global);
+      gsl_vector_free(tbmOut6Global);
+      gsl_vector_free(tbmOut7Global);
+      gsl_vector_free(tbmOut8Global);
+      gsl_vector_free(tbmOut9Global);
+      gsl_vector_free(tbmOut10Global);
+      gsl_vector_free(tbmOut11Global);
+      gsl_vector_free(tbmOut12Global);
+      
+      gsl_vector_free(ip1Global);
+      ip1Global = readMDSplusVector(shotNumber, "\\I_TBM_1_OUT", "fuze");  
+      tbmOut1Global = readMDSplusVector(shotNumber, "\\I_TBM_1_OUT", "fuze");
+      tbmOut2Global = readMDSplusVector(shotNumber, "\\I_TBM_2_OUT", "fuze");
+      tbmOut3Global = readMDSplusVector(shotNumber, "\\I_TBM_3_OUT", "fuze");
+      tbmOut4Global = readMDSplusVector(shotNumber, "\\I_TBM_4_OUT", "fuze");
+      tbmOut5Global = readMDSplusVector(shotNumber, "\\I_TBM_5_OUT", "fuze");
+      tbmOut6Global = readMDSplusVector(shotNumber, "\\I_TBM_6_OUT", "fuze");
+      tbmOut7Global = readMDSplusVector(shotNumber, "\\I_TBM_7_OUT", "fuze");
+      tbmOut8Global = readMDSplusVector(shotNumber, "\\I_TBM_8_OUT", "fuze");
+      tbmOut9Global = readMDSplusVector(shotNumber, "\\I_TBM_9_OUT", "fuze");
+      tbmOut10Global = readMDSplusVector(shotNumber, "\\I_TBM_10_OUT", "fuze");
+      tbmOut11Global = readMDSplusVector(shotNumber, "\\I_TBM_11_OUT", "fuze");
+      tbmOut12Global = readMDSplusVector(shotNumber, "\\I_TBM_12_OUT", "fuze");
+      
+      gsl_vector_add(ip1Global, tbmOut2Global);
+      gsl_vector_add(ip1Global, tbmOut3Global);
+      gsl_vector_add(ip1Global, tbmOut4Global);
+      gsl_vector_add(ip1Global, tbmOut5Global);
+      gsl_vector_add(ip1Global, tbmOut6Global);
+      gsl_vector_add(ip1Global, tbmOut7Global);
+      gsl_vector_add(ip1Global, tbmOut8Global);
+      gsl_vector_add(ip1Global, tbmOut9Global);
+      gsl_vector_add(ip1Global, tbmOut10Global);
+      gsl_vector_add(ip1Global, tbmOut11Global);
+      gsl_vector_add(ip1Global, tbmOut12Global);
+      
+    } else {
+
+      timeTBMOutGlobal = readMDSplusVectorDim(shotNumber, "\\I_TBM_01_OUT", "fuze");
+      tbmOut1Global = readMDSplusVector(shotNumber, "\\I_TBM_01_OUT", "fuze");
+      tbmOut2Global = readMDSplusVector(shotNumber, "\\I_TBM_02_OUT", "fuze");
+      tbmOut3Global = readMDSplusVector(shotNumber, "\\I_TBM_03_OUT", "fuze");
+      tbmOut4Global = readMDSplusVector(shotNumber, "\\I_TBM_04_OUT", "fuze");
+      tbmOut5Global = readMDSplusVector(shotNumber, "\\I_TBM_05_OUT", "fuze");
+      tbmOut6Global = readMDSplusVector(shotNumber, "\\I_TBM_06_OUT", "fuze");
+      tbmOut7Global = readMDSplusVector(shotNumber, "\\I_TBM_07_OUT", "fuze");
+      tbmOut8Global = readMDSplusVector(shotNumber, "\\I_TBM_08_OUT", "fuze");
+      tbmOut9Global = readMDSplusVector(shotNumber, "\\I_TBM_09_OUT", "fuze");
+      tbmOut10Global = readMDSplusVector(shotNumber, "\\I_TBM_10_OUT", "fuze");
+      tbmOut11Global = readMDSplusVector(shotNumber, "\\I_TBM_11_OUT", "fuze");
+      tbmOut12Global = readMDSplusVector(shotNumber, "\\I_TBM_12_OUT", "fuze");
+      
+    }
+    
+  }
+  
   return 0;
 
 }
