@@ -36,6 +36,7 @@ static int plotDualBanksAnalysis();
 static int plotDualBanksAnalysis2();
 static int saveData(int shotNumber);
 static int setGlobalVariables(int shotNumber);
+static int clearGlobalVariables();
 static gsl_vector *timeIPGlobal;
 static gsl_vector *ip1Global;
 static gsl_vector *ip2Global;
@@ -124,7 +125,7 @@ int plotPostShotAnalysis() {
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
 
   setGlobalVariables(shotNumber);
-  
+    
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
@@ -192,6 +193,8 @@ int plotPostShotAnalysis() {
     
   }
 
+  clearGlobalVariables();
+  
   return 0;
 
 }
@@ -468,6 +471,70 @@ static int setGlobalVariables(int shotNumber) {
   
   return 0;
 
+}
+
+
+/******************************************************************************
+ * Function: clearGlobalVariables
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int clearGlobalVariables() {
+
+  gsl_vector_free(timeIPGlobal);
+  gsl_vector_free(ip1Global);
+  gsl_vector_free(ip2Global);
+  gsl_vector_free(ip3Global);
+  gsl_vector_free(timeVGapGlobal);
+  gsl_vector_free(vgap1Global);
+  gsl_vector_free(vgap2Global);
+  gsl_vector_free(vgap3Global);
+  gsl_vector_free(timeProbeGlobal);
+  gsl_vector_free(m0p5Global);
+  gsl_vector_free(m0p15Global);
+  gsl_vector_free(m0p35Global);
+  gsl_vector_free(m0p45Global);
+  gsl_vector_free(m1p5Global);
+  gsl_vector_free(m1p15Global);
+  gsl_vector_free(m1p35Global);
+  gsl_vector_free(m1p45Global);
+  gsl_vector_free(timeNeutronGlobal);
+  gsl_vector_free(neutron1Global);
+  //gsl_vector_free(neutron2Global);
+  //gsl_vector_free(neutron3Global);
+  gsl_vector_free(neutron4Global);
+  gsl_vector_free(neutron5Global);
+  //gsl_vector_free(neutron6Global);
+  gsl_vector_free(neutron7Global);
+  gsl_vector_free(neutron8Global);
+  //gsl_vector_free(neutron9Global);
+  gsl_vector_free(neutron10Global);
+  gsl_vector_free(timeIBMOutGlobal);
+  gsl_vector_free(ibmOut1Global);
+  gsl_vector_free(ibmOut2Global);
+  gsl_vector_free(ibmOut3Global);
+  gsl_vector_free(ibmOut4Global);
+  gsl_vector_free(ibmOut5Global);
+  gsl_vector_free(ibmOut6Global);
+  gsl_vector_free(timeTBMOutGlobal);
+  gsl_vector_free(tbmOut1Global);
+  gsl_vector_free(tbmOut2Global);
+  gsl_vector_free(tbmOut3Global);
+  gsl_vector_free(tbmOut4Global);
+  gsl_vector_free(tbmOut5Global);
+  gsl_vector_free(tbmOut6Global);
+  gsl_vector_free(tbmOut7Global);
+  gsl_vector_free(tbmOut8Global);
+  gsl_vector_free(tbmOut9Global);
+  gsl_vector_free(tbmOut10Global);
+  gsl_vector_free(tbmOut11Global);
+  gsl_vector_free(tbmOut12Global);
+
+  return 0;
+  
 }
 
 
