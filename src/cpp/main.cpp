@@ -8,7 +8,9 @@ int main() {
   
   //plotPostShotAnalysis();
 
-  softXRayRun();
+  //softXRayRun();
+  
+  bankDiagnosticsRun();
   
   //testLightField();
 

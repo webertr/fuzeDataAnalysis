@@ -14,5 +14,6 @@
 #include "cpp/interferometry.h"
 #include "cpp/save.h"
 #include "cpp/softXRay.h"
+#include "cpp/bankDiagnostics.h"
 
 #endif
