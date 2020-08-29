@@ -5,6 +5,7 @@
 #include <gsl/gsl_vector.h>
 
 #include <cpp/mdsplusAccess.h>
+#include <cpp/plot.h>
 
 int testSoftXRay();
 int softXRayRun();
