@@ -23,6 +23,8 @@ static int plotBankCap(int shotNumber, std::string tempDataFile, std::string tem
 		       int tLow, int tHigh);
 static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
 		    int tLow, int tHigh);
+static int plotGV(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		  double tLow, double tHigh);
 
 /******************************************************************************
  * Global variables
@@ -44,6 +46,10 @@ static gsl_vector *timeVGapGlobal;
 static gsl_vector *vgap1Global;
 static gsl_vector *vgap2Global;
 static gsl_vector *vgap3Global;
+static gsl_vector *timeGVGlobal;
+static gsl_vector *gv1Global;
+static gsl_vector *gv2Global;
+static gsl_vector *gv3Global;
 
 
 #define TLOW 0
@@ -77,15 +83,18 @@ int bankDiagnosticsRun() {
   int pid2 = fork();
 
   if ( (pid1 == 0) && (pid2 == 0) ) {
-    plotBankOut(shotNumber, "data/bankDiag1.txt", "data/bankDiag1.sh", TLOW, THIGH);
+    plotBankOut(shotNumber, "data/igout1.txt", "data/igout1.sh", TLOW, THIGH);
     exit(0);    
   }
   else if ( (pid1 == 0) && (pid2 > 0) ) {
-    plotBankCap(shotNumber, "data/bankDiag2.txt", "data/bankDiag2.sh", TLOW, THIGH);
+    plotBankCap(shotNumber, "data/igcap1.txt", "data/igcap1.sh", TLOW, THIGH);
     exit(0);
   }
-  else if ( (pid1 > 0) && (pid2 > 0) ) {
+  else if ( (pid1 > 0) && (pid2 == 0) ) {
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
+  }
+  else if ( (pid1 > 0) && (pid2 > 0) ) {
+    plotGV(shotNumber, "data/gv1.txt", "data/gv2.sh", -1.5, 1.5);
   }
   
   clearGlobalVariables();
@@ -121,6 +130,10 @@ static int setGlobalVariables(int shotNumber) {
   vgap1Global = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
   vgap2Global = readMDSplusVector(shotNumber-1, "\\V_GAP", "fuze");
   vgap3Global = readMDSplusVector(shotNumber-2, "\\V_GAP", "fuze");
+  timeGVGlobal = readMDSplusVectorDim(shotNumber, "\\i_gv_1_valve", "fuze");
+  gv1Global = readMDSplusVector(shotNumber, "\\i_gv_1_valve", "fuze");
+  gv2Global = readMDSplusVector(shotNumber, "\\i_gv_2_valve", "fuze");
+  gv3Global = readMDSplusVector(shotNumber, "\\i_gv_3_valve", "fuze");
 
   return 0;
 
@@ -153,6 +166,10 @@ static int clearGlobalVariables() {
   gsl_vector_free(vgap1Global);
   gsl_vector_free(vgap2Global);
   gsl_vector_free(vgap3Global);
+  gsl_vector_free(timeGVGlobal);
+  gsl_vector_free(gv1Global);
+  gsl_vector_free(gv2Global);
+  gsl_vector_free(gv3Global);
 
   return 0;
   
@@ -202,12 +219,12 @@ static int plotBankOut(int shotNumber, std::string tempDataFile, std::string tem
   oss.str("");
 
   gsl_vector_scale(ignitronOut5Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'red' title 'I Out 5 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'yellow' title 'I Out 5 for " << shotNumber << "'";
   ignitronOut5Label = oss.str();
   oss.str("");
 
   gsl_vector_scale(ignitronOut6Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'black' title 'I Out 6 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'purple' title 'I Out 6 for " << shotNumber << "'";
   ignitronOut6Label = oss.str();
   oss.str("");
   
@@ -348,13 +365,67 @@ static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempSc
   std::string keyWords = "set title 'V_{GAP}'\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time ({/Symbol m}sec)'\n"
-    "set key left top\n"
+    "set key right top\n"
     "set yrange[:]\n";
   
   keyWords.append(rangeLabel);
 
   plot3VectorData(timeVGapGlobal, vgap1Global, vgap1Label, vgap2Global, vgap2Label,
 		  vgap3Global, vgap3Label, keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotGV
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotGV(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+		  double tLow, double tHigh) {
+
+  std::ostringstream oss;
+  std::string gv1Label;
+  std::string gv2Label;
+  std::string gv3Label;
+  std::string rangeLabel;
+
+  gsl_vector_scale(timeGVGlobal, 1E3);
+
+  gsl_vector_scale(gv1Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'black' title 'GV1 for " << shotNumber << "'";
+  gv1Label = oss.str();
+  oss.str("");
+
+  gsl_vector_scale(gv2Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title 'GV2 for " << shotNumber << "'";
+  gv2Label = oss.str();
+  oss.str("");
+
+  gsl_vector_scale(gv3Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'green' title 'GV3 for " << shotNumber << "'";
+  gv3Label = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'V_{GAP}'\n"
+    "set ylabel 'Voltage (kV)'\n"
+    "set xlabel 'Time (ms)'\n"
+    "set key left top\n"
+    "set yrange[:]\n";
+  
+  keyWords.append(rangeLabel);
+
+  plot3VectorData(timeGVGlobal, gv1Global, gv1Label, gv2Global, gv2Label,
+		  gv3Global, gv3Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 

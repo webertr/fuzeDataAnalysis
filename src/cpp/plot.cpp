@@ -581,7 +581,7 @@ int plot6VectorData(gsl_vector *xVecIn, gsl_vector *yVec1In, std::string y1Label
 
   for (ii = 0; ii < len; ii++) {
 
-    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
+    fprintf(fpData, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(xVecIn, ii), 
 	    gsl_vector_get(yVec1In, ii), gsl_vector_get(yVec2In, ii), 
 	    gsl_vector_get(yVec3In, ii), gsl_vector_get(yVec4In, ii), 
 	    gsl_vector_get(yVec5In, ii), gsl_vector_get(yVec6In, ii));
