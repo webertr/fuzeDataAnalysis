@@ -13,5 +13,6 @@
 #include "cpp/psqlAccess.h"
 #include "cpp/interferometry.h"
 #include "cpp/save.h"
+#include "cpp/softXRay.h"
 
 #endif

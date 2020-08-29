@@ -54,6 +54,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/interferometry.cpp \
 	src/cpp/plasmaParam.cpp \
 	src/cpp/save.cpp \
+	src/cpp/softXRay.cpp \
 	src/cpp/test.cpp
 
 SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \

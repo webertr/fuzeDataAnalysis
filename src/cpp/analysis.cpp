@@ -16,6 +16,9 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile,
 static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
 		       gsl_vector *det2, int detNum2,  gsl_vector *det3, int detNum3,
 		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh);
+static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
+		       gsl_vector *det2, int detNum2, std::string tempDataFile,
+			std::string tempScriptFile, int tLow, int tHigh);
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      std::string tempDataFile, std::string tempScriptFile, 
 			      int tLow, int tHigh);
@@ -56,15 +59,16 @@ static gsl_vector *m1p35Global;
 static gsl_vector *m1p45Global;
 static gsl_vector *timeNeutronGlobal;
 static gsl_vector *neutron1Global;
-//static gsl_vector *neutron2Global;
-//static gsl_vector *neutron3Global;
+static gsl_vector *neutron2Global;
+static gsl_vector *neutron3Global;
 static gsl_vector *neutron4Global;
 static gsl_vector *neutron5Global;
-//static gsl_vector *neutron6Global;
+static gsl_vector *neutron6Global;
 static gsl_vector *neutron7Global;
 static gsl_vector *neutron8Global;
-//static gsl_vector *neutron9Global;
+static gsl_vector *neutron9Global;
 static gsl_vector *neutron10Global;
+static gsl_vector *neutron12Global;
 static gsl_vector *timeIBMOutGlobal;
 static gsl_vector *ibmOut1Global;
 static gsl_vector *ibmOut2Global;
@@ -90,7 +94,7 @@ static gsl_vector *tbmOut12Global;
 #define THIGH 50
 #define USE_IGNITRON_IP true
 #define USE_THYRISTOR_IP false
-#define USE_NEUTRON false
+#define USE_NEUTRON true
 #define USE_THYRISTOR_BANK false
 #define USE_IGNITRON_BANK true
 
@@ -123,7 +127,8 @@ int plotPostShotAnalysis() {
   //plotPinchVgapScaling("data/data.txt", "data/data.sh");
   //plotPinchCurrentScaling("data/data.txt", "data/data.sh");
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
-
+  //exit(0);
+  
   setGlobalVariables(shotNumber);
     
   int pid1 = fork();
@@ -131,7 +136,7 @@ int plotPostShotAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
+    //plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
@@ -139,26 +144,26 @@ int plotPostShotAnalysis() {
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
+    //plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
+    //plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
 
     if (USE_NEUTRON) {
-      plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
-		  neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+      //plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
+      //	  neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     }
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
 
     if (USE_NEUTRON) {
-      plotNeutron(shotNumber, timeNeutronGlobal, neutron7Global, 7, neutron8Global, 8,
-		  neutron10Global, 10, "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
+      plotNeutron2(shotNumber, timeNeutronGlobal, neutron10Global, 10, neutron12Global, 12,
+		  "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
     }
     exit(0);
   }
@@ -173,6 +178,8 @@ int plotPostShotAnalysis() {
     
     plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
 		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    plotNeutron2(shotNumber, timeNeutronGlobal, neutron10Global, 10, neutron12Global, 12,
+		 "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
@@ -228,17 +235,18 @@ static int setGlobalVariables(int shotNumber) {
 
   if (USE_NEUTRON) {
     
-    timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_1_s", "fuze");
-    neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
+    timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_10_s", "fuze");
+    //neutron1Global = readMDSplusVector(shotNumber, "\\neutron_1_s", "fuze");
     //neutron2Global = readMDSplusVector(shotNumber, "\\neutron_2_s", "fuze");
     //neutron3Global = readMDSplusVector(shotNumber, "\\neutron_3_s", "fuze");
-    neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
-    neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
+    //neutron4Global = readMDSplusVector(shotNumber, "\\neutron_4_s", "fuze");
+    //neutron5Global = readMDSplusVector(shotNumber, "\\neutron_5_s", "fuze");
     //neutron6Global = readMDSplusVector(shotNumber, "\\neutron_6_s", "fuze");
-    neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
-    neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
+    //neutron7Global = readMDSplusVector(shotNumber, "\\neutron_7_s", "fuze");
+    //neutron8Global = readMDSplusVector(shotNumber, "\\neutron_8_s", "fuze");
     //neutron9Global = readMDSplusVector(shotNumber, "\\neutron_9_s", "fuze");
     neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
+    neutron12Global = readMDSplusVector(shotNumber, "\\neutron_12_s", "fuze");
 
   }
 
@@ -503,15 +511,16 @@ static int clearGlobalVariables() {
   gsl_vector_free(m1p45Global);
   gsl_vector_free(timeNeutronGlobal);
   gsl_vector_free(neutron1Global);
-  //gsl_vector_free(neutron2Global);
-  //gsl_vector_free(neutron3Global);
+  gsl_vector_free(neutron2Global);
+  gsl_vector_free(neutron3Global);
   gsl_vector_free(neutron4Global);
   gsl_vector_free(neutron5Global);
-  //gsl_vector_free(neutron6Global);
+  gsl_vector_free(neutron6Global);
   gsl_vector_free(neutron7Global);
   gsl_vector_free(neutron8Global);
-  //gsl_vector_free(neutron9Global);
+  gsl_vector_free(neutron9Global);
   gsl_vector_free(neutron10Global);
+  gsl_vector_free(neutron12Global);
   gsl_vector_free(timeIBMOutGlobal);
   gsl_vector_free(ibmOut1Global);
   gsl_vector_free(ibmOut2Global);
@@ -833,6 +842,53 @@ static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int d
   
   plot3VectorData(time, det1, neutron1Label, det2, neutron2Label,
 		  det3, neutron3Label, keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotNeutron2
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
+		       gsl_vector *det2, int detNum2, std::string tempDataFile,
+			std::string tempScriptFile, int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  std::string neutron1Label;
+  std::string neutron2Label;
+  std::string rangeLabel;
+  
+  gsl_vector_scale(timeNeutronGlobal, 1E6);
+
+  oss << "with line lw 3 lc rgb 'black' title 'ND" << detNum1 << "for " << shotNumber << "'";
+  neutron1Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'red' title 'ND" << detNum2 << "for " << shotNumber << "'";
+  neutron2Label = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Neutron Detectors'\n"
+    "set ylabel 'Signal (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left bottom\n"
+    "set yrange[:]\n";
+
+  keyWords.append(rangeLabel);
+  
+  plot2VectorData(time, det1, neutron1Label, det2, neutron2Label, keyWords,
+		  tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -1218,54 +1274,73 @@ static int plotPinchCurrentAverageData(int shotNumber, std::string tempDataFile,
 
 static int saveIBMData() {
 
-  std::string fileNameOut = "/home/fuze/Downloads/Ouput_191028003.csv";
-  std::string fileNameGap = "/home/fuze/Downloads/Gap_191028003.csv";
+  //std::string fileNameOut = "/home/fuze/Downloads/Ouput_191028003.csv";
+  //std::string fileNameGap = "/home/fuze/Downloads/Gap_191028003.csv";
+  std::string fileNameOutCB = "/home/fuze/Downloads/Out_200826008.csv";
+  std::string fileNameCBCB = "/home/fuze/Downloads/CB_200826008.csv";
+  std::string fileNameOutNoCB = "/home/fuze/Downloads/Out_200130027.csv";
+  std::string fileNameCBNoCB = "/home/fuze/Downloads/CB_200130027.csv";
 
-  int shotNumber = 191028003;
+  int shotNumberCB = 200826008;
+  int shotNumberNoCB = 200130027;
   int sizeRowOut;
-  int sizeRowGap;
+  int sizeRowCB;
   int ii;
 
   gsl_vector *timeOut;
-  gsl_vector *timeGap;
+  gsl_vector *timeCB;
   gsl_vector *outRaw1;
   gsl_vector *outRaw2;
   gsl_vector *outRaw3;
   gsl_vector *outRaw4;
   gsl_vector *outRaw5;
   gsl_vector *outRaw6;
-  gsl_vector *vgap;
+  gsl_vector *cbRaw1;
+  gsl_vector *cbRaw2;
+  gsl_vector *cbRaw3;
+  gsl_vector *cbRaw4;
+  gsl_vector *cbRaw5;
+  gsl_vector *cbRaw6;
 
-  remove(fileNameOut.c_str());
-  remove(fileNameGap.c_str());
-  FILE *fpDataOut = fopen(fileNameOut.c_str(), "w");
-  FILE *fpDataGap = fopen(fileNameGap.c_str(), "w");
+  remove(fileNameOutCB.c_str());
+  remove(fileNameCBCB.c_str());
+  remove(fileNameOutNoCB.c_str());
+  remove(fileNameCBNoCB.c_str());
+  FILE *fpDataOutCB = fopen(fileNameOutCB.c_str(), "w");
+  FILE *fpDataCBCB = fopen(fileNameCBCB.c_str(), "w");
+  FILE *fpDataOutNoCB = fopen(fileNameOutNoCB.c_str(), "w");
+  FILE *fpDataCBNoCB = fopen(fileNameCBNoCB.c_str(), "w");
 
-  if ( (fpDataOut == NULL) || (fpDataGap == NULL) ) {
+  if ( (fpDataOutCB == NULL) || (fpDataCBCB == NULL) ||
+       (fpDataOutNoCB == NULL) || (fpDataCBNoCB == NULL) ) {
     printf("Error opening files!\n");
     exit(1);
   }
 
-  timeGap = readMDSplusVectorDim(shotNumber, "\\V_GAP", "fuze");
-  gsl_vector_scale(timeGap, 1E6);
-  vgap = readMDSplusVector(shotNumber, "\\V_GAP", "fuze");
-  gsl_vector_scale(vgap, 1E3);
-  
-  timeOut = readMDSplusVectorDim(shotNumber, "\\I_IBM_1_OUT:RAW", "fuze");
+  timeOut = readMDSplusVectorDim(shotNumberCB, "\\I_IBM_1_OUT", "fuze");
   gsl_vector_scale(timeOut, 1E6);
-  outRaw1 = readMDSplusVector(shotNumber, "\\I_IBM_1_OUT:RAW", "fuze");
-  outRaw2 = readMDSplusVector(shotNumber, "\\I_IBM_2_OUT:RAW", "fuze");
-  outRaw3 = readMDSplusVector(shotNumber, "\\I_IBM_3_OUT:RAW", "fuze");
-  outRaw4 = readMDSplusVector(shotNumber, "\\I_IBM_4_OUT:RAW", "fuze");
-  outRaw5 = readMDSplusVector(shotNumber, "\\I_IBM_5_OUT:RAW", "fuze");
-  outRaw6 = readMDSplusVector(shotNumber, "\\I_IBM_6_OUT:RAW", "fuze");
+  outRaw1 = readMDSplusVector(shotNumberCB, "\\I_IBM_1_OUT", "fuze");
+  outRaw2 = readMDSplusVector(shotNumberCB, "\\I_IBM_2_OUT", "fuze");
+  outRaw3 = readMDSplusVector(shotNumberCB, "\\I_IBM_3_OUT", "fuze");
+  outRaw4 = readMDSplusVector(shotNumberCB, "\\I_IBM_4_OUT", "fuze");
+  outRaw5 = readMDSplusVector(shotNumberCB, "\\I_IBM_5_OUT", "fuze");
+  outRaw6 = readMDSplusVector(shotNumberCB, "\\I_IBM_6_OUT", "fuze");
+
+  timeCB = readMDSplusVectorDim(shotNumberCB, "\\I_IBM_1_CB", "fuze");
+  gsl_vector_scale(timeCB, 1E6);
+  cbRaw1 = readMDSplusVector(shotNumberCB, "\\I_IBM_1_CB", "fuze");
+  cbRaw2 = readMDSplusVector(shotNumberCB, "\\I_IBM_2_CB", "fuze");
+  cbRaw3 = readMDSplusVector(shotNumberCB, "\\I_IBM_3_CB", "fuze");
+  cbRaw4 = readMDSplusVector(shotNumberCB, "\\I_IBM_4_CB", "fuze");
+  cbRaw5 = readMDSplusVector(shotNumberCB, "\\I_IBM_5_CB", "fuze");
+  cbRaw6 = readMDSplusVector(shotNumberCB, "\\I_IBM_6_CB", "fuze");
   
   sizeRowOut = (int) timeOut->size;
-  sizeRowGap = (int) timeGap->size;
+  sizeRowCB = (int) timeCB->size;
 
   for (ii = 0; ii < sizeRowOut; ii++) {
 
-    fprintf(fpDataOut, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeOut, ii), 
+    fprintf(fpDataOutCB, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeOut, ii), 
 	    gsl_vector_get(outRaw1, ii), gsl_vector_get(outRaw2, ii),
 	    gsl_vector_get(outRaw3, ii), 
 	    gsl_vector_get(outRaw4, ii), gsl_vector_get(outRaw5, ii),
@@ -1273,22 +1348,71 @@ static int saveIBMData() {
 
   }
 
-  for (ii = 0; ii < sizeRowGap; ii++) {
+  for (ii = 0; ii < sizeRowCB; ii++) {
 
-    fprintf(fpDataGap, "%g\t%g\n", gsl_vector_get(timeGap, ii), 
-	    gsl_vector_get(vgap, ii));
+    fprintf(fpDataCBCB, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeCB, ii), 
+	    gsl_vector_get(cbRaw1, ii), gsl_vector_get(cbRaw2, ii),
+	    gsl_vector_get(cbRaw3, ii), 
+	    gsl_vector_get(cbRaw4, ii), gsl_vector_get(cbRaw5, ii),
+	    gsl_vector_get(cbRaw6, ii));
 
   }
 
+  timeOut = readMDSplusVectorDim(shotNumberNoCB, "\\I_IBM_1_OUT", "fuze");
+  //gsl_vector_scale(timeOut, 1E6);
+  outRaw1 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_1_OUT", "fuze");
+  outRaw2 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_2_OUT", "fuze");
+  outRaw3 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_3_OUT", "fuze");
+  outRaw4 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_4_OUT", "fuze");
+  outRaw5 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_5_OUT", "fuze");
+  outRaw6 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_6_OUT", "fuze");
+
+  timeCB = readMDSplusVectorDim(shotNumberNoCB, "\\I_IBM_1_CB", "fuze");
+  //gsl_vector_scale(timeCB, 1E6);
+  cbRaw1 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_1_CB", "fuze");
+  cbRaw2 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_2_CB", "fuze");
+  cbRaw3 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_3_CB", "fuze");
+  cbRaw4 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_4_CB", "fuze");
+  cbRaw5 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_5_CB", "fuze");
+  cbRaw6 = readMDSplusVector(shotNumberNoCB, "\\I_IBM_6_CB", "fuze");
+  
+  sizeRowOut = (int) timeOut->size;
+  sizeRowCB = (int) timeCB->size;
+
+  for (ii = 0; ii < sizeRowOut; ii++) {
+
+    fprintf(fpDataOutNoCB, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeOut, ii), 
+	    gsl_vector_get(outRaw1, ii), gsl_vector_get(outRaw2, ii),
+	    gsl_vector_get(outRaw3, ii), 
+	    gsl_vector_get(outRaw4, ii), gsl_vector_get(outRaw5, ii),
+	    gsl_vector_get(outRaw6, ii));
+
+  }
+
+  for (ii = 0; ii < sizeRowCB; ii++) {
+
+    fprintf(fpDataCBNoCB, "%g\t%g\t%g\t%g\t%g\t%g\t%g\n", gsl_vector_get(timeCB, ii), 
+	    gsl_vector_get(cbRaw1, ii), gsl_vector_get(cbRaw2, ii),
+	    gsl_vector_get(cbRaw3, ii), 
+	    gsl_vector_get(cbRaw4, ii), gsl_vector_get(cbRaw5, ii),
+	    gsl_vector_get(cbRaw6, ii));
+
+  }
+  
   gsl_vector_free(timeOut);
-  gsl_vector_free(timeGap);
+  gsl_vector_free(timeCB);
   gsl_vector_free(outRaw1);
   gsl_vector_free(outRaw2);
   gsl_vector_free(outRaw3);
   gsl_vector_free(outRaw4);
   gsl_vector_free(outRaw5);
   gsl_vector_free(outRaw6);
-  gsl_vector_free(vgap);
+  gsl_vector_free(cbRaw1);
+  gsl_vector_free(cbRaw2);
+  gsl_vector_free(cbRaw3);
+  gsl_vector_free(cbRaw4);
+  gsl_vector_free(cbRaw5);
+  gsl_vector_free(cbRaw6);
 
   return 0;
 

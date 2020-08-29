@@ -6,8 +6,10 @@ int main() {
 
   //testMDSplusAccess();
   
-  plotPostShotAnalysis();
+  //plotPostShotAnalysis();
 
+  softXRayRun();
+  
   //testLightField();
 
   //testMDSplusAccess();
