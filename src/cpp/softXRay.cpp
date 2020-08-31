@@ -33,7 +33,7 @@ static gsl_vector *xRay2Global;
 static gsl_vector *xRay4Global;
 
 #define TLOW 15
-#define THIGH 25
+#define THIGH 35
 
 
 /******************************************************************************

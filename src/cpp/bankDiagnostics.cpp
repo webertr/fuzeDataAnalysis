@@ -416,7 +416,7 @@ static int plotGV(int shotNumber, std::string tempDataFile, std::string tempScri
   rangeLabel = oss.str();
   oss.str("");
 
-  std::string keyWords = "set title 'V_{GAP}'\n"
+  std::string keyWords = "set title 'Gas Valve Current'\n"
     "set ylabel 'Voltage (kV)'\n"
     "set xlabel 'Time (ms)'\n"
     "set key left top\n"
