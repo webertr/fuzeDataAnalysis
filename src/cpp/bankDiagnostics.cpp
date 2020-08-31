@@ -293,12 +293,12 @@ static int plotBankCap(int shotNumber, std::string tempDataFile, std::string tem
   oss.str("");
 
   gsl_vector_scale(ignitronCap5Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'red' title 'I Cap 5 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'yellow' title 'I Cap 5 for " << shotNumber << "'";
   ignitronCap5Label = oss.str();
   oss.str("");
 
   gsl_vector_scale(ignitronCap6Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'black' title 'I Cap 6 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'purple' title 'I Cap 6 for " << shotNumber << "'";
   ignitronCap6Label = oss.str();
   oss.str("");
   
