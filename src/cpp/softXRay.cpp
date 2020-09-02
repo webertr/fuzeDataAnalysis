@@ -29,7 +29,9 @@ static gsl_vector *timeNeutronGlobal;
 static gsl_vector *neutron10Global;
 static gsl_vector *neutron12Global;
 static gsl_vector *timeXRayGlobal;
+static gsl_vector *xRay1Global;
 static gsl_vector *xRay2Global;
+static gsl_vector *xRay3Global;
 static gsl_vector *xRay4Global;
 
 #define TLOW 15
@@ -90,7 +92,9 @@ static int setGlobalVariables(int shotNumber) {
   neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
   neutron12Global = readMDSplusVector(shotNumber, "\\neutron_12_s", "fuze");
   timeXRayGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_10_s", "fuze");
+  xRay1Global = readMDSplusVector(shotNumber, "\\xray_1", "fuze");
   xRay2Global = readMDSplusVector(shotNumber, "\\xray_2", "fuze");
+  xRay3Global = readMDSplusVector(shotNumber, "\\xray_3", "fuze");
   xRay4Global = readMDSplusVector(shotNumber, "\\xray_4", "fuze");
 
   return 0;
@@ -111,7 +115,9 @@ static int clearGlobalVariables() {
   gsl_vector_free(neutron10Global);
   gsl_vector_free(neutron12Global);
   gsl_vector_free(timeXRayGlobal);
+  gsl_vector_free(xRay1Global);
   gsl_vector_free(xRay2Global);
+  gsl_vector_free(xRay3Global);
   gsl_vector_free(xRay4Global);
 
   return 0;
@@ -131,22 +137,34 @@ static int plotXRay(int shotNumber, std::string tempDataFile, std::string tempSc
 		    int tLow, int tHigh) {
 
   std::ostringstream oss;
+  std::string xRay1Label;
   std::string xRay2Label;
+  std::string xRay3Label;
   std::string xRay4Label;
   std::string rangeLabel;
 
   gsl_vector_scale(timeXRayGlobal, 1E6);
-
+ 
   //gsl_vector_scale(xRay2Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'black' title 'Ti/X-Ray 2 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'black' title '0.1um Al #1 for " << shotNumber << "'";
+  xRay1Label = oss.str();
+  oss.str("");
+ 
+  //gsl_vector_scale(xRay2Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title '4.4um Ti #2 for " << shotNumber << "'";
   xRay2Label = oss.str();
   oss.str("");
 
   //gsl_vector_scale(xRay4Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'red' title 'Al/X-Ray 4 for " << shotNumber << "'";
-  xRay4Label = oss.str();
+  oss << "with line lw 3 lc rgb 'green' title '1.27um Ni #3 for " << shotNumber << "'";
+  xRay3Label = oss.str();
   oss.str("");
 
+  //gsl_vector_scale(xRay4Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'blue' title '4.1um Al #4 for " << shotNumber << "'";
+  xRay4Label = oss.str();
+  oss.str("");
+  
   oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
   rangeLabel = oss.str();
   oss.str("");
@@ -159,7 +177,8 @@ static int plotXRay(int shotNumber, std::string tempDataFile, std::string tempSc
   
   keyWords.append(rangeLabel);
 
-  plot2VectorData(timeXRayGlobal, xRay2Global, xRay2Label, xRay4Global, xRay4Label,
+  plot4VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay2Global, xRay2Label,
+		  xRay3Global, xRay3Label, xRay4Global, xRay4Label,
   		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;
