@@ -56,6 +56,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/save.cpp \
 	src/cpp/softXRay.cpp \
 	src/cpp/bankDiagnostics.cpp \
+	src/cpp/backUp.cpp \
 	src/cpp/test.cpp
 
 SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \

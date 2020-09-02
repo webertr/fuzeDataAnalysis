@@ -10,7 +10,9 @@ int main() {
 
   //softXRayRun();
   
-  bankDiagnosticsRun();
+  //bankDiagnosticsRun();
+  
+  backUpRun();
   
   //testLightField();
 
