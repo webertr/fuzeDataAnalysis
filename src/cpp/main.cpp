@@ -8,11 +8,11 @@ int main() {
   
   //plotPostShotAnalysis();
 
-  //softXRayRun();
+  softXRayRun();
   
   //bankDiagnosticsRun();
   
-  backUpRun();
+  //backUpRun();
   
   //testLightField();
 
