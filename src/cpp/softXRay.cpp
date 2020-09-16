@@ -33,6 +33,7 @@ static gsl_vector *xRay1Global;
 static gsl_vector *xRay2Global;
 static gsl_vector *xRay3Global;
 static gsl_vector *xRay4Global;
+static gsl_vector *xRay5Global;
 
 #define TLOW 20
 #define THIGH 30
@@ -96,6 +97,7 @@ static int setGlobalVariables(int shotNumber) {
   xRay2Global = readMDSplusVector(shotNumber, "\\xray_2", "fuze");
   xRay3Global = readMDSplusVector(shotNumber, "\\xray_3", "fuze");
   xRay4Global = readMDSplusVector(shotNumber, "\\xray_4", "fuze");
+  xRay5Global = readMDSplusVector(shotNumber, "\\xray_5", "fuze");
 
   return 0;
 
@@ -119,6 +121,7 @@ static int clearGlobalVariables() {
   gsl_vector_free(xRay2Global);
   gsl_vector_free(xRay3Global);
   gsl_vector_free(xRay4Global);
+  gsl_vector_free(xRay5Global);
 
   return 0;
   
@@ -141,12 +144,13 @@ static int plotXRay(int shotNumber, std::string tempDataFile, std::string tempSc
   std::string xRay2Label;
   std::string xRay3Label;
   std::string xRay4Label;
+  std::string xRay5Label;
   std::string rangeLabel;
 
   gsl_vector_scale(timeXRayGlobal, 1E6);
  
   //gsl_vector_scale(xRay2Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'black' title '0.1um Al #1 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'black' title '2 um Ti #1 for " << shotNumber << "'";
   xRay1Label = oss.str();
   oss.str("");
  
@@ -164,6 +168,11 @@ static int plotXRay(int shotNumber, std::string tempDataFile, std::string tempSc
   oss << "with line lw 3 lc rgb 'blue' title '4.1um Al #4 for " << shotNumber << "'";
   xRay4Label = oss.str();
   oss.str("");
+
+  //gsl_vector_scale(xRay5Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'yellow' title '8.0um Be #5 for " << shotNumber << "'";
+  xRay5Label = oss.str();
+  oss.str("");
   
   oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
   rangeLabel = oss.str();
@@ -177,8 +186,8 @@ static int plotXRay(int shotNumber, std::string tempDataFile, std::string tempSc
   
   keyWords.append(rangeLabel);
 
-  plot4VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay2Global, xRay2Label,
-		  xRay3Global, xRay3Label, xRay4Global, xRay4Label,
+  plot5VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay2Global, xRay2Label,
+		  xRay3Global, xRay3Label, xRay4Global, xRay4Label, xRay5Global, xRay5Label,
   		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;
