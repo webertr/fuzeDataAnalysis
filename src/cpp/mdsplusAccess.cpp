@@ -137,7 +137,8 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName, std::stri
   snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName.c_str());
 
   try {
-    
+
+    MDSplus::setActiveTree(tree);
     data = MDSplus::execute(buf, tree);
 
   } catch (MDSplus::MdsException &exc) {
