@@ -111,7 +111,9 @@ static int setGlobalVariables(int shotNumber) {
   timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_10_s", "fuze");
   neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
   neutron12Global = readMDSplusVector(shotNumber, "\\neutron_12_s", "fuze");
-  timeXRayGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_10_s", "fuze");
+  timeXRayDetaqGlobal = readMDSplusVectorDim(shotNumber, "\\xray_2", "fuze");
+  timeXRayScopeGlobal = readMDSplusVectorDim(shotNumber, "\\xray_1", "fuze");
+  timeXRayGlobal = readMDSplusVectorDim(shotNumber, "\\xray_1", "fuze");
   xRay1Global = readMDSplusVector(shotNumber, "\\xray_1", "fuze");
   xRay2Global = readMDSplusVector(shotNumber, "\\xray_2", "fuze");
   xRay3Global = readMDSplusVector(shotNumber, "\\xray_3", "fuze");
@@ -334,7 +336,7 @@ static int plotNeutron(int shotNumber, std::string tempDataFile,
   std::string neutron12Label;
   std::string rangeLabel;
 
-  gsl_vector_scale(timeNeutronGlobal, 1E6);
+  //gsl_vector_scale(timeNeutronGlobal, 1E6);
 
   //gsl_vector_scale(neutron10Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'Neutron 10 for " << shotNumber << "'";
