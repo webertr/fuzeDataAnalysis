@@ -258,8 +258,8 @@ static int plotXRay1(int shotNumber, std::string tempDataFile,
   
   keyWords.append(rangeLabel);
 
-  plot2VectorData(timeXRayGlobal, xRay2Global, xRay2Label, xRay4Global, xRay4Label, 
-  		  keyWords, tempDataFile, tempScriptFile);
+  plot2VectorData(timeXRayDetaqGlobal, xRay2Global, xRay2Label, xRay4Global,
+		  xRay4Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -312,8 +312,9 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
   
   keyWords.append(rangeLabel);
 
-  plot3VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay3Global, xRay3Label,
-		  xRay5Global, xRay5Label, keyWords, tempDataFile, tempScriptFile);
+  plot3VectorData(timeXRayScopeGlobal, xRay1Global, xRay1Label,
+		  xRay3Global, xRay3Label, xRay5Global, xRay5Label,
+		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -336,7 +337,7 @@ static int plotNeutron(int shotNumber, std::string tempDataFile,
   std::string neutron12Label;
   std::string rangeLabel;
 
-  //gsl_vector_scale(timeNeutronGlobal, 1E6);
+  gsl_vector_scale(timeNeutronGlobal, 1E6);
 
   //gsl_vector_scale(neutron10Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'Neutron 10 for " << shotNumber << "'";
