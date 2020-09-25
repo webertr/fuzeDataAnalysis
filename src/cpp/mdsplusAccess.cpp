@@ -15,7 +15,8 @@
  * Description: 
  ******************************************************************************/
 
-gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName, std::string treeName) {
+gsl_vector *readMDSplusVector(int shotNumber, std::string nodeName,
+			      std::string treeName) {
 
   MDSplus::Tree *tree = NULL;
   MDSplus::Data *data = NULL;
@@ -102,12 +103,12 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName,
 
   MDSplus::Tree *tree = NULL;
   MDSplus::Data *data = NULL;
-  MDSplus::Data *dataDim = NULL;
   int numElements;
   double *doubleArray = NULL;
   std::string readOnly = "READONLY";
   gsl_vector *nullVec = 0;
-
+  char buf[1024];
+  
   /*
    * Trying to open an experiment and shot number
    */
@@ -135,10 +136,12 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName,
     return nullVec;
   }
 
+  snprintf(buf,sizeof(buf)-1,"DIM_OF(%s)",nodeName.c_str());
+  
   try {
 
-    data = MDSplus::execute(nodeName.c_str(), tree);
-    dataDim = tree->tdiCompile("DIM_OF($1)", data); 
+    MDSplus::setActiveTree(tree);
+    data = MDSplus::execute(buf, tree);
 
   } catch (MDSplus::MdsException &exc) {
       
@@ -150,7 +153,7 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName,
 
   }
 
-  doubleArray = dataDim->getDoubleArray(&numElements);
+  doubleArray = data->getDoubleArray(&numElements);
   
   gsl_vector *retVec = gsl_vector_alloc(numElements);
 
@@ -161,7 +164,6 @@ gsl_vector *readMDSplusVectorDim(int shotNumber, std::string nodeName,
 
   // Data objects must be freed via routine deleteData()
   MDSplus::deleteData(data);
-  MDSplus::deleteData(dataDim);
 
   // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
   delete tree;

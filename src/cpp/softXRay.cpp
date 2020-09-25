@@ -25,6 +25,13 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
 		     std::string tempScriptFile, int tLow, int tHigh);
 static int plotNeutron(int shotNumber, std::string tempDataFile,
 		       std::string tempScriptFile, int tLow, int tHigh);
+static int plotNeutron1(int shotNumber, std::string tempDataFile,
+			std::string tempScriptFile, int tLow, int tHigh);
+static int plotBGLight(int shotNumber, std::string tempDataFile,
+		       std::string tempScriptFile, int tLow, int tHigh);
+static int plotXRay3(int shotNumber, std::string tempDataFile,
+		     std::string tempScriptFile, int tLow, int tHigh);
+
 
 /******************************************************************************
  * Global variables
@@ -42,7 +49,7 @@ static gsl_vector *xRay4Global;
 static gsl_vector *xRay5Global;
 
 #define TLOW 20
-#define THIGH 30
+#define THIGH 60
 
 
 /******************************************************************************
@@ -72,7 +79,7 @@ int softXRayRun() {
   int pid2 = fork();
 
   if ( (pid1 == 0) && (pid2 == 0) ) {
-    plotNeutron(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    plotNeutron1(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     exit(0);    
   }
   else if ( (pid1 == 0) && (pid2 > 0) ) {
@@ -80,16 +87,22 @@ int softXRayRun() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) ) {
-    plotXRay1(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
+    //plotXRay1(shotNumber, "data/xray2.txt", "data/xray2.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) ) {
-    plotXRay2(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
+    plotXRay3(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
     exit(0);
   }
 
   if (0) {
+    plotXRay1(shotNumber, "data/xray2.txt", "data/xray2.sh", TLOW, THIGH);
     plotXRay(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
+    plotXRay2(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
+    plotXRay3(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
+    plotNeutron(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    plotNeutron1(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    plotBGLight(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
   }
   
   clearGlobalVariables();
@@ -109,10 +122,13 @@ int softXRayRun() {
 static int setGlobalVariables(int shotNumber) {
   
   timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_10_s", "fuze");
+  gsl_vector_scale(timeNeutronGlobal, 1E6);
   neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
   neutron12Global = readMDSplusVector(shotNumber, "\\neutron_12_s", "fuze");
   timeXRayDetaqGlobal = readMDSplusVectorDim(shotNumber, "\\xray_2", "fuze");
+  gsl_vector_scale(timeXRayDetaqGlobal, 1E6);
   timeXRayScopeGlobal = readMDSplusVectorDim(shotNumber, "\\xray_1", "fuze");
+  gsl_vector_scale(timeXRayScopeGlobal, 1E6);
   timeXRayGlobal = readMDSplusVectorDim(shotNumber, "\\xray_1", "fuze");
   xRay1Global = readMDSplusVector(shotNumber, "\\xray_1", "fuze");
   xRay2Global = readMDSplusVector(shotNumber, "\\xray_2", "fuze");
@@ -170,8 +186,6 @@ static int plotXRay(int shotNumber, std::string tempDataFile,
   std::string xRay5Label;
   std::string rangeLabel;
 
-  gsl_vector_scale(timeXRayGlobal, 1E6);
- 
   //gsl_vector_scale(xRay2Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title '2 um Ti #1 for " << shotNumber << "'";
   xRay1Label = oss.str();
@@ -234,15 +248,13 @@ static int plotXRay1(int shotNumber, std::string tempDataFile,
   std::string xRay4Label;
   std::string rangeLabel;
 
-  gsl_vector_scale(timeXRayDetaqGlobal, 1E6);
- 
   //gsl_vector_scale(xRay2Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'red' title '4.4um Ti #2 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'black' title '4.4um Ti #2 for " << shotNumber << "'";
   xRay2Label = oss.str();
   oss.str("");
 
   //gsl_vector_scale(xRay4Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'blue' title '4.1um Al #4 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'red' title '4.1um Al #4 for " << shotNumber << "'";
   xRay4Label = oss.str();
   oss.str("");
   
@@ -283,20 +295,18 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
   std::string xRay5Label;
   std::string rangeLabel;
 
-  gsl_vector_scale(timeXRayScopeGlobal, 1E6);
- 
   //gsl_vector_scale(xRay2Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title '2 um Ti #1 for " << shotNumber << "'";
   xRay1Label = oss.str();
   oss.str("");
  
   //gsl_vector_scale(xRay4Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'green' title '1.27um Ni #3 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'red' title '1.27um Ni #3 for " << shotNumber << "'";
   xRay3Label = oss.str();
   oss.str("");
 
   //gsl_vector_scale(xRay5Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'yellow' title '8.0um Be #5 for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'green' title '8.0um Be #5 for " << shotNumber << "'";
   xRay5Label = oss.str();
   oss.str("");
   
@@ -322,6 +332,115 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
 
 
 /******************************************************************************
+ * Function: plotXRay3
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotXRay3(int shotNumber, std::string tempDataFile,
+		     std::string tempScriptFile, int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  std::string xRay2Label;
+  std::string xRay4Label;
+  std::string xRay5Label;
+  std::string rangeLabel;
+  std::string titleLabel;
+
+  //gsl_vector_scale(xRay2Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'black' title '4.4um Ti #2 for " << shotNumber << "'";
+  xRay2Label = oss.str();
+  oss.str("");
+
+  //gsl_vector_scale(xRay4Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title '4.1um Al #4 for " << shotNumber << "'";
+  xRay4Label = oss.str();
+  oss.str("");
+
+  gsl_vector_scale(xRay5Global, 0.05/1.25);
+  oss << "with line lw 3 lc rgb 'green' title 'Room light for " << shotNumber << "'";
+  xRay5Label = oss.str();
+  oss.str("");
+  
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  oss << "set title 'Soft X-ray Signals for " << shotNumber << "\n";
+  titleLabel = oss.str();
+  oss.str("");
+  
+  std::string keyWords = "set ylabel 'Voltage (V)'\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/x-ray.png'\n"
+    "set ylabel 'Voltage (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left top\n"
+    "set yrange[0:]\n";
+  
+  keyWords.append(rangeLabel);
+  keyWords.append(titleLabel);
+
+  plot3VectorDataXY(timeXRayDetaqGlobal, xRay2Global, xRay2Label,
+		    timeXRayDetaqGlobal, xRay4Global, xRay4Label,
+		    timeXRayScopeGlobal,xRay5Global, xRay5Label, keyWords,
+		    tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotBGLight
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotBGLight(int shotNumber, std::string tempDataFile,
+		       std::string tempScriptFile, int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  std::string xRay3Label;
+  std::string xRay5Label;
+  std::string rangeLabel;
+ 
+  gsl_vector_scale(xRay3Global, 1.2/0.15);
+  oss << "with line lw 3 lc rgb 'black' title 'Broken? #3 for " << shotNumber << "'";
+  xRay3Label = oss.str();
+  oss.str("");
+
+  //gsl_vector_scale(xRay5Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'red' title 'Room light for " << shotNumber << "'";
+  xRay5Label = oss.str();
+  oss.str("");
+  
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Photodiode output'\n"
+    "set ylabel 'Voltage (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left top\n"
+    "set yrange[:]\n";
+  
+  keyWords.append(rangeLabel);
+
+  plot2VectorData(timeXRayScopeGlobal,
+		  xRay3Global, xRay3Label, xRay5Global, xRay5Label,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: plotNeutron
  * Inputs: int
  * Returns: int
@@ -336,8 +455,6 @@ static int plotNeutron(int shotNumber, std::string tempDataFile,
   std::string neutron10Label;
   std::string neutron12Label;
   std::string rangeLabel;
-
-  gsl_vector_scale(timeNeutronGlobal, 1E6);
 
   //gsl_vector_scale(neutron10Global, 1E-3);
   oss << "with line lw 3 lc rgb 'black' title 'Neutron 10 for " << shotNumber << "'";
@@ -363,6 +480,53 @@ static int plotNeutron(int shotNumber, std::string tempDataFile,
 
   plot2VectorData(timeNeutronGlobal, neutron10Global, neutron10Label, neutron12Global,
 		  neutron12Label, keyWords, tempDataFile, tempScriptFile);
+
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotNeutron1
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotNeutron1(int shotNumber, std::string tempDataFile,
+		       std::string tempScriptFile, int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  std::string neutron10Label;
+  std::string rangeLabel;
+  std::string titleLabel;
+
+  //gsl_vector_scale(neutron10Global, 1E-3);
+  oss << "with line lw 3 lc rgb 'black' title 'Neutron 10 for " << shotNumber << "'";
+  neutron10Label = oss.str();
+  oss.str("");
+
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  oss << "set title 'Neutron Signals for " << shotNumber << "\n";
+  titleLabel = oss.str();
+  oss.str("");
+  
+  std::string keyWords = "set ylabel 'Voltage (V)'\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/neutron.png'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left top\n"
+    "set yrange[:]\n";
+  
+  keyWords.append(rangeLabel);
+  keyWords.append(titleLabel);
+  
+  plotVectorData(timeNeutronGlobal, neutron10Global, neutron10Label,
+		 keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
