@@ -15,6 +15,7 @@
 #include <cpp/Kirana.h>
 #include <cpp/magnetic.h>
 #include <cpp/save.h>
+#include <cpp/LightField.h>
 
 int plotPostShotAnalysis();
 

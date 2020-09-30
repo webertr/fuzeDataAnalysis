@@ -6,33 +6,44 @@
  *
  ******************************************************************************/
 
+static bool checkFileExists(std::string fileName);
+static std::string getFileFromShotNumber(long shotNumber);
+static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
+			    std::string tempScriptFile);
 static int plotIP(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
 		  int tLow, int tHigh);
-static int plotVGap(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+static int plotVGap(int shotNumber, std::string tempDataFile,
+		    std::string tempScriptFile,
 		    int tLow, int tHigh);
 static int plotCompCurrent(int shotNumber, std::string tempDataFile,
 			   std::string tempScriptFile,
 			   int tLow, int tHigh);
 static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
 		       gsl_vector *det2, int detNum2,  gsl_vector *det3, int detNum3,
-		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh);
-static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
+		       std::string tempDataFile, std::string tempScriptFile,
+		       int tLow, int tHigh);
+static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1,
+			int detNum1,
 		       gsl_vector *det2, int detNum2, std::string tempDataFile,
 			std::string tempScriptFile, int tLow, int tHigh);
 static int plotAzimuthalArray(int shotNumber, std::string nodeName,
 			      std::string tempDataFile, std::string tempScriptFile, 
 			      int tLow, int tHigh);
-static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+static int plotM1Mode(int shotNumber, std::string tempDataFile,
+		      std::string tempScriptFile,
 		      int tLow, int tHigh);
 static int kiranaImageAnalysis();
 static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
 				std::string tempScriptFile, int tLow, int tHigh);
-static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+static int plotM0Mode(int shotNumber, std::string tempDataFile,
+		      std::string tempScriptFile,
 		      int tLow, int tHigh);
 static int plotPinchCurrentAverageData(int shotNumber, std::string tempDataFile,
-				       std::string tempScriptFile, int tLow, int tHigh);
+				       std::string tempScriptFile, int tLow,
+				       int tHigh);
 static int saveIBMData();
-static int plotPinchCurrentScaling(std::string tempDataFile, std::string tempScriptFile);
+static int plotPinchCurrentScaling(std::string tempDataFile,
+				   std::string tempScriptFile);
 static int plotPinchM1Scaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotPinchVgapScaling(std::string tempDataFile, std::string tempScriptFile);
 static int plotDualBanksAnalysis();
@@ -129,42 +140,30 @@ int plotPostShotAnalysis() {
   //plotPinchM1Scaling("data/data.txt", "data/data.sh");
   //exit(0);
   
-  setGlobalVariables(shotNumber);
+  //setGlobalVariables(shotNumber);
     
   int pid1 = fork();
   int pid2 = fork();
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    //plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
+    plotSpectroscopy(shotNumber, "data/spec1.txt", "data/spec1.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
-    plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 == 0 )) {
-    //plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 == 0) ) {
-    //plotM1Mode(shotNumber, "data/m14.txt", "data/m15.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 > 0) && (pid3 > 0) ) {
-
-    if (USE_NEUTRON) {
-      //plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
-      //	  neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
-    }
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) && (pid3 == 0) ) {
 
-    if (USE_NEUTRON) {
-      plotNeutron2(shotNumber, timeNeutronGlobal, neutron10Global, 10, neutron12Global, 12,
-		  "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
-    }
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) && (pid3 > 0) ) {
@@ -177,14 +176,15 @@ int plotPostShotAnalysis() {
   if (0) {
     
     plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
-		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
-    plotNeutron2(shotNumber, timeNeutronGlobal, neutron10Global, 10, neutron12Global, 12,
-		 "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
+		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh",
+		TLOW, THIGH);
+    plotNeutron2(shotNumber, timeNeutronGlobal, neutron10Global, 10, neutron12Global,
+		 12, "data/neutron2.txt", "data/neutron2.sh", TLOW, THIGH);
     plotIP(shotNumber, "data/ip1.txt", "data/ip1.sh", TLOW, THIGH);
     plotVGap(shotNumber, "data/vgap2.txt", "data/vgap2.sh", TLOW, THIGH);
     plotCompCurrent(shotNumber, "data/comp3.txt", "data/comp3.sh", TLOW, THIGH);
-    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt", "data/azimuth4.sh",
-		       TLOW, THIGH);
+    plotAzimuthalArray(shotNumber, "\\b_p15_000", "data/azimuth4.txt",
+		       "data/azimuth4.sh", TLOW, THIGH);
     kiranaImageAnalysis();
     plotPinchCurrentData(shotNumber, "data/data.txt", "data/data.sh", 0, 100);
     plotM0Mode(shotNumber, "data/m0.txt", "data/m0.sh", 20, 50);
@@ -197,6 +197,7 @@ int plotPostShotAnalysis() {
     plotDualBanksAnalysis();
     plotDualBanksAnalysis2();
     saveData(shotNumber);
+    setGlobalVariables(shotNumber);
     
   }
 
@@ -548,6 +549,96 @@ static int clearGlobalVariables() {
 
 
 /******************************************************************************
+ * Function: plotSpectroscopy
+ * Inputs: int
+ * Returns: int
+ * Description: This will analyze images from the kirana
+ ******************************************************************************/
+
+static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
+			    std::string tempScriptFile) {
+
+  std::ostringstream oss;  
+  const int numFibers = 20;
+  const int numEdges = 21;
+  std::string shotNumberFileName = getFileFromShotNumber(shotNumber);
+  gsl_vector *fiberCenters = 0;
+  gsl_vector *fiberEdges = 0 ;
+  const double centers[numFibers] = {51, 100, 149, 195, 243, 295, 341, 390, 441, 490,
+				     539, 590, 640, 683, 737, 780, 837, 880, 935, 975};
+  
+  /* Checking to see if there is a file available */
+  if ( !checkFileExists(shotNumberFileName)) {
+    std::cout << "No light field file available for shot number "
+	      << shotNumber << "\n";
+    return false;
+  }
+        
+  /* Getting light field .spe file data from current shot */
+  LightField lfObject = LightField(shotNumberFileName);
+    
+  /* Checking to see if the fiber centers were found. if not, abort */
+  if (lfObject.chordsOK) {
+    std::cout << "Fiber centers found for shot number "
+	      << shotNumber << "\n";
+  } else {
+
+      std::cout << "Fiber centers not found \n";
+      
+      lfObject.setNumEdges(numEdges);
+      lfObject.setNumFibers(numFibers);
+      fiberCenters = gsl_vector_alloc(numFibers);
+      fiberEdges = gsl_vector_alloc(numEdges);
+      
+      for (int ii = 0; ii < numFibers; ii++) {
+	gsl_vector_set(fiberCenters, ii, centers[ii]);
+      }
+
+      gsl_vector_set(fiberEdges, 0, 0);
+      gsl_vector_set(fiberEdges, numFibers, lfObject.ydim - 1);
+
+      int halfDist, fibE;
+      
+      for (int ii = 1; ii < numFibers; ii++) {
+	halfDist = (int) (gsl_vector_get(fiberCenters, ii) -
+			  gsl_vector_get(fiberCenters, ii-1)) / 2;
+	fibE = (int) gsl_vector_get(fiberCenters, ii) - halfDist;
+	gsl_vector_set(fiberEdges, ii, fibE);
+      }
+      
+      lfObject.setFiberCenters(fiberCenters);
+      lfObject.setFiberEdges(fiberEdges);
+      lfObject.setNumFibers(fiberCenters->size);
+      lfObject.setNumEdges(fiberEdges->size);
+      lfObject.populateChords();
+
+  }
+  
+  //lfObject.plotImage();
+
+  //std::string keywords = "set palette gray\nset title 'corn'"; 
+  //plotImageData(lfObject.image, 1, 1, keywords, tempDataFile, tempScriptFile);
+
+  std::string plotLabel;
+  oss << "with points title 'Chord'";
+  plotLabel = oss.str();
+  oss.str("");
+  
+  std::string keyWords = "set title 'Neutron Detectors'\n"
+    "set ylabel 'Signal (V)'\n"
+    "set xlabel 'Wavelength'\n"
+    "set key left bottom\n"
+    "set yrange[:]\n";
+
+  plotVectorData(lfObject.waveLength, lfObject.chord5, plotLabel, keyWords,
+		 tempDataFile, tempScriptFile);
+    
+  return 0;
+
+}
+
+
+/******************************************************************************
  * Function: kiranaImageAnalysis
  * Inputs: int
  * Returns: int
@@ -856,9 +947,10 @@ static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int d
  * the post shot analysis
  ******************************************************************************/
 
-static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
-		       gsl_vector *det2, int detNum2, std::string tempDataFile,
-			std::string tempScriptFile, int tLow, int tHigh) {
+static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1,
+			int detNum1, gsl_vector *det2, int detNum2,
+			std::string tempDataFile, std::string tempScriptFile,
+			int tLow, int tHigh) {
 
   std::ostringstream oss;
   std::string neutron1Label;
@@ -1082,8 +1174,8 @@ static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
  * the post shot analysis
  ******************************************************************************/
 
-static int plotM0Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
-		      int tLow, int tHigh) {
+static int plotM0Mode(int shotNumber, std::string tempDataFile,
+		      std::string tempScriptFile, int tLow, int tHigh) {
 
   std::ostringstream oss;
   gsl_vector *time;
@@ -1213,11 +1305,13 @@ static int plotPinchCurrentAverageData(int shotNumber, std::string tempDataFile,
   /* Averaging all axial positions together */
   for (ii = 0; ii < sizeVec; ii++) {
     
-    avg = gsl_vector_get(p5M0, ii) + gsl_vector_get(p15M0, ii) + gsl_vector_get(p25M0, ii) \
+    avg = gsl_vector_get(p5M0, ii) + gsl_vector_get(p15M0, ii) +
+      gsl_vector_get(p25M0, ii)	
       + gsl_vector_get(p35M0, ii) + gsl_vector_get(p45M0, ii);
     gsl_vector_set(pM0, ii, avg/5.0);
 
-    avg = gsl_vector_get(p5M1, ii) + gsl_vector_get(p15M1, ii) + gsl_vector_get(p25M1, ii) \
+    avg = gsl_vector_get(p5M1, ii) + gsl_vector_get(p15M1, ii) +
+      gsl_vector_get(p25M1, ii)
       + gsl_vector_get(p35M1, ii) + gsl_vector_get(p45M1, ii);
     gsl_vector_set(pM1, ii, avg/5.0);
     
@@ -1920,4 +2014,68 @@ static int plotDualBanksAnalysis2() {
 
   return 0;
   
+}
+
+
+/******************************************************************************
+ * Function: getFileFromShotNumber
+ * Inputs: 
+ * Returns: boolean
+ * Description: Checks to see if a passed file exists. If it does, return true
+ ******************************************************************************/
+
+static std::string getFileFromShotNumber(long shotNumber) {
+
+  /* 
+   * 190521009 should be
+   * "/mnt/nas/Fuze Data/Spectroscopy (NAS)/Data/190521/190521009.spe"
+   */
+
+  std::string returnString;
+  std::stringstream stringStream;
+
+  //std::string baseFileName = "/mnt/nas/Fuze Data/Spectroscopy (NAS)/Data/";
+  std::string baseFileName =   "/home/fuze/SpectroscopyData/";
+
+  int baseShotNumber = shotNumber/1000;
+  stringStream << baseShotNumber;
+  std::string baseShotNumberString = stringStream.str();
+  stringStream.str("");
+
+  stringStream << shotNumber;
+  std::string shotNumberString = stringStream.str();
+  stringStream.str("");
+
+  returnString.append(baseFileName);
+  returnString.append(baseShotNumberString);
+  returnString.append("/");
+  returnString.append(shotNumberString);
+  returnString.append(".spe");
+  
+  return returnString;
+
+}
+
+
+/******************************************************************************
+ * Function: checkFileExists
+ * Inputs: 
+ * Returns: boolean
+ * Description: Checks to see if a passed file exists. If it does, return true
+ ******************************************************************************/
+
+static bool checkFileExists(std::string fileName) {
+
+  std::cout << "Checking to see if " << fileName << " exists\n";
+
+  std::ifstream ifile(fileName.c_str(), std::ifstream::in);
+
+  if (ifile.is_open()) {
+    std::cout << fileName << " exists\n";
+    return true;
+  } else {
+    std::cout << fileName << " does not exists\n";
+    return false;
+  }
+
 }

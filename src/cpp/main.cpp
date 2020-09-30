@@ -6,9 +6,9 @@ int main() {
 
   //testMDSplusAccess();
   
-  //plotPostShotAnalysis();
+  plotPostShotAnalysis();
 
-  softXRayRun();
+  //softXRayRun();
   
   //bankDiagnosticsRun();
   

@@ -577,7 +577,8 @@ gsl_vector *LightField::getFiberEdges() {
   int halfDist,
     fibE;
   for (ii = 1; ii < numFibers; ii++) {
-    halfDist = (int) (gsl_vector_get(fiberCenters, ii) - gsl_vector_get(fiberCenters, ii-1)) / 2;
+    halfDist = (int) (gsl_vector_get(fiberCenters, ii) -
+		      gsl_vector_get(fiberCenters, ii-1)) / 2;
     fibE = (int) gsl_vector_get(fiberCenters, ii) - halfDist;
     gsl_vector_set(fiberEdgesRet, ii, fibE);
   }
