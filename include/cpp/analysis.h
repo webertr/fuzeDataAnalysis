@@ -16,6 +16,8 @@
 #include <cpp/magnetic.h>
 #include <cpp/save.h>
 #include <cpp/LightField.h>
+#include <cpp/fit.h>
+#include <cpp/plasmaParam.h>
 
 int plotPostShotAnalysis();
 

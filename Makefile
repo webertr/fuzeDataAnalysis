@@ -57,6 +57,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/softXRay.cpp \
 	src/cpp/bankDiagnostics.cpp \
 	src/cpp/backUp.cpp \
+	src/cpp/fit.cpp \
 	src/cpp/test.cpp
 
 SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \
@@ -64,6 +65,8 @@ SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \
 	src/cpp/epicsCA.cpp \
 	src/cpp/psqlAccess.cpp \
 	src/cpp/plot.cpp \
+	src/cpp/plasmaParam.cpp \
+	src/cpp/fit.cpp \
 	src/cpp/LightField.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))

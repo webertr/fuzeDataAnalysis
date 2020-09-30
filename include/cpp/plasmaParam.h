@@ -7,6 +7,7 @@
 #include <string.h>
 #include <gsl/gsl_math.h>
 
+double carbonIonTemperature(double centerWL, double widthWL);
 int testPlasmaParam();
 
 #endif

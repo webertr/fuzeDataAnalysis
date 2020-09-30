@@ -614,25 +614,44 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
 
   }
   
-  //lfObject.plotImage();
+  double ampParam = 18500,
+    centerParam = 227.1,
+    sigmaParam = 0.2,
+    offsetParam = 315000;
 
-  //std::string keywords = "set palette gray\nset title 'corn'"; 
-  //plotImageData(lfObject.image, 1, 1, keywords, tempDataFile, tempScriptFile);
+  int offSet = 320;
+  int length = 80;
+  int chordNum = 10;
+  double temperature =  lfObject.getTemperature(chordNum, offSet, length, sigmaParam,
+						ampParam, centerParam, offsetParam);
 
-  std::string plotLabel;
-  oss << "with points title 'Chord'";
-  plotLabel = oss.str();
-  oss.str("");
+  std::cout << "Fit ion temperature: "
+	    << temperature
+	    << " keV\n";
   
-  std::string keyWords = "set title 'Neutron Detectors'\n"
-    "set ylabel 'Signal (V)'\n"
-    "set xlabel 'Wavelength'\n"
-    "set key left bottom\n"
-    "set yrange[:]\n";
+  gsl_vector_view wL = gsl_vector_subvector(lfObject.waveLength, offSet, length);
+  gsl_vector_view chord = gsl_vector_subvector(lfObject.chord10, offSet, length);
 
-  plotVectorData(lfObject.waveLength, lfObject.chord5, plotLabel, keyWords,
-		 tempDataFile, tempScriptFile);
-    
+  std::string dataLabel;
+  oss << "with points title 'Data'";
+  dataLabel = oss.str();
+  oss.str("");
+
+  std::string fitLabel;
+  oss << "with points title 'Fit'";
+  fitLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Temperature'\n"
+    "set ylabel 'Signal'\n"
+    "set xlabel 'Wavelength (nm))'\n"
+    "set key left top\n"
+    "set yrange[:]\n";
+  
+  plot2VectorData(&wL.vector, &chord.vector, dataLabel,
+		  lfObject.chord10Fit, fitLabel, keyWords,
+		  tempDataFile, tempScriptFile);
+
   return 0;
 
 }

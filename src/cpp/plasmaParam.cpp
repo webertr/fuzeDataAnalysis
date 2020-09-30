@@ -20,7 +20,6 @@ static const double PI   = 3.1416;         // Value of pi
 
 
 static int gyroFrequencies(double bField);
-static double carbonIonTemperature(double centerWL, double widthWL);
 static int gyroRadius(double bField, double temperature);
 static int alfvenVelocity(double bField, double ionDensity, double mu);
 static int debyeLength(double temperature, double density);
@@ -61,7 +60,7 @@ static int gyroFrequencies(double bField) {
  * 
  ******************************************************************************/
 
-static double carbonIonTemperature(double centerWL, double widthWL) {
+double carbonIonTemperature(double centerWL, double widthWL) {
 
   double ionTemp;
   double carbonMassAMU = 12.01;
