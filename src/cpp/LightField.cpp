@@ -1121,9 +1121,9 @@ int LightField::populateChords() {
  * centerParam = center estimate; offsetParam = offset estimate
  ******************************************************************************/
 
-double LightField::getTemperature(int chordNum, int offSet, int length,
-				  double sigmaParam, double ampParam,
-				  double centerParam, double offsetParam) {
+gsl_vector *LightField::getTemperature(int chordNum, int offSet, int length,
+				       double sigmaParam, double ampParam,
+				       double centerParam, double offsetParam) {
 
   gsl_vector *tempVec;
 
@@ -1195,12 +1195,15 @@ double LightField::getTemperature(int chordNum, int offSet, int length,
   gsl_vector_view chord = gsl_vector_subvector(tempVec, offSet, length);
   gsl_vector_view wL = gsl_vector_subvector(waveLength, offSet, length);
   gsl_vector *gaussFit = gsl_vector_alloc((&chord.vector)->size);
-    
+  double temperatureError;
   fitGaussian(&wL.vector, &chord.vector, gaussFit,
-	      &ampParam, &centerParam, &sigmaParam, &offsetParam, 0);
+	      &ampParam, &centerParam, &sigmaParam, &offsetParam,
+	      &temperatureError, 0);
 
   double temperature = carbonIonTemperature(centerParam, sigmaParam);
-
+  temperatureError = 2*(sigmaParam/centerParam) / (gsl_pow_2(1.46E-3)*12.01)
+    * abs(temperatureError);
+  
   switch(chordNum) {
   case 1:
     chord1Fit = gaussFit;
@@ -1266,8 +1269,11 @@ double LightField::getTemperature(int chordNum, int offSet, int length,
     chord20Fit = gaussFit;
   }
   
+  gsl_vector *retVec = gsl_vector_alloc(2);
+  gsl_vector_set(retVec, 0, temperature);
+  gsl_vector_set(retVec, 1, temperatureError);
   
-  return temperature;
+  return retVec;
 
 }
 

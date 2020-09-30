@@ -613,34 +613,30 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
       lfObject.populateChords();
 
   }
-  
-  double ampParam = 18500,
-    centerParam = 227.1,
-    sigmaParam = 0.2,
-    offsetParam = 315000;
 
-  int offSet = 320;
-  int length = 80;
-  int chordNum = 10;
-  double temperature =  lfObject.getTemperature(chordNum, offSet, length, sigmaParam,
-						ampParam, centerParam, offsetParam);
-
-  std::cout << "Fit ion temperature: "
-	    << temperature
-	    << " keV\n";
-  
-  gsl_vector_view wL = gsl_vector_subvector(lfObject.waveLength, offSet, length);
-  gsl_vector_view chord = gsl_vector_subvector(lfObject.chord10, offSet, length);
-
-  std::string dataLabel;
+  std::string tempLabel;
   oss << "with points title 'Data'";
-  dataLabel = oss.str();
+  tempLabel = oss.str();
   oss.str("");
 
-  std::string fitLabel;
-  oss << "with points title 'Fit'";
-  fitLabel = oss.str();
-  oss.str("");
+  // double ampParam = 18500,
+  //   centerParam = 227.1,
+  //   sigmaParam = 0.2,
+  //   offsetParam = 315000;
+
+  // int offSet = 320;
+  // int length = 80;
+  // int chordNum = 8;
+
+  // chord1ParamDouble[4] =     {ampPara, centerParam, sigmaPara, offsetParam}
+  double chord1ParamDouble[4] = {65000, 227.125, 0.05, 47500};
+  // chord1ParamInt[3] = {offset, length, chordNum}
+  int chord1ParamInt[3] = {340, 50, 1};
+    
+  int *chordParamInt = chord1ParamInt;
+  double *chordParamDouble = chord1ParamDouble;
+  gsl_vector *vectorTemp = lfObject.chord1;
+  plot1DVectorData(vectorTemp, tempLabel, "", tempDataFile, tempScriptFile);
 
   std::string keyWords = "set title 'Temperature'\n"
     "set ylabel 'Signal'\n"
@@ -648,9 +644,105 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
     "set key left top\n"
     "set yrange[:]\n";
   
-  plot2VectorData(&wL.vector, &chord.vector, dataLabel,
-		  lfObject.chord10Fit, fitLabel, keyWords,
-		  tempDataFile, tempScriptFile);
+  plotVectorData(lfObject.waveLength, vectorTemp, tempLabel,
+		 keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector *tempVec;
+  gsl_vector *temperatureVector = gsl_vector_alloc(20);
+  gsl_vector_set_zero(temperatureVector);
+  gsl_vector *temperatureErrorVector = gsl_vector_alloc(20);
+  gsl_vector_set_zero(temperatureErrorVector);
+  gsl_vector *temperatureX = gsl_vector_alloc(20);
+  gsl_vector_set_zero(temperatureX);
+  
+  for (int ii = 1; ii < 20; ii++) {
+
+    chord1ParamInt[2] = ii;
+    tempVec =  lfObject.getTemperature(chordParamInt[2],
+				       chordParamInt[0],
+				       chordParamInt[1],
+				       chordParamDouble[2],
+				       chordParamDouble[0],
+				       chordParamDouble[1],
+				       chordParamDouble[3]);
+    gsl_vector_set(temperatureVector, ii, gsl_vector_get(tempVec, 0));
+    gsl_vector_set(temperatureErrorVector, ii, gsl_vector_get(tempVec, 1));
+    gsl_vector_set(temperatureX, ii, ii);
+    
+  }
+
+  plotVectorData(temperatureX, temperatureVector,
+		 tempLabel, keyWords,
+		 tempDataFile, tempScriptFile);
+
+  oss << "title 'T'";
+  tempLabel = oss.str();
+  oss.str("");
+
+  keyWords = "set title 'Temperature'\n"
+    "set ylabel 'Temperature (keV)'\n"
+    "set xlabel 'Chord)'\n"
+    "set key left top\n"
+    "set yrange[:]\n";
+  
+  plotVectorDataWithError(temperatureX, temperatureVector,
+			  temperatureErrorVector, tempLabel, keyWords,
+			  tempDataFile, tempScriptFile);
+  
+  // std::cout << "Fit ion temperature: "
+  // 	    << gsl_vector_get(tempVec, 0) << " +/- "
+  // 	    << gsl_vector_get(tempVec, 1)
+  // 	    << " keV\n";
+
+  return 0;
+  
+  // gsl_vector *temperatureVector = gsl_vector_alloc(20);
+  // gsl_vector_set_zero(temperatureVector);
+  // gsl_vector *temperatureErrorVector = gsl_vector_alloc(20);
+  // gsl_vector_set_zero(temperatureErrorVector);
+  // for (int ii = 10; ii < 14; ii=ii+2) {
+  //   ampParam = 18500;
+  //   centerParam = 227.1;
+  //   sigmaParam = 0.2;
+  //   offsetParam = 315000;
+  //   offSet = 320;
+  //   length = 80;
+  //   chordNum = ii;
+  //   tempVec =  lfObject.getTemperature(ii, offSet, length, sigmaParam,
+  // 				       ampParam, centerParam, offsetParam);
+  //   gsl_vector_set(temperatureVector, ii, gsl_vector_get(tempVec, 0));
+  //   gsl_vector_set(temperatureErrorVector, ii, gsl_vector_get(tempVec, 1));
+  // }
+
+  // std::string tempLabel;
+  // oss << "with points title 'Data'";
+  // tempLabel = oss.str();
+  // oss.str("");
+  
+  // plot1DVectorData(temperatureVector, tempLabel, "", tempDataFile, tempScriptFile);
+  
+  // gsl_vector_view wL = gsl_vector_subvector(lfObject.waveLength, offSet, length);
+  // gsl_vector_view chord = gsl_vector_subvector(lfObject.chord8, offSet, length);
+
+  // std::string dataLabel;
+  // oss << "with points title 'Data'";
+  // dataLabel = oss.str();
+  // oss.str("");
+
+  // std::string fitLabel;
+  // oss << "with points title 'Fit'";
+  // fitLabel = oss.str();
+  // oss.str("");
+
+  // std::string keyWords = "set title 'Temperature'\n"
+  //   "set ylabel 'Signal'\n"
+  //   "set xlabel 'Wavelength (nm))'\n"
+  //   "set key left top\n"
+  //   "set yrange[:]\n";
+  
+  // plot2VectorData(&wL.vector, &chord.vector, dataLabel,
+  // 		  lfObject.chord8Fit, fitLabel, keyWords,
+  // 		  tempDataFile, tempScriptFile);
 
   return 0;
 

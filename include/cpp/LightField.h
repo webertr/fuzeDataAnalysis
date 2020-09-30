@@ -130,9 +130,9 @@ class LightField {
   void uploadToMDSplus(int shotNumber);      // Upload data to mdsplus
   bool setNumEdges(int numEdgesIn);          // Set number of edges
   bool setNumFibers(int numFibersIn);        // set number of fibers
-  double getTemperature(int chordNum, int offSet, int length,   // Returns line temp
-			double sigmaParam, double ampParam,
-			double centerParam, double offsetParam);
+  gsl_vector *getTemperature(int chordNum, int offSet, int length, // Returns line temp
+			     double sigmaParam, double ampParam,
+			     double centerParam, double offsetParam);
     
 };
 

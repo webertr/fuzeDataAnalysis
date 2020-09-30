@@ -137,7 +137,7 @@ static void iterCallBackGauss(const size_t iter, void *params,
 
 int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
 		 double *amplitude, double *center, double *width,
-		 double *offset, int printOption) {
+		 double *offset, double *widthError, int printOption) {
 
   /* 
    * Specifies the type of algorhtym used to solve non linear least squares problem.
@@ -250,12 +250,15 @@ int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
     fprintf (stderr, "status = %s\n", gsl_strerror (status));
 
   }
+
+  *widthError = c*sqrt(gsl_matrix_get(covar,2,2));
   gsl_multifit_nlinear_free(workSpace);
   gsl_matrix_free(covar);
 
   /* Converting to the passed units */
   *width = *width * deltaX;
   *center = deltaX*(*center) + xInitial;
+  *widthError = *widthError * deltaX;
 
   for (ii = 0; ii < (int) numPoints; ii++) {
     gsl_vector_set(gaussFit, ii,

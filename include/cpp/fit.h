@@ -1,6 +1,7 @@
 #ifndef FITCPP_H
 #define FITCPP_H
 
+#include <iostream>
 #include <stdio.h>
 #include <gsl/gsl_math.h>
 #include <sys/types.h>
@@ -26,6 +27,6 @@
 
 int fitGaussian(gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
 		double *amplitude, double *center, double *width,
-		double *offset, int printOption);
+		double *offset, double *widthError, int printOption);
 
 #endif
