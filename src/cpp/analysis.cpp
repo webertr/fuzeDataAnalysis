@@ -566,7 +566,7 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   gsl_vector *fiberEdges = 0 ;
   const double centers[numFibers] = {51, 100, 149, 195, 243, 295, 341, 390, 441, 490,
 				     539, 590, 640, 683, 737, 780, 837, 880, 935, 975};
-  
+
   /* Checking to see if there is a file available */
   if ( !checkFileExists(shotNumberFileName)) {
     std::cout << "No light field file available for shot number "
@@ -629,12 +629,21 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   // int chordNum = 8;
 
   // chord1ParamDouble[4] =     {ampPara, centerParam, sigmaPara, offsetParam}
-  double chord1ParamDouble[4] = {65000, 227.125, 0.05, 47500};
+
+  // 200929048
+  double chordParamDouble[4] = {65000, 227.125, 0.05, 47500};
+
+  // 200929045
+  //double chord1ParamDouble[4] = {30000, 227.125, 0.05, 50000};
+  
   // chord1ParamInt[3] = {offset, length, chordNum}
-  int chord1ParamInt[3] = {340, 50, 1};
-    
-  int *chordParamInt = chord1ParamInt;
-  double *chordParamDouble = chord1ParamDouble;
+
+  // 200929048  
+  int chordParamInt[3] = {340, 50, 1};
+
+  // 200929045
+  //int chord1ParamInt[3] = {340, 50, 1};
+  
   gsl_vector *vectorTemp = lfObject.chord1;
   plot1DVectorData(vectorTemp, tempLabel, "", tempDataFile, tempScriptFile);
 
@@ -655,9 +664,9 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   gsl_vector *temperatureX = gsl_vector_alloc(20);
   gsl_vector_set_zero(temperatureX);
   
-  for (int ii = 1; ii < 20; ii++) {
+  for (int ii = 0; ii < 20; ii++) {
 
-    chord1ParamInt[2] = ii;
+    chordParamInt[2] = ii+1;
     tempVec =  lfObject.getTemperature(chordParamInt[2],
 				       chordParamInt[0],
 				       chordParamInt[1],
@@ -670,10 +679,6 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
     gsl_vector_set(temperatureX, ii, ii);
     
   }
-
-  plotVectorData(temperatureX, temperatureVector,
-		 tempLabel, keyWords,
-		 tempDataFile, tempScriptFile);
 
   oss << "title 'T'";
   tempLabel = oss.str();
@@ -744,7 +749,7 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   // 		  lfObject.chord8Fit, fitLabel, keyWords,
   // 		  tempDataFile, tempScriptFile);
 
-  return 0;
+  //return 0;
 
 }
 
