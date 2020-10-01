@@ -629,25 +629,32 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   // int chordNum = 8;
 
   // chord1ParamDouble[4] =     {ampPara, centerParam, sigmaPara, offsetParam}
-
-  // 200929048
+  // 200929048, 227.1 nm CV
   double chordParamDouble[4] = {65000, 227.125, 0.05, 47500};
 
-  // 200929045
+  // 200929045, 227.1 nm CV
   //double chord1ParamDouble[4] = {30000, 227.125, 0.05, 50000};
+
   
   // chord1ParamInt[3] = {offset, length, chordNum}
-
-  // 200929048  
+  // 200929048, 227.1 nm CV
   int chordParamInt[3] = {340, 50, 1};
 
-  // 200929045
+  // 200929045, 227.1 nm CV
   //int chord1ParamInt[3] = {340, 50, 1};
+
+  // Chord # to plot
+  gsl_vector *vectorTemp = lfObject.chord10;
   
-  gsl_vector *vectorTemp = lfObject.chord1;
+  std::string keyWords = "set title 'Spectrum'\n"
+    "set ylabel 'Signal'\n"
+    "set xlabel 'Pixels)'\n"
+    "set key left top\n"
+    "set yrange[:]\n";
+
   plot1DVectorData(vectorTemp, tempLabel, "", tempDataFile, tempScriptFile);
 
-  std::string keyWords = "set title 'Temperature'\n"
+  keyWords = "set title 'Spectrum'\n"
     "set ylabel 'Signal'\n"
     "set xlabel 'Wavelength (nm))'\n"
     "set key left top\n"
@@ -684,7 +691,9 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   tempLabel = oss.str();
   oss.str("");
 
-  keyWords = "set title 'Temperature'\n"
+  keyWords = "set title 'Temperature for 200929048 pulse'\n"
+    //"set terminal png\n"
+    //"set output '/home/fuze/Downloads/temp.png'\n"
     "set ylabel 'Temperature (keV)'\n"
     "set xlabel 'Chord)'\n"
     "set key left top\n"
@@ -694,13 +703,13 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
 			  temperatureErrorVector, tempLabel, keyWords,
 			  tempDataFile, tempScriptFile);
   
+  return 0;
+
   // std::cout << "Fit ion temperature: "
   // 	    << gsl_vector_get(tempVec, 0) << " +/- "
   // 	    << gsl_vector_get(tempVec, 1)
   // 	    << " keV\n";
 
-  return 0;
-  
   // gsl_vector *temperatureVector = gsl_vector_alloc(20);
   // gsl_vector_set_zero(temperatureVector);
   // gsl_vector *temperatureErrorVector = gsl_vector_alloc(20);
