@@ -418,27 +418,6 @@ LightField::LightField(std::string fileNameParam):
   chord18 = gsl_vector_alloc(xdim);
   chord19 = gsl_vector_alloc(xdim);
   chord20 = gsl_vector_alloc(xdim);
-
-  chord1Fit = NULL;
-  chord2Fit = NULL;
-  chord3Fit = NULL;
-  chord4Fit = NULL;
-  chord5Fit = NULL;
-  chord6Fit = NULL;
-  chord7Fit = NULL;
-  chord8Fit = NULL;
-  chord9Fit = NULL;
-  chord10Fit = NULL;
-  chord11Fit = NULL;
-  chord12Fit = NULL;
-  chord13Fit = NULL;
-  chord14Fit = NULL;
-  chord15Fit = NULL;
-  chord16Fit = NULL;
-  chord17Fit = NULL;
-  chord18Fit = NULL;
-  chord19Fit = NULL;
-  chord20Fit = NULL;
   
   /* If all the fibers were found, write a true to the appropriate boolean */
   if ( (numEdges == NUM_FIBERS + 1) &&
@@ -502,26 +481,6 @@ LightField::~LightField() {
   gsl_vector_free(chord18);
   gsl_vector_free(chord19);
   gsl_vector_free(chord20);
-  gsl_vector_free(chord1Fit);
-  gsl_vector_free(chord2Fit);
-  gsl_vector_free(chord3Fit);
-  gsl_vector_free(chord4Fit);
-  gsl_vector_free(chord5Fit);
-  gsl_vector_free(chord6Fit);
-  gsl_vector_free(chord7Fit);
-  gsl_vector_free(chord8Fit);
-  gsl_vector_free(chord9Fit);
-  gsl_vector_free(chord10Fit);
-  gsl_vector_free(chord11Fit);
-  gsl_vector_free(chord12Fit);
-  gsl_vector_free(chord13Fit);
-  gsl_vector_free(chord14Fit);
-  gsl_vector_free(chord15Fit);
-  gsl_vector_free(chord16Fit);
-  gsl_vector_free(chord17Fit);
-  gsl_vector_free(chord18Fit);
-  gsl_vector_free(chord19Fit);
-  gsl_vector_free(chord20Fit);
 
   gsl_matrix_free(image);
   gsl_matrix_ushort_free(imageUShort);
@@ -1122,8 +1081,8 @@ int LightField::populateChords() {
  ******************************************************************************/
 
 gsl_vector *LightField::getTemperature(int chordNum, int offSet, int length,
-				       double sigmaParam, double ampParam,
-				       double centerParam, double offsetParam) {
+				       double *sigmaParam, double *ampParam,
+				       double *centerParam, double *offsetParam) {
 
   gsl_vector *tempVec;
 
@@ -1197,81 +1156,17 @@ gsl_vector *LightField::getTemperature(int chordNum, int offSet, int length,
   gsl_vector *gaussFit = gsl_vector_alloc((&chord.vector)->size);
   double temperatureError;
   fitGaussian(&wL.vector, &chord.vector, gaussFit,
-	      &ampParam, &centerParam, &sigmaParam, &offsetParam,
+	      ampParam, centerParam, sigmaParam, offsetParam,
 	      &temperatureError, 0);
 
-  double temperature = carbonIonTemperature(centerParam, sigmaParam);
-  temperatureError = 2*(sigmaParam/centerParam) / (gsl_pow_2(1.46E-3)*12.01)
+  double temperature = carbonIonTemperature(*centerParam, *sigmaParam);
+  temperatureError = 2*(*sigmaParam / *centerParam) / (gsl_pow_2(1.46E-3)*12.01)
     * abs(temperatureError);
-  
-  switch(chordNum) {
-  case 1:
-    chord1Fit = gaussFit;
-    break;
-  case 2:
-    chord2Fit = gaussFit;
-    break;
-  case 3:
-    chord3Fit = gaussFit;
-    break;
-  case 4:
-    chord4Fit = gaussFit;
-    break;
-  case 5:
-    chord5Fit = gaussFit;
-    break;
-  case 6:
-    chord6Fit = gaussFit;
-    break;
-  case 7:
-    chord7Fit = gaussFit;
-    break;
-  case 8:
-    chord8Fit = gaussFit;
-    break;
-  case 9:
-    chord9Fit = gaussFit;
-    break;
-  case 10:
-    chord10Fit = gaussFit;
-    break;
-  case 11:
-    chord11Fit = gaussFit;
-    break;
-  case 12:
-    chord12Fit = gaussFit;
-    break;
-  case 13:
-    chord13Fit = gaussFit;
-    break;
-  case 14:
-    chord14Fit = gaussFit;
-    break;
-  case 15:
-    chord15Fit = gaussFit;
-    break;
-  case 16:
-    chord16Fit = gaussFit;
-    break;
-  case 17:
-    chord17Fit = gaussFit;
-    break;
-  case 18:
-    chord18Fit = gaussFit;
-    break;
-  case 19:
-    chord19Fit = gaussFit;
-    break;
-  case 20:
-    chord20Fit = gaussFit;
-    break;
-  default:
-    chord20Fit = gaussFit;
-  }
-  
+    
   gsl_vector *retVec = gsl_vector_alloc(2);
   gsl_vector_set(retVec, 0, temperature);
   gsl_vector_set(retVec, 1, temperatureError);
+  gsl_vector_free(gaussFit);
   
   return retVec;
 

@@ -552,7 +552,7 @@ static int clearGlobalVariables() {
  * Function: plotSpectroscopy
  * Inputs: int
  * Returns: int
- * Description: This will analyze images from the kirana
+ * Description: This will analyze images from a LightField file/Spectrometer
  ******************************************************************************/
 
 static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
@@ -673,17 +673,19 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   
   for (int ii = 0; ii < 20; ii++) {
 
+    // Parameters update here to fit values after each iteration.
     chordParamInt[2] = ii+1;
     tempVec =  lfObject.getTemperature(chordParamInt[2],
 				       chordParamInt[0],
 				       chordParamInt[1],
-				       chordParamDouble[2],
-				       chordParamDouble[0],
-				       chordParamDouble[1],
-				       chordParamDouble[3]);
+				       &chordParamDouble[2],
+				       &chordParamDouble[0],
+				       &chordParamDouble[1],
+				       &chordParamDouble[3]);
     gsl_vector_set(temperatureVector, ii, gsl_vector_get(tempVec, 0));
     gsl_vector_set(temperatureErrorVector, ii, gsl_vector_get(tempVec, 1));
     gsl_vector_set(temperatureX, ii, ii);
+    gsl_vector_free(tempVec);
     
   }
 
@@ -702,6 +704,12 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   plotVectorDataWithError(temperatureX, temperatureVector,
 			  temperatureErrorVector, tempLabel, keyWords,
 			  tempDataFile, tempScriptFile);
+
+  gsl_vector_free(fiberEdges);
+  gsl_vector_free(fiberCenters);
+  gsl_vector_free(temperatureVector);
+  gsl_vector_free(temperatureErrorVector);
+  gsl_vector_free(temperatureX);
   
   return 0;
 

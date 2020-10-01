@@ -96,28 +96,9 @@ class LightField {
   gsl_vector *chord18;                       // Chord #18
   gsl_vector *chord19;                       // Chord #19
   gsl_vector *chord20;                       // Chord #20
-  gsl_vector *chord1Fit;                        // Chord #1
-  gsl_vector *chord2Fit;                        // Chord #2
-  gsl_vector *chord3Fit;                        // Chord #3
-  gsl_vector *chord4Fit;                        // Chord #4
-  gsl_vector *chord5Fit;                        // Chord #5
-  gsl_vector *chord6Fit;                        // Chord #6
-  gsl_vector *chord7Fit;                        // Chord #7
-  gsl_vector *chord8Fit;                        // Chord #8
-  gsl_vector *chord9Fit;                        // Chord #9
-  gsl_vector *chord10Fit;                       // Chord #10
-  gsl_vector *chord11Fit;                       // Chord #11
-  gsl_vector *chord12Fit;                       // Chord #12
-  gsl_vector *chord13Fit;                       // Chord #13
-  gsl_vector *chord14Fit;                       // Chord #14
-  gsl_vector *chord15Fit;                       // Chord #15
-  gsl_vector *chord16Fit;                       // Chord #16
-  gsl_vector *chord17Fit;                       // Chord #17
-  gsl_vector *chord18Fit;                       // Chord #18
-  gsl_vector *chord19Fit;                       // Chord #19
-  gsl_vector *chord20Fit;                       // Chord #20
   gsl_matrix *image;                         // The full image of all 20 fibers
-  gsl_matrix_ushort *imageUShort;            // The full image of all 20 fibers in unsigned int
+  gsl_matrix_ushort *imageUShort;            // The full image of all 20 fibers
+                                             // in unsigned int
   
   LightField(std::string fileNameParam);
   ~LightField();
@@ -131,8 +112,8 @@ class LightField {
   bool setNumEdges(int numEdgesIn);          // Set number of edges
   bool setNumFibers(int numFibersIn);        // set number of fibers
   gsl_vector *getTemperature(int chordNum, int offSet, int length, // Returns line temp
-			     double sigmaParam, double ampParam,
-			     double centerParam, double offsetParam);
+			     double *sigmaParam, double *ampParam,
+			     double *centerParam, double *offsetParam);
     
 };
 
