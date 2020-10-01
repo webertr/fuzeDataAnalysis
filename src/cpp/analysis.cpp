@@ -648,7 +648,7 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   
   std::string keyWords = "set title 'Spectrum'\n"
     "set ylabel 'Signal'\n"
-    "set xlabel 'Pixels)'\n"
+    "set xlabel 'Pixels'\n"
     "set key left top\n"
     "set yrange[:]\n";
 
@@ -695,7 +695,7 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
     //"set terminal png\n"
     //"set output '/home/fuze/Downloads/temp.png'\n"
     "set ylabel 'Temperature (keV)'\n"
-    "set xlabel 'Chord)'\n"
+    "set xlabel 'Chord'\n"
     "set key left top\n"
     "set yrange[:]\n";
   
