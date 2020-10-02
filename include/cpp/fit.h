@@ -27,6 +27,7 @@
 
 int fitGaussian(gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
 		double *amplitude, double *center, double *width,
-		double *offset, double *widthError, int printOption);
+		double *offset, double *widthError, double *chiSqr,
+		int printOption);
 
 #endif

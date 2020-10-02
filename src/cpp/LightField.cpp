@@ -1082,7 +1082,9 @@ int LightField::populateChords() {
 
 gsl_vector *LightField::getTemperature(int chordNum, int offSet, int length,
 				       double *sigmaParam, double *ampParam,
-				       double *centerParam, double *offsetParam) {
+				       double *centerParam, double *offsetParam,
+				       int plotOption, std::string tempDataFile,
+				       std::string tempScriptFile) {
 
   gsl_vector *tempVec;
 
@@ -1155,18 +1157,47 @@ gsl_vector *LightField::getTemperature(int chordNum, int offSet, int length,
   gsl_vector_view wL = gsl_vector_subvector(waveLength, offSet, length);
   gsl_vector *gaussFit = gsl_vector_alloc((&chord.vector)->size);
   double temperatureError;
+  double chiSqr;
   fitGaussian(&wL.vector, &chord.vector, gaussFit,
 	      ampParam, centerParam, sigmaParam, offsetParam,
-	      &temperatureError, 0);
+	      &temperatureError, &chiSqr, 0);
 
   double temperature = carbonIonTemperature(*centerParam, *sigmaParam);
   temperatureError = 2*(*sigmaParam / *centerParam) / (gsl_pow_2(1.46E-3)*12.01)
     * abs(temperatureError);
+
+  if (plotOption == 1) {
+
+    std::ostringstream oss;
     
+    std::string dataLabel;
+    oss << "with points title 'Data'";
+    dataLabel = oss.str();
+    oss.str("");
+
+    std::string fitLabel;
+    oss << "with points title 'Fit'";
+    fitLabel = oss.str();
+    oss.str("");
+
+    std::string keyWords = "set title 'Temperature'\n"
+      "set ylabel 'Signal'\n"
+      "set xlabel 'Wavelength (nm))'\n"
+      "set key left top\n"
+      "set yrange[:]\n";
+    
+    plot2VectorData(&wL.vector, &chord.vector, dataLabel,
+		    gaussFit, fitLabel, keyWords,
+		    tempDataFile, tempScriptFile);
+    
+  }
+  
   gsl_vector *retVec = gsl_vector_alloc(2);
   gsl_vector_set(retVec, 0, temperature);
   gsl_vector_set(retVec, 1, temperatureError);
   gsl_vector_free(gaussFit);
+
+
   
   return retVec;
 

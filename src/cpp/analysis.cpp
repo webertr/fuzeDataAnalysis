@@ -558,7 +558,7 @@ static int clearGlobalVariables() {
 static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
 			    std::string tempScriptFile) {
 
-  std::ostringstream oss;  
+  std::ostringstream oss;
   const int numFibers = 20;
   const int numEdges = 21;
   std::string shotNumberFileName = getFileFromShotNumber(shotNumber);
@@ -619,15 +619,6 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   tempLabel = oss.str();
   oss.str("");
 
-  // double ampParam = 18500,
-  //   centerParam = 227.1,
-  //   sigmaParam = 0.2,
-  //   offsetParam = 315000;
-
-  // int offSet = 320;
-  // int length = 80;
-  // int chordNum = 8;
-
   // chord1ParamDouble[4] =     {ampPara, centerParam, sigmaPara, offsetParam}
   // 200929048, 227.1 nm CV
   double chordParamDouble[4] = {65000, 227.125, 0.05, 47500};
@@ -638,9 +629,9 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   // 200929044, 227.1 nm CV
   //double chordParamDouble[4] = {245000, 227.1, 0.05, 35000};
   
-  // chord1ParamInt[3] = {offset, length, chordNum}
+  // chord1ParamInt[3] = {offset, length, chordNum, plot}
   // 200929048, 227.1 nm CV
-  int chordParamInt[3] = {340, 50, 1};
+  int chordParamInt[4] = {320, 100, 0, 1};
 
   // 200929045, 227.1 nm CV
   //int chordParamInt[3] = {340, 50, 1};
@@ -686,7 +677,9 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
 				       &chordParamDouble[2],
 				       &chordParamDouble[0],
 				       &chordParamDouble[1],
-				       &chordParamDouble[3]);
+				       &chordParamDouble[3],
+				       chordParamInt[3],
+				       tempDataFile, tempScriptFile);
     gsl_vector_set(temperatureVector, ii, gsl_vector_get(tempVec, 0));
     gsl_vector_set(temperatureErrorVector, ii, gsl_vector_get(tempVec, 1));
     gsl_vector_set(temperatureX, ii, ii);
@@ -974,7 +967,8 @@ static int plotCompCurrent(int shotNumber, std::string tempDataFile, std::string
  * the post shot analysis
  ******************************************************************************/
 
-static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string tempScriptFile,
+static int plotM1Mode(int shotNumber, std::string tempDataFile,
+		      std::string tempScriptFile,
 		      int tLow, int tHigh) {
 
   std::ostringstream oss;
@@ -1017,7 +1011,8 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
 
   keyWords.append(rangeLabel);
   
-  plot4VectorData(timeProbeGlobal, m1p5Global, p5Label, m1p15Global, p15Label, m1p35Global, p35Label,
+  plot4VectorData(timeProbeGlobal, m1p5Global, p5Label, m1p15Global,
+		  p15Label, m1p35Global, p35Label,
 		  m1p45Global, p45Label, keyWords, tempDataFile, tempScriptFile);
 
   return 0;
@@ -1035,7 +1030,8 @@ static int plotM1Mode(int shotNumber, std::string tempDataFile, std::string temp
 
 static int plotNeutron(int shotNumber, gsl_vector *time, gsl_vector *det1, int detNum1,
 		       gsl_vector *det2, int detNum2,  gsl_vector *det3, int detNum3,
-		       std::string tempDataFile, std::string tempScriptFile, int tLow, int tHigh) {
+		       std::string tempDataFile, std::string tempScriptFile,
+		       int tLow, int tHigh) {
 
   std::ostringstream oss;
   std::string neutron1Label;
@@ -1097,11 +1093,13 @@ static int plotNeutron2(int shotNumber, gsl_vector *time, gsl_vector *det1,
   
   gsl_vector_scale(timeNeutronGlobal, 1E6);
 
-  oss << "with line lw 3 lc rgb 'black' title 'ND" << detNum1 << "for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'black' title 'ND" << detNum1 << "for "
+      << shotNumber << "'";
   neutron1Label = oss.str();
   oss.str("");
 
-  oss << "with line lw 3 lc rgb 'red' title 'ND" << detNum2 << "for " << shotNumber << "'";
+  oss << "with line lw 3 lc rgb 'red' title 'ND" << detNum2 << "for "
+      << shotNumber << "'";
   neutron2Label = oss.str();
   oss.str("");
 
@@ -1217,7 +1215,8 @@ static int plotAzimuthalArray(int shotNumber, std::string nodeName,
   keyWords.append(rangeLabel);
 
   plot8VectorData(time, p_000, p_000Label, p_045, p_045Label, p_090, p_090Label, 
-		  p_135, p_135Label, p_180, p_180Label, p_225, p_225Label, p_270, p_270Label,
+		  p_135, p_135Label, p_180, p_180Label, p_225, p_225Label,
+		  p_270, p_270Label,
 		  p_315, p_315Label, keyWords, tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
@@ -1293,7 +1292,8 @@ static int plotPinchCurrentData(int shotNumber, std::string tempDataFile,
 
   keyWords.append(rangeLabel);
   
-  plot2VectorData(time, p15M0, p15M0Label, p15M1, p15M1Label, keyWords, tempDataFile, tempScriptFile);
+  plot2VectorData(time, p15M0, p15M0Label, p15M1, p15M1Label, keyWords,
+		  tempDataFile, tempScriptFile);
 
   gsl_vector_free(time);
   gsl_vector_free(p15M1);

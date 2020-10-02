@@ -137,7 +137,8 @@ static void iterCallBackGauss(const size_t iter, void *params,
 
 int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
 		 double *amplitude, double *center, double *width,
-		 double *offset, double *widthError, int printOption) {
+		 double *offset, double *widthError, double *chiSqr,
+		 int printOption) {
 
   /* 
    * Specifies the type of algorhtym used to solve non linear least squares problem.
@@ -146,7 +147,9 @@ int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
   const gsl_multifit_nlinear_type *trustRegionMethod = gsl_multifit_nlinear_trust;
   gsl_multifit_nlinear_workspace *workSpace;
   gsl_multifit_nlinear_fdf fdf;
-  gsl_multifit_nlinear_parameters fdf_params = gsl_multifit_nlinear_default_parameters();
+  gsl_multifit_nlinear_parameters fdf_params =
+    gsl_multifit_nlinear_default_parameters();
+
   const size_t numPoints = yVec->size;
   const size_t numParameters = 4;
 
@@ -201,10 +204,12 @@ int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
   }
   
   /* allocate workspace with default parameters */
-  workSpace = gsl_multifit_nlinear_alloc (trustRegionMethod, &fdf_params, numPoints, numParameters);
+  workSpace = gsl_multifit_nlinear_alloc (trustRegionMethod, &fdf_params,
+					  numPoints, numParameters);
 
   /* initialize solver with starting point and weights */
-  gsl_multifit_nlinear_winit(&paramInitVec.vector, &weightVector.vector, &fdf, workSpace);
+  gsl_multifit_nlinear_winit(&paramInitVec.vector, &weightVector.vector,
+			     &fdf, workSpace);
 
   /* compute initial cost function */
   costFun = gsl_multifit_nlinear_residual(workSpace);
@@ -259,11 +264,13 @@ int fitGaussian (gsl_vector *xVec, gsl_vector *yVec, gsl_vector *gaussFit,
   *width = *width * deltaX;
   *center = deltaX*(*center) + xInitial;
   *widthError = *widthError * deltaX;
+  *chiSqr = chisq;
 
   for (ii = 0; ii < (int) numPoints; ii++) {
     gsl_vector_set(gaussFit, ii,
 		   *offset + *amplitude*\
-		   gsl_sf_exp(-gsl_pow_2(gsl_vector_get(xVec, ii)-*center)/gsl_pow_2(*width)));
+		   gsl_sf_exp(-gsl_pow_2(gsl_vector_get(xVec, ii)-*center)/
+			      gsl_pow_2(*width)));
   }
 
   return 0;

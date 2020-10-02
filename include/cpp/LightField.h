@@ -113,7 +113,9 @@ class LightField {
   bool setNumFibers(int numFibersIn);        // set number of fibers
   gsl_vector *getTemperature(int chordNum, int offSet, int length, // Returns line temp
 			     double *sigmaParam, double *ampParam,
-			     double *centerParam, double *offsetParam);
+			     double *centerParam, double *offsetParam,
+			     int plotOption, std::string tempDataFile,
+			     std::string tempScriptFile);
     
 };
 
