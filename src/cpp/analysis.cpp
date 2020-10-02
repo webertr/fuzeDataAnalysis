@@ -633,18 +633,23 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   double chordParamDouble[4] = {65000, 227.125, 0.05, 47500};
 
   // 200929045, 227.1 nm CV
-  //double chord1ParamDouble[4] = {30000, 227.125, 0.05, 50000};
+  //double chordParamDouble[4] = {30000, 227.125, 0.05, 50000}
 
+  // 200929044, 227.1 nm CV
+  //double chordParamDouble[4] = {245000, 227.1, 0.05, 35000};
   
   // chord1ParamInt[3] = {offset, length, chordNum}
   // 200929048, 227.1 nm CV
   int chordParamInt[3] = {340, 50, 1};
 
   // 200929045, 227.1 nm CV
-  //int chord1ParamInt[3] = {340, 50, 1};
+  //int chordParamInt[3] = {340, 50, 1};
 
+  // 200929044, 227.1 nm CV
+  //int chordParamInt[3] = {340, 40, 1};
+    
   // Chord # to plot
-  gsl_vector *vectorTemp = lfObject.chord10;
+  gsl_vector *vectorTemp = lfObject.chord1;
   
   std::string keyWords = "set title 'Spectrum'\n"
     "set ylabel 'Signal'\n"
@@ -672,7 +677,7 @@ static int plotSpectroscopy(int shotNumber, std::string tempDataFile,
   gsl_vector_set_zero(temperatureX);
   
   for (int ii = 0; ii < 20; ii++) {
-
+    
     // Parameters update here to fit values after each iteration.
     chordParamInt[2] = ii+1;
     tempVec =  lfObject.getTemperature(chordParamInt[2],
