@@ -147,7 +147,6 @@ int plotPostShotAnalysis() {
   int pid3 = fork();
 
   if ( (pid1 == 0) && (pid2==0) && (pid3==0) ) {
-    plotSpectroscopy(shotNumber, "data/spec1.txt", "data/spec1.sh");
     exit(0);
   }
   else if ( (pid1 == 0) && (pid2 == 0) && (pid3 > 0 ) ) {
@@ -175,6 +174,7 @@ int plotPostShotAnalysis() {
 
   if (0) {
     
+    plotSpectroscopy(shotNumber, "data/spec1.txt", "data/spec1.sh");
     plotNeutron(shotNumber, timeNeutronGlobal, neutron1Global, 1, neutron4Global, 4,
 		neutron5Global, 5, "data/neutron1.txt", "data/neutron1.sh",
 		TLOW, THIGH);

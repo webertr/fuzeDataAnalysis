@@ -49,7 +49,7 @@ static gsl_vector *xRay4Global;
 static gsl_vector *xRay5Global;
 
 #define TLOW 20
-#define THIGH 60
+#define THIGH 50
 
 
 /******************************************************************************
@@ -83,7 +83,7 @@ int softXRayRun() {
     exit(0);    
   }
   else if ( (pid1 == 0) && (pid2 > 0) ) {
-    //plotXRay(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
+    plotXRay(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) ) {
@@ -91,7 +91,7 @@ int softXRayRun() {
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) ) {
-    plotXRay3(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
+    //plotXRay3(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
     exit(0);
   }
 
@@ -124,17 +124,18 @@ static int setGlobalVariables(int shotNumber) {
   timeNeutronGlobal = readMDSplusVectorDim(shotNumber, "\\neutron_10_s", "fuze");
   gsl_vector_scale(timeNeutronGlobal, 1E6);
   neutron10Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
-  neutron12Global = readMDSplusVector(shotNumber, "\\neutron_12_s", "fuze");
+  neutron12Global = readMDSplusVector(shotNumber, "\\neutron_10_s", "fuze");
   timeXRayDetaqGlobal = readMDSplusVectorDim(shotNumber, "\\xray_2", "fuze");
   gsl_vector_scale(timeXRayDetaqGlobal, 1E6);
   timeXRayScopeGlobal = readMDSplusVectorDim(shotNumber, "\\xray_1", "fuze");
   gsl_vector_scale(timeXRayScopeGlobal, 1E6);
   timeXRayGlobal = readMDSplusVectorDim(shotNumber, "\\xray_1", "fuze");
+  gsl_vector_scale(timeXRayGlobal, 1E6);
   xRay1Global = readMDSplusVector(shotNumber, "\\xray_1", "fuze");
   xRay2Global = readMDSplusVector(shotNumber, "\\xray_2", "fuze");
   xRay3Global = readMDSplusVector(shotNumber, "\\xray_3", "fuze");
   xRay4Global = readMDSplusVector(shotNumber, "\\xray_4", "fuze");
-  xRay5Global = readMDSplusVector(shotNumber, "\\xray_5", "fuze");
+  //xRay5Global = readMDSplusVector(shotNumber, "\\xray_4", "fuze");
 
   return 0;
 
@@ -160,7 +161,7 @@ static int clearGlobalVariables() {
   gsl_vector_free(xRay2Global);
   gsl_vector_free(xRay3Global);
   gsl_vector_free(xRay4Global);
-  gsl_vector_free(xRay5Global);
+  //gsl_vector_free(xRay5Global);
 
   return 0;
   
@@ -183,7 +184,6 @@ static int plotXRay(int shotNumber, std::string tempDataFile,
   std::string xRay2Label;
   std::string xRay3Label;
   std::string xRay4Label;
-  std::string xRay5Label;
   std::string rangeLabel;
 
   //gsl_vector_scale(xRay2Global, 1E-3);
@@ -206,11 +206,6 @@ static int plotXRay(int shotNumber, std::string tempDataFile,
   xRay4Label = oss.str();
   oss.str("");
 
-  //gsl_vector_scale(xRay5Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'yellow' title '8.0um Be #5 for " << shotNumber << "'";
-  xRay5Label = oss.str();
-  oss.str("");
-  
   oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
   rangeLabel = oss.str();
   oss.str("");
@@ -223,9 +218,9 @@ static int plotXRay(int shotNumber, std::string tempDataFile,
   
   keyWords.append(rangeLabel);
 
-  plot5VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay2Global, xRay2Label,
-		  xRay3Global, xRay3Label, xRay4Global, xRay4Label, xRay5Global,
-		  xRay5Label, keyWords, tempDataFile, tempScriptFile);
+  plot4VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay2Global, xRay2Label,
+		  xRay3Global, xRay3Label, xRay4Global, xRay4Label,
+		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;
 
@@ -292,7 +287,6 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
   std::ostringstream oss;
   std::string xRay1Label;
   std::string xRay3Label;
-  std::string xRay5Label;
   std::string rangeLabel;
 
   //gsl_vector_scale(xRay2Global, 1E-3);
@@ -305,11 +299,6 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
   xRay3Label = oss.str();
   oss.str("");
 
-  //gsl_vector_scale(xRay5Global, 1E-3);
-  oss << "with line lw 3 lc rgb 'green' title '8.0um Be #5 for " << shotNumber << "'";
-  xRay5Label = oss.str();
-  oss.str("");
-  
   oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
   rangeLabel = oss.str();
   oss.str("");
@@ -322,8 +311,8 @@ static int plotXRay2(int shotNumber, std::string tempDataFile,
   
   keyWords.append(rangeLabel);
 
-  plot3VectorData(timeXRayScopeGlobal, xRay1Global, xRay1Label,
-		  xRay3Global, xRay3Label, xRay5Global, xRay5Label,
+  plot2VectorData(timeXRayScopeGlobal, xRay1Global, xRay1Label,
+		  xRay3Global, xRay3Label,
 		  keyWords, tempDataFile, tempScriptFile);
 
   return 0;
