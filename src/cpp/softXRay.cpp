@@ -31,6 +31,10 @@ static int plotBGLight(int shotNumber, std::string tempDataFile,
 		       std::string tempScriptFile, int tLow, int tHigh);
 static int plotXRay3(int shotNumber, std::string tempDataFile,
 		     std::string tempScriptFile, int tLow, int tHigh);
+static int plotXRayRatio1(int shotNumber, std::string tempDataFile,
+			  std::string tempScriptFile, int tLow, int tHigh);
+static int plotXRayRatio2(int shotNumber, std::string tempDataFile,
+			  std::string tempScriptFile, int tLow, int tHigh);
 
 
 /******************************************************************************
@@ -49,7 +53,7 @@ static gsl_vector *xRay4Global;
 static gsl_vector *xRay5Global;
 
 #define TLOW 20
-#define THIGH 50
+#define THIGH 30
 
 
 /******************************************************************************
@@ -79,19 +83,19 @@ int softXRayRun() {
   int pid2 = fork();
 
   if ( (pid1 == 0) && (pid2 == 0) ) {
-    plotNeutron1(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
+    //plotNeutron1(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     exit(0);    
   }
   else if ( (pid1 == 0) && (pid2 > 0) ) {
-    plotXRay(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
+    //plotXRay(shotNumber, "data/xray1.txt", "data/xray1.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 == 0) ) {
-    //plotXRay1(shotNumber, "data/xray2.txt", "data/xray2.sh", TLOW, THIGH);
+    plotXRayRatio1(shotNumber, "data/xray2.txt", "data/xray2.sh", TLOW, THIGH);
     exit(0);
   }
   else if ( (pid1 > 0) && (pid2 > 0) ) {
-    //plotXRay3(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
+    plotXRayRatio2(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
     exit(0);
   }
 
@@ -103,6 +107,7 @@ int softXRayRun() {
     plotNeutron(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     plotNeutron1(shotNumber, "data/neutron1.txt", "data/neutron1.sh", TLOW, THIGH);
     plotBGLight(shotNumber, "data/xray3.txt", "data/xray3.sh", TLOW, THIGH);
+    plotXRayRatio1(shotNumber, "data/xray2.txt", "data/xray2.sh", TLOW, THIGH);
   }
   
   clearGlobalVariables();
@@ -377,6 +382,136 @@ static int plotXRay3(int shotNumber, std::string tempDataFile,
 		    timeXRayScopeGlobal,xRay5Global, xRay5Label, keyWords,
 		    tempDataFile, tempScriptFile);
 
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotXRayRatio1
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotXRayRatio1(int shotNumber, std::string tempDataFile,
+			  std::string tempScriptFile, int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  std::string xRay1Label;
+  std::string xRay2Label;
+  std::string xRayRatioLabel;
+  std::string rangeLabel;
+
+  oss << "with line lw 3 lc rgb 'black' title '12.5um Al #1 for " << shotNumber << "'";
+  xRay1Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'red' title '12.5um Al #2 for " << shotNumber << "'";
+  xRay2Label = oss.str();
+  oss.str("");
+
+  oss << "with dots lc rgb 'green' title '1 / 2 " << shotNumber << "'";
+  xRayRatioLabel = oss.str();
+  oss.str("");
+  
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Soft X-ray Ratios 1 / 2'\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/1over2.png'\n"
+    "set ylabel 'Voltage (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left top\n"
+    "set yrange[0:3]\n";
+  
+  keyWords.append(rangeLabel);
+
+  gsl_vector* ratio = gsl_vector_alloc(xRay1Global->size);
+  double temp1, temp2;
+  for (int ii = 0; ii < (int) xRay1Global->size; ii++) {
+    temp1 = gsl_vector_get(xRay1Global, ii);
+    temp2 = gsl_vector_get(xRay2Global, ii);
+    gsl_vector_set(ratio, ii, temp1 / temp2);
+  }
+
+  gsl_vector_scale(xRay1Global, -1.0);
+  gsl_vector_scale(xRay2Global, -1.0);
+
+  plot3VectorData(timeXRayGlobal, xRay1Global, xRay1Label, xRay2Global, xRay2Label,
+		  ratio, xRayRatioLabel,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(ratio);
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
+ * Function: plotXRayRatio2
+ * Inputs: int
+ * Returns: int
+ * Description: This will prompt the user for a pulse number, and output 
+ * the post shot analysis
+ ******************************************************************************/
+
+static int plotXRayRatio2(int shotNumber, std::string tempDataFile,
+			  std::string tempScriptFile, int tLow, int tHigh) {
+
+  std::ostringstream oss;
+  std::string xRay3Label;
+  std::string xRay4Label;
+  std::string xRayRatioLabel;
+  std::string rangeLabel;
+
+  oss << "with line lw 3 lc rgb 'black' title '7um Al #3 for " << shotNumber << "'";
+  xRay3Label = oss.str();
+  oss.str("");
+
+  oss << "with line lw 3 lc rgb 'red' title '7um Al #4 for " << shotNumber << "'";
+  xRay4Label = oss.str();
+  oss.str("");
+
+  oss << "with dots lc rgb 'green' title '3 / 4 " << shotNumber << "'";
+  xRayRatioLabel = oss.str();
+  oss.str("");
+  
+  oss << "set xrange[" << tLow << ":" << tHigh << "]\n";
+  rangeLabel = oss.str();
+  oss.str("");
+
+  std::string keyWords = "set title 'Soft X-ray Ratios 3 / 4'\n"
+    "set terminal png\n"
+    "set output '/home/fuze/Downloads/3over4.png'\n"
+    "set ylabel 'Voltage (V)'\n"
+    "set xlabel 'Time ({/Symbol m}sec)'\n"
+    "set key left top\n"
+    "set yrange[0:3]\n";
+  
+  keyWords.append(rangeLabel);
+
+  gsl_vector* ratio = gsl_vector_alloc(xRay3Global->size);
+  double temp1, temp2;
+  for (int ii = 0; ii < (int) xRay3Global->size; ii++) {
+    temp1 = gsl_vector_get(xRay3Global, ii);
+    temp2 = gsl_vector_get(xRay4Global, ii);
+    gsl_vector_set(ratio, ii, temp1 / temp2);
+  }
+
+  gsl_vector_scale(xRay3Global, -1.0);
+  gsl_vector_scale(xRay4Global, -1.0);
+
+  plot3VectorData(timeXRayGlobal, xRay3Global, xRay3Label, xRay4Global, xRay4Label,
+		  ratio, xRayRatioLabel,
+		  keyWords, tempDataFile, tempScriptFile);
+
+  gsl_vector_free(ratio);
+  
   return 0;
 
 }
