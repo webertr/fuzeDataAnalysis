@@ -12,7 +12,7 @@
 
 static int getID(int serialPort);
 static int initSerialPort(int *serialPortRet, struct termios *ttyRet);
-static int *getChData(int serialPort, int channelNumber, int *numPointsRet);
+static float *getChData(int serialPort, int channelNumber, int *numPointsRet);
 
 
 /******************************************************************************
@@ -160,23 +160,20 @@ static int getID(int serialPort) {
  * Tektronix TPS 2024B scope via RS232 for it's channel data
  ******************************************************************************/
 
-static int *getChData(int serialPort, int channelNumber, int *numPointsRet) {
+static float *getChData(int serialPort, int channelNumber, int *numPointsRet) {
 
   char readChar;
   char readCharArray[1024];
   char writeCharArray[1024];
 
-
   // Setting the chanel number
   snprintf(writeCharArray, sizeof(writeCharArray), "DATA:SOURCE CH%d", channelNumber);
-
   unsigned char setChNum[16];
   int ii;
   for (ii = 0; ii < 15; ii++) {
     setChNum[ii] = writeCharArray[ii];
   }
   setChNum[ii] = '\n';
-  
   write(serialPort, setChNum, sizeof(setChNum));
 
   // Setting the data width. Signed range should be 0 to 256. Only 1 byte of data
@@ -209,8 +206,63 @@ static int *getChData(int serialPort, int channelNumber, int *numPointsRet) {
       break;
     }
   }
+ 
+  // Getting y multiplication factor WFMPre:YMUlt?\n
+  unsigned char yMultFactorChar[] = { 'W', 'F', 'M', 'P', 'r', 'e', ':', 'Y',
+				      'M', 'U', 'l', 't', '?', '\n' };
+  write(serialPort, yMultFactorChar, sizeof(yMultFactorChar));
+  
+  read(serialPort, &readChar, 1);
+  ii = 0;
+  while (readChar != '\n') {
+    readCharArray[ii] = readChar;    
+    read(serialPort, &readChar, 1);
+    ii = ii + 1;
+  }
+  readCharArray[ii] = '\n';
+  readCharArray[ii+1] = '\0';
+  
+  // Converting string to integer
+  double yMultFactor;
+  sscanf(readCharArray, "%lf", &yMultFactor);
 
-  // WFMPre:YMUlt?\n
+  // Getting y offset WFMPre:YOFf?\n
+  unsigned char yOffsetChar[] = { 'W', 'F', 'M', 'P', 'r', 'e', ':', 'Y',
+				  'O', 'F', 'f', '?', '\n' };
+  write(serialPort, yOffsetChar, sizeof(yOffsetChar));
+  
+  read(serialPort, &readChar, 1);
+  ii = 0;
+  while (readChar != '\n') {
+    readCharArray[ii] = readChar;    
+    read(serialPort, &readChar, 1);
+    ii = ii + 1;
+  }
+  readCharArray[ii] = '\n';
+  readCharArray[ii+1] = '\0';
+  
+  // Converting string to integer
+  double yOffset;
+  sscanf(readCharArray, "%lf", &yOffset);
+
+  // Getting y zero WFMPre:YZEro?\n
+  unsigned char yZeroChar[] = { 'W', 'F', 'M', 'P', 'r', 'e', ':', 'Y',
+				  'Z', 'E', 'r', 'o', '?', '\n' };
+  write(serialPort, yZeroChar, sizeof(yZeroChar));
+  
+  read(serialPort, &readChar, 1);
+  ii = 0;
+  while (readChar != '\n') {
+    readCharArray[ii] = readChar;    
+    read(serialPort, &readChar, 1);
+    ii = ii + 1;
+  }
+  readCharArray[ii] = '\n';
+  readCharArray[ii+1] = '\0';
+  
+  // Converting string to integer
+  double yZero;
+  sscanf(readCharArray, "%lf", &yZero);  
   
   // Getting the number of points to read from the scope
   unsigned char wfNumPoints[] = { 'W', 'F', 'M', 'P', 'r', 'e', ':', 'N',
@@ -232,15 +284,10 @@ static int *getChData(int serialPort, int channelNumber, int *numPointsRet) {
   sscanf(readCharArray, "%d", &numPoints);
 
   // Allocating array to hold int data
-  int *data = (int *) malloc(numPoints * sizeof(int));
+  float *data = (float *) malloc(numPoints * sizeof(float));
 
   // Allocating array to hold char data
   char *readDataArray = (char *) malloc(numPoints * sizeof(char));
-    
-  // Selecting channel and data type
-
-  
-
   
   // Getting data from scope
   unsigned char getCurve[] = { 'C', 'U', 'R', 'V', 'E', '?', '\n' };
@@ -262,7 +309,7 @@ static int *getChData(int serialPort, int channelNumber, int *numPointsRet) {
 
   // Writing data to the data array created earlier
   for (ii = 0; ii < numPoints; ii++) {
-    data[ii] = readDataArray[ii];
+    data[ii] = ((readDataArray[ii]*yMultFactor - yOffset) + yZero);
   }
 
   // Freeing array created earlier
@@ -284,10 +331,12 @@ int main() {
   
   getID(serialPort);
 
-  int *data;
+  float *data;
   int numPoints;
   data = getChData(serialPort, 1, &numPoints);
 
+  printf("Data[10]: %f\n", data[10]);
+  
   free(data);
   
   close(serialPort);
