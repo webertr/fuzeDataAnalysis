@@ -16,12 +16,13 @@
  ******************************************************************************/
 
 static int initSerialPort(LibSerial::SerialPort *serialPort);
-static std::string getID(LibSerial::SerialPort *serialPort);
+static std::string writeReadBack(LibSerial::SerialPort *serialPort, std::string cmd);
 static int setString(LibSerial::SerialPort *serialPort, std::string setStringCmd,
 		     std::string setStringVal);
 static int setInt(LibSerial::SerialPort *serialPort, std::string setStringCmd,
 		  int intVal);
 static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCmd);
+static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd);
 
 
 /******************************************************************************
@@ -32,17 +33,16 @@ static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCm
  * Tektronix TPS 2024B scope via RS232 for it's ID
  ******************************************************************************/
 
-static std::string getID(LibSerial::SerialPort *serialPort) {
+static std::string writeReadBack(LibSerial::SerialPort *serialPort, std::string cmd) {
 
-  std::string idString = "ID?\n";
-  serialPort->Write(idString);
+  serialPort->Write(cmd + "\n");
 
   char nextChar;
-  std::string idRet;
+  std::string cmdRet;
   int timeoutMS = 5000;
-  serialPort->ReadLine(idRet, '\n', timeoutMS);
+  serialPort->ReadLine(cmdRet, '\n', timeoutMS);
 
-  return idRet;
+  return cmdRet;
 
 }
 
@@ -160,11 +160,40 @@ static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCm
 
   std::istringstream os(setStringRet);
   
-  float floatValRet = std::stoi(setStringRet);
+  float floatValRet;
 
   os >> floatValRet;
   
   return floatValRet;
+
+}
+
+
+/******************************************************************************
+ * Function: getInt
+ * Inputs: int
+ * Returns: int
+ * Description: Assuming a serial port is opened, this will poll the
+ * Tektronix TPS 2024B scope via RS232 and get a int val
+ ******************************************************************************/
+
+static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd) {
+  
+  // Commanding readback
+  serialPort->Write(setStringCmd + "?\n");
+
+  char nextChar;
+  std::string setStringRet;
+  int timeoutMS = 5000;
+  serialPort->ReadLine(setStringRet, '\n', timeoutMS);
+
+  std::istringstream os(setStringRet);
+  
+  int intValRet;
+
+  os >> intValRet;
+  
+  return intValRet;
 
 }
 
@@ -177,7 +206,6 @@ static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCm
  ******************************************************************************/
 
 int main() {
-
   
   LibSerial::SerialPort serialPort("/dev/ttyUSB0");
 
@@ -185,17 +213,25 @@ int main() {
   initSerialPort(&serialPort);
 
   // Printing the ID
-  std::cout << getID(&serialPort);
+  std::cout << writeReadBack(&serialPort, "ID?");
 
+  // Printing the information
+  std::cout << writeReadBack(&serialPort, "WFMpre?");
+
+  // Setting data format
   setString(&serialPort, "DATA:ENCDG", "RIBINARY");
-
-  setInt(&serialPort, "DATA:WIDTH", 2);
   setInt(&serialPort, "DATA:WIDTH", 2);
 
+  // Setting channel
+  setString(&serialPort, "DATA:SOURCE", "CH3");
+
+  // Getting needed data
   float yMult = getFloat(&serialPort, "WFMPre:YMUlt");
   float yOffset = getFloat(&serialPort, "WFMPre:YOFf");
   float yZero = getFloat(&serialPort, "WFMPre:YZEro");
+  int numPoints = getInt(&serialPort, "WFMPre:NR_Pt");
 
+  
   
 
   return 0;
