@@ -23,6 +23,8 @@ static int setInt(LibSerial::SerialPort *serialPort, std::string setStringCmd,
 		  int intVal);
 static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCmd);
 static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd);
+static float *getChData(LibSerial::SerialPort *serialPort, int chNum);
+static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum);
 
 
 /******************************************************************************
@@ -60,12 +62,14 @@ static int initSerialPort(LibSerial::SerialPort *serialPort) {
 
   serialPort->SetCharacterSize(LibSerial::CharacterSize::CHAR_SIZE_8);
   
-  //serialPort.SetFlowControl(LibSerial::FlowControl::FLOW_CONTROL_HARDWARE);
   serialPort->SetFlowControl(LibSerial::FlowControl::FLOW_CONTROL_NONE);
 
   serialPort->SetParity(LibSerial::Parity::PARITY_NONE);
 
   serialPort->SetStopBits(LibSerial::StopBits::STOP_BITS_1);
+
+  // Clearing
+  serialPort->Write("*CLS\n");
 
   return 0;
    
@@ -199,6 +203,84 @@ static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd) {
 
 
 /******************************************************************************
+ * Function: getChData
+ * Inputs: int
+ * Returns: int
+ * Description: Assuming a serial port is opened, this will poll the
+ * Tektronix TPS 2024B scope via RS232 and get a channel data
+ ******************************************************************************/
+
+static float *getChData(LibSerial::SerialPort *serialPort, int chNum) {
+  
+  // Setting channel
+  setString(serialPort, "DATA:SOURCE", "CH" + std::to_string(chNum));
+
+  // Setting data format
+  setString(serialPort, "DATA:ENCDG", "RIBINARY");
+  setInt(serialPort, "DATA:WIDTH", 1);
+  
+  // Getting information
+  float yMult = getFloat(serialPort, "WFMPre:YMUlt");
+  float yOffset = getFloat(serialPort, "WFMPre:YOFf");
+  float yZero = getFloat(serialPort, "WFMPre:YZEro");
+  int numPoints = getInt(serialPort, "WFMPre:NR_Pt");
+
+  float *dataArray = (float *) malloc(numPoints * sizeof(float));
+  
+  // Commanding readback
+  serialPort->Write("CURVE?\n");
+
+  int timeOutMS = 5000;  
+  char nextChar;
+  int ii;
+  // Reading preample
+  for (ii = 0; ii < 6; ii++) {
+    serialPort->ReadByte(nextChar, timeOutMS);
+  }
+
+  for (ii = 0; ii < numPoints; ii++) {
+    serialPort->ReadByte(nextChar, timeOutMS);
+    dataArray[ii] = (((int) nextChar)*yMult - yOffset) + yZero;
+  }
+
+  // Reading "\n"
+  serialPort->ReadByte(nextChar, timeOutMS);
+  
+  return dataArray;
+
+}
+
+
+/******************************************************************************
+ * Function: getTimeData
+ * Inputs: int
+ * Returns: int
+ * Description: Assuming a serial port is opened, this will poll the
+ * Tektronix TPS 2024B scope via RS232 and get a time base
+ ******************************************************************************/
+
+static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum) {
+  
+  // Setting channel
+  setString(serialPort, "DATA:SOURCE", "CH" + std::to_string(chNum));
+  
+  // Getting information
+  float xDelta = getFloat(serialPort, "WFMPre:XINcr");
+  int numPoints = getInt(serialPort, "WFMPre:NR_Pt");
+
+  float *dataArray = (float *) malloc(numPoints * sizeof(float));
+
+  int ii;
+  for (ii = 0; ii < numPoints; ii++) {
+    dataArray[ii] = xDelta * ii;
+  }
+
+  return dataArray;
+
+}
+
+
+/******************************************************************************
  * Function: main
  * Inputs: 
  * Returns: int
@@ -208,75 +290,25 @@ static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd) {
 int main() {
   
   LibSerial::SerialPort serialPort("/dev/ttyUSB0");
-
+  
   // Initializing the port
   initSerialPort(&serialPort);
-
-  // Printing the ID
-  std::cout << writeReadBack(&serialPort, "ID?");
 
   // Printing the information
   std::cout << writeReadBack(&serialPort, "WFMpre?");
 
-  // Setting data format
-  setString(&serialPort, "DATA:ENCDG", "RIBINARY");
-  setInt(&serialPort, "DATA:WIDTH", 2);
+  // Getting data
+  float *data = getChData(&serialPort, 4);
 
-  // Setting channel
-  setString(&serialPort, "DATA:SOURCE", "CH3");
+  // Getting time base
+  float *time = getTimeData(&serialPort, 1);
 
-  // Getting needed data
-  float yMult = getFloat(&serialPort, "WFMPre:YMUlt");
-  float yOffset = getFloat(&serialPort, "WFMPre:YOFf");
-  float yZero = getFloat(&serialPort, "WFMPre:YZEro");
-  int numPoints = getInt(&serialPort, "WFMPre:NR_Pt");
-
-  
-  
-
-  return 0;
-  
-  // serialPort.Read(nextChar);
-  // while (nextChar != '\n') {
-  //   serialPort.Read(nextChar);
-  
-  // // Read one character from the serial port.
-  // //serialPort >> nextChar;
-
-  // // You can also read other types of values from the serial port in a similar fashion.
-  // //int dataSize;
-  // //serialPort >> dataSize;
-
-
-  
-  // // Write a single character to the serial port.
-  // my_serial_port.WriteByte( 'U' );
-  // serialPort << 'U' ;
-
-  // // You can easily write strings.
-  // std::string my_string = "Hello, Serial Port.";
-
-  // serialPort.Write( my_string );
-  // serialPort << my_string << std::endl ;
-
-  // // And, with serial stream objects, you can easily write any type
-  // // of object that is supported by a "<<" operator.
-  // double radius = 2.0 ;
-  // double area = M_PI * 2.0 * 2.0 ;
-  
-  // serialPort << area << std::endl ;
-
-
-  
-  // // Read a whole array of data from the serial port.
-  // const int BUFFER_SIZE = 256;
-  // char input_buffer[BUFFER_SIZE];
-
-  // my_serial_port.Read( input_buffer, BUFFER_SIZE );
-  // serialPort.read( input_buffer, BUFFER_SIZE );
-
-
+  // Closing serial port
   serialPort.Close();
+
+  free(data);
+
+  free(time);
   
   return 0;
 	 
