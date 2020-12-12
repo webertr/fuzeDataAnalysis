@@ -75,6 +75,7 @@ SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \
 SOURCE_TEKSCOPE_CPP := src/cpp/tekScopeMonitor.cpp \
 	src/cpp/mdsplusAccess.cpp \
 	src/cpp/serialTekScopeComm.cpp \
+	src/cpp/save.cpp \
 	src/cpp/epicsCA.cpp
 
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))

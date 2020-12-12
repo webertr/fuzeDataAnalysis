@@ -109,10 +109,20 @@ static bool tekScopeUpdate() {
   gsl_vector *ch3Vec = SerialTekScopeComm::getScopeChData(3);
   gsl_vector *ch4Vec = SerialTekScopeComm::getScopeChData(4);
 
+  saveVectorData(timeBase, "data/timeBase.txt");
+  saveVectorData(ch1Vec, "data/ch1.txt");
+  saveVectorData(ch2Vec, "data/ch2.txt");
+  saveVectorData(ch3Vec, "data/ch3.txt");
+  saveVectorData(ch4Vec, "data/ch4.txt");
+  
+  // Sleeping for 10 seconds
+  sleep(20);
+
   int shotNumber = 0;
-  std::string nodeName = "\\TOP.SIGNALS.XRAY:XRAY_1:RAW";
+  std::string nodeName;
   std::string treeName = "fuze";
   
+  nodeName = "\\TOP.SIGNALS.XRAY:XRAY_1:RAW";
   MDSplusAccess::writeMDSplusSignal(timeBase, ch1Vec, shotNumber, nodeName, treeName);
   nodeName = "\\TOP.SIGNALS.XRAY:XRAY_2:RAW";
   MDSplusAccess::writeMDSplusSignal(timeBase, ch2Vec, shotNumber, nodeName, treeName);
