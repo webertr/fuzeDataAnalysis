@@ -20,8 +20,6 @@ static int setInt(LibSerial::SerialPort *serialPort, std::string setStringCmd,
 		  int intVal);
 static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCmd);
 static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd);
-static float *getChData(LibSerial::SerialPort *serialPort, int chNum);
-static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum);
 
 
 /******************************************************************************
@@ -202,7 +200,8 @@ static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd) {
  * Tektronix TPS 2024B scope via RS232 and get a channel data
  ******************************************************************************/
 
-static float *getChData(LibSerial::SerialPort *serialPort, int chNum) {
+gsl_vector *SerialTekScopeComm::getScopeChData(LibSerial::SerialPort *serialPort,
+					       int chNum) {
   
   // Setting channel
   setString(serialPort, "DATA:SOURCE", "CH" + std::to_string(chNum));
@@ -217,7 +216,7 @@ static float *getChData(LibSerial::SerialPort *serialPort, int chNum) {
   float yZero = getFloat(serialPort, "WFMPre:YZEro");
   int numPoints = getInt(serialPort, "WFMPre:NR_Pt");
 
-  float *dataArray = (float *) malloc(numPoints * sizeof(float));
+  gsl_vector *dataVector = gsl_vector_alloc(numPoints);
   
   // Commanding readback
   serialPort->Write("CURVE?\n");
@@ -232,13 +231,13 @@ static float *getChData(LibSerial::SerialPort *serialPort, int chNum) {
 
   for (ii = 0; ii < numPoints; ii++) {
     serialPort->ReadByte(nextChar, timeOutMS);
-    dataArray[ii] = (((int) nextChar)*yMult - yOffset) + yZero;
+    gsl_vector_set(dataVector, ii, (((int) nextChar)*yMult - yOffset) + yZero);
   }
 
   // Reading "\n"
   serialPort->ReadByte(nextChar, timeOutMS);
   
-  return dataArray;
+  return dataVector;
 
 }
 
@@ -251,7 +250,8 @@ static float *getChData(LibSerial::SerialPort *serialPort, int chNum) {
  * Tektronix TPS 2024B scope via RS232 and get a time base
  ******************************************************************************/
 
-static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum) {
+gsl_vector *SerialTekScopeComm::getScopeTimeBase(LibSerial::SerialPort *serialPort,
+						 int chNum) {
   
   // Setting channel
   setString(serialPort, "DATA:SOURCE", "CH" + std::to_string(chNum));
@@ -260,14 +260,14 @@ static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum) {
   float xDelta = getFloat(serialPort, "WFMPre:XINcr");
   int numPoints = getInt(serialPort, "WFMPre:NR_Pt");
 
-  float *dataArray = (float *) malloc(numPoints * sizeof(float));
-
+  gsl_vector *dataVector = gsl_vector_alloc(numPoints);
+  
   int ii;
   for (ii = 0; ii < numPoints; ii++) {
-    dataArray[ii] = xDelta * ii;
+    gsl_vector_set(dataVector, ii, xDelta * ii);
   }
 
-  return dataArray;
+  return dataVector;
 
 }
 
@@ -278,7 +278,7 @@ static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum) {
  *
  ******************************************************************************/
 
-bool testSerialTekScopeComm() {
+bool SerialTekScopeComm::testSerialTekScopeComm() {
   
   LibSerial::SerialPort serialPort("/dev/ttyUSB0");
   
@@ -289,11 +289,14 @@ bool testSerialTekScopeComm() {
   std::cout << writeReadBack(&serialPort, "WFMpre?");
 
   // Getting data
-  float *data = getChData(&serialPort, 4);
+  gsl_vector *data = getScopeChData(&serialPort, 4);
 
   // Getting time base
-  float *time = getTimeData(&serialPort, 1);
+  gsl_vector *time = getScopeTimeBase(&serialPort, 1);
 
+  std::cout << gsl_vector_get(data, data->size-1) << "\n";
+  std::cout << gsl_vector_get(time, time->size-1) << "\n";
+  
   // Closing serial port
   serialPort.Close();
 

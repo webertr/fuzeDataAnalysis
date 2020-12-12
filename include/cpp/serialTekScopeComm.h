@@ -1,11 +1,18 @@
-#ifndef CPP_SERIALTEKSCOPECOM_H
-#define CPP_SERIALTEKSCOPECOM_H
+#ifndef CPP_SERIALTEKSCOPECOMM_H
+#define CPP_SERIALTEKSCOPECOMM_H
 
 #include <SerialPort.h>
 #include <SerialStream.h>
 #include <iostream>
 #include <sstream>
+#include <gsl/gsl_vector.h>
 
-bool testSerialTekScopeComm();
+namespace SerialTekScopeComm {
+  
+  gsl_vector *getScopeChData(LibSerial::SerialPort *serialPort, int chNum);
+  bool testSerialTekScopeComm();
+  gsl_vector *getScopeTimeBase(LibSerial::SerialPort *serialPort, int chNum);
+  
+}
 
 #endif

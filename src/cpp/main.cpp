@@ -30,7 +30,7 @@ int main() {
 
   //testSave();
 
-  testSerialTekScopeComm();
+  SerialTekScopeComm::testSerialTekScopeComm();
   
   return 0;
 
