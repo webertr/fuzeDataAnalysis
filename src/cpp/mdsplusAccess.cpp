@@ -869,6 +869,123 @@ bool readMDSplusVectorDimWrite(int shotNumber, std::string nodeName, std::string
 
 
 /******************************************************************************
+ * Function: writeMDSplusSignal
+ * Inputs: int, char *, char *, char *
+ * Returns: gsl_vector *
+ * Description: Write vector to the tree
+ ******************************************************************************/
+
+int writeMDSplusSignal(gsl_vector *vecX, gsl_vector *vecY, int shotNumber, 
+		       std::string nodeName, std::string treeName) {
+
+  MDSplus::Tree *tree = NULL;
+  MDSplus::TreeNode *node = NULL;
+  std::string readOnly = "NORMAL";
+  MDSplus::Float64Array *dataX = new MDSplus::Float64Array(vecX->data, vecX->size);
+  MDSplus::Float64Array *dataY = new MDSplus::Float64Array(vecY->data, vecY->size);
+
+  /*
+   * Trying to open an experiment and shot number
+   */
+  try {
+
+    /*
+     * The tree name has to match the path environment variable xxx_path
+     * fuze_path = fuze.fuze::/usr/local/trees/fuze/newdata/~t
+     */
+    tree = new MDSplus::Tree(treeName.c_str(), shotNumber, readOnly.c_str());
+
+  } catch(MDSplus::MdsException &exc) {
+
+    std::cout << "Cannot open tree " << treeName  
+	      << " shot " << shotNumber << ": " << exc.what() << std::endl;
+    delete tree;
+    delete node;
+    MDSplus::deleteData(dataX);
+    MDSplus::deleteData(dataY);
+    return -1;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    delete tree;
+    delete node;
+    MDSplus::deleteData(dataX);
+    MDSplus::deleteData(dataY);
+    return -1;
+
+  }
+
+  /* Getting node from tree */
+  try {
+    node = tree->getNode(nodeName.c_str());
+  } catch(MDSplus::MdsException &exc) {
+    std::cout << "Cannot get node " << treeName  
+	      << " shot " << shotNumber
+	      << " Node " << nodeName << ": " << exc.what() << std::endl;
+    delete tree;
+    delete node;
+    MDSplus::deleteData(dataX);
+    MDSplus::deleteData(dataY);
+    return -1;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    delete tree;
+    delete node;
+    MDSplus::deleteData(dataX);
+    MDSplus::deleteData(dataY);
+    return -1;
+
+  }
+
+  // Creating data expression
+  MDSplus::Data *dataExpression =
+    MDSplus::compileWithArgs("BUILD_SIGNAL($VALUE, $1, $2)", 2, dataY, dataX);
+  
+  try {
+    
+    /* Putting Signal */
+    node->putData(dataExpression);
+
+  } catch(MDSplus::MdsException &exc) {
+    std::cout << "Cannot put signal " << treeName  
+	      << " shot " << shotNumber
+	      << " Node " << nodeName << ": " << exc.what() << std::endl;
+    delete tree;
+    delete node;
+    MDSplus::deleteData(dataX);
+    MDSplus::deleteData(dataY);
+    return -1;
+
+  } catch(...) {
+
+    std::cout << "Default error";
+    delete tree;
+    delete node;
+    MDSplus::deleteData(dataX);
+    MDSplus::deleteData(dataY);
+    return -1;
+
+  }
+  
+  // Data objects must be freed via routine deleteData()
+  MDSplus::deleteData(dataX);
+  MDSplus::deleteData(dataY);
+
+  // Tree objects use C++ delete. Can't find a MDSplus::deleteTree()
+  delete tree;
+
+  // Deleting node. Use C++ delete. Can't find MDSPLus::deleteTreeNode()
+  delete node;
+  
+  return 0;
+
+}
+
+
+/******************************************************************************
  *
  * TESTING SECTION
  *

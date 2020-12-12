@@ -23,4 +23,7 @@ int writeMDSplusMatrix(gsl_matrix_ushort *matIn, int shotNumber,
 gsl_matrix_ushort *readMDSplusMatrix(int shotNumber, std::string nodeName, std::string treeName);
 bool readMDSplusVectorWrite(int shotNumber, std::string nodeName,
 			    std::string treeName, std::string fileName);
+int writeMDSplusSignal(gsl_vector *vecX, gsl_vector *vecY, int shotNumber, 
+		       std::string nodeName, std::string treeName);
+
 #endif
