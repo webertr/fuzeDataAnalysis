@@ -8,7 +8,7 @@ int main() {
   
   //plotPostShotAnalysis();
 
-  softXRayRun();
+  //softXRayRun();
   
   //bankDiagnosticsRun();
   
@@ -29,6 +29,8 @@ int main() {
   //testPlot();
 
   //testSave();
+
+  testSerialTekScopeComm();
   
   return 0;
 

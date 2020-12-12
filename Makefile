@@ -8,11 +8,13 @@ LIBRY = -lgsl -lgslcblas -lxml2 -lm -L$(MDSPLUS_DIR)/lib -lMdsLib -lMdsShr -ljpe
 # C++ Definitions
 CCP = g++
 
-INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2 -I$(EPICS_BASE)/include \
-	-I$(EPICS_BASE)/include/os/Linux -I$(EPICS_BASE)/include/compiler/gcc
+INCL_CPP = -Iinclude -I$(MDSPLUS_DIR)/include -I/usr/include/libxml2 \
+	-I$(EPICS_BASE)/include -I$(EPICS_BASE)/include/os/Linux \
+	-I$(EPICS_BASE)/include/compiler/gcc -I/usr/include/libserial
 FLAGS_CPP = -g -Wall
 LIBRY_CPP = -lgsl -lgslcblas -lxml2 -L$(MDSPLUS_DIR)/lib -lMdsObjectsCppShr \
-	-L$(EPICS_BASE)/lib/$(EPICS_HOST_ARCH) -lCom -lca -lpqxx -lpq
+	-L$(EPICS_BASE)/lib/$(EPICS_HOST_ARCH) -lCom -lca -lpqxx -lpq \
+	 -lserial
 
 
 SRC_DIR = src
@@ -58,6 +60,7 @@ SOURCE_CPP := src/cpp/main.cpp \
 	src/cpp/bankDiagnostics.cpp \
 	src/cpp/backUp.cpp \
 	src/cpp/fit.cpp \
+	src/cpp/serialTekScopeComm.cpp \
 	src/cpp/test.cpp
 
 SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \

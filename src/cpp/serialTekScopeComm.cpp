@@ -1,7 +1,4 @@
-#include <SerialPort.h>
-#include <SerialStream.h>
-#include <iostream>
-#include <sstream>
+#include "cpp/serialTekScopeComm.h"
 
 
 /******************************************************************************
@@ -39,7 +36,6 @@ static std::string writeReadBack(LibSerial::SerialPort *serialPort, std::string 
 
   serialPort->Write(cmd + "\n");
 
-  char nextChar;
   std::string cmdRet;
   int timeoutMS = 5000;
   serialPort->ReadLine(cmdRet, '\n', timeoutMS);
@@ -91,7 +87,6 @@ static int setString(LibSerial::SerialPort *serialPort, std::string setStringCmd
 
   serialPort->Write(setStringCmd + "?\n");
 
-  char nextChar;
   std::string setStringRet;
   int timeoutMS = 5000;
   serialPort->ReadLine(setStringRet, '\n', timeoutMS);
@@ -126,7 +121,6 @@ static int setInt(LibSerial::SerialPort *serialPort, std::string setStringCmd,
   // Commanding readback
   serialPort->Write(setStringCmd + "?\n");
 
-  char nextChar;
   std::string setStringRet;
   int timeoutMS = 5000;
   serialPort->ReadLine(setStringRet, '\n', timeoutMS);
@@ -157,7 +151,6 @@ static float getFloat(LibSerial::SerialPort *serialPort, std::string setStringCm
   // Commanding readback
   serialPort->Write(setStringCmd + "?\n");
 
-  char nextChar;
   std::string setStringRet;
   int timeoutMS = 5000;
   serialPort->ReadLine(setStringRet, '\n', timeoutMS);
@@ -186,7 +179,6 @@ static int getInt(LibSerial::SerialPort *serialPort, std::string setStringCmd) {
   // Commanding readback
   serialPort->Write(setStringCmd + "?\n");
 
-  char nextChar;
   std::string setStringRet;
   int timeoutMS = 5000;
   serialPort->ReadLine(setStringRet, '\n', timeoutMS);
@@ -281,13 +273,12 @@ static float *getTimeData(LibSerial::SerialPort *serialPort, int chNum) {
 
 
 /******************************************************************************
- * Function: main
- * Inputs: 
- * Returns: int
- * Description: This executes the main function in this file.
+ *
+ * TESTING SECTION
+ *
  ******************************************************************************/
 
-int main() {
+bool testSerialTekScopeComm() {
   
   LibSerial::SerialPort serialPort("/dev/ttyUSB0");
   

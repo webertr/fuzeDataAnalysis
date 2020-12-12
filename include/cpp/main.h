@@ -16,5 +16,6 @@
 #include "cpp/softXRay.h"
 #include "cpp/bankDiagnostics.h"
 #include "cpp/backUp.h"
+#include "cpp/serialTekScopeComm.h"
 
 #endif
