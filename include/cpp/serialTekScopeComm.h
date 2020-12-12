@@ -9,9 +9,9 @@
 
 namespace SerialTekScopeComm {
   
-  gsl_vector *getScopeChData(LibSerial::SerialPort *serialPort, int chNum);
+  gsl_vector *getScopeChData(int chNum);
   bool testSerialTekScopeComm();
-  gsl_vector *getScopeTimeBase(LibSerial::SerialPort *serialPort, int chNum);
+  gsl_vector *getScopeTimeBase(int chNum);
   
 }
 

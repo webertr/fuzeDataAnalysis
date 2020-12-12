@@ -72,15 +72,23 @@ SOURCE_SPECTROSCOPY_CPP := src/cpp/spectroscopyMonitor.cpp \
 	src/cpp/fit.cpp \
 	src/cpp/LightField.cpp
 
+SOURCE_TEKSCOPE_CPP := src/cpp/tekScopeMonitor.cpp \
+	src/cpp/mdsplusAccess.cpp \
+	src/cpp/serialTekScopeComm.cpp \
+	src/cpp/epicsCA.cpp
+
 OBJECT := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SOURCE))
 
 OBJECT_CPP := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCE_CPP))
 
 OBJECT_SPECTROSCOPY_CPP := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCE_SPECTROSCOPY_CPP))
 
+OBJECT_TEKSCOPE_CPP := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SOURCE_TEKSCOPE_CPP))
+
 PROD := exec \
 	run \
-	spectroscopy
+	spectroscopy \
+	tekscope
 
 all: $(PROD)
 
@@ -95,6 +103,10 @@ exec: $(OBJECT_CPP)
 spectroscopy: $(OBJECT_SPECTROSCOPY_CPP)
 	$(CCP) $(FLAGS_CPP) $(INCL_CPP) \
 	$(OBJECT_SPECTROSCOPY_CPP) $(LIBRY_CPP) -o spectroscopy
+
+tekscope: $(OBJECT_TEKSCOPE_CPP)
+	$(CCP) $(FLAGS_CPP) $(INCL_CPP) \
+	$(OBJECT_TEKSCOPE_CPP) $(LIBRY_CPP) -o tekscope
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INCL_DIR)/%.h
 	@$(MKDIR) -p $(@D)
