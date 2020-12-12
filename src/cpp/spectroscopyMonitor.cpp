@@ -1,5 +1,7 @@
 #include "cpp/spectroscopyMonitor.h"
 
+using namespace MDSplusAccess;
+
 /******************************************************************************
  *
  * These are the functions that will monitor the fuze control system,

@@ -6,6 +6,8 @@
  *
  ******************************************************************************/
 
+using namespace MDSplusAccess;
+
 static bool checkFileExists(std::string fileName);
 static std::string getFileFromShotNumber(long shotNumber);
 static int plotSpectroscopy(int shotNumber, std::string tempDataFile,

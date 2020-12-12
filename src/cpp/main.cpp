@@ -16,7 +16,7 @@ int main() {
   
   //testLightField();
 
-  //testMDSplusAccess();
+  MDSplusAccess::testMDSplusAccess();
 
   //testEpicsCA();
 
@@ -30,8 +30,8 @@ int main() {
 
   //testSave();
 
-  SerialTekScopeComm::testSerialTekScopeComm();
-  
+  //SerialTekScopeComm::testSerialTekScopeComm();
+
   return 0;
 
 }

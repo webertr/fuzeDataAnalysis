@@ -1,5 +1,7 @@
 #include "cpp/bankDiagnostics.h"
 
+using namespace MDSplusAccess;
+
 /******************************************************************************
  *
  * This is the source file to analyze the bank diagnostics

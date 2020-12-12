@@ -1,5 +1,7 @@
 #include "cpp/interferometry.h"
 
+using namespace MDSplusAccess;
+
 /******************************************************************************
  *
  * These are functions to break down inteferometry data from the FuZE experimemt

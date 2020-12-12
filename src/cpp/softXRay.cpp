@@ -1,5 +1,7 @@
 #include "cpp/softXRay.h"
 
+using namespace MDSplusAccess;
+
 /******************************************************************************
  *
  * This is the source file to analyze soft X-ray data

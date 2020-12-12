@@ -1,5 +1,7 @@
 #include "cpp/LightField.h"
 
+using namespace MDSplusAccess;
+
 /******************************************************************************
  * Function: LightField
  * Inputs: 
